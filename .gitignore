@@ -1,0 +1,14 @@
+# Build output
+bin/
+*.prg
+*.iq
+*.iq.debug.xml
+
+# Developer signing keys — never commit
+developer_key.pem
+developer_key.der
+*.der
+
+# Editor / OS
+.DS_Store
+.vscode/settings.local.json
