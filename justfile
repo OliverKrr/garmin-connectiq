@@ -41,6 +41,13 @@ sim:
 run: build
     "{{sdk_bin}}/monkeydo" {{out}} {{device}}
 
+# Build with unit tests and run them in the simulator (launch it first with `just sim`)
+# Note: monkeydo -t always exits 1; we grep the output for PASSED to set the real exit code.
+test:
+    mkdir -p bin
+    "{{sdk_bin}}/monkeyc" -d {{device}} -f {{jungle}} -o bin/run-field-test.prg -y {{key}} --unit-test -w
+    "{{sdk_bin}}/monkeydo" bin/run-field-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
+
 # Copy the built .prg to a USB-mounted watch (override WATCH=/Volumes/GARMIN)
 sideload watch="/Volumes/GARMIN": build
     test -d "{{watch}}/GARMIN/APPS" || { echo "No GARMIN/APPS at {{watch}} — see README (MTP/Android File Transfer)"; exit 1; }
