@@ -10,6 +10,7 @@ class HrZoneModel {
         _t = thresholds;
     }
 
+    // Returns 0 when hr is below zone 1; callers feeding TimeInZone should expect 1..5.
     // Integer zone 1..5; 0 if below zone 1.
     function zone(hr as Number) as Number {
         if (hr < _t[0]) {
@@ -35,6 +36,9 @@ class HrZoneModel {
             var lo = _t[z - 1];
             var hi = _t[z];
             if (hr < hi) {
+                if (hi <= lo) {
+                    return z.toFloat();
+                }
                 return z + (hr - lo).toFloat() / (hi - lo).toFloat();
             }
         }

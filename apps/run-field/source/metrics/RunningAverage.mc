@@ -13,6 +13,7 @@ class RunningAverage {
         _count++;
     }
 
+    // Integer (truncated) mean — HR/power are displayed as whole numbers.
     function average() as Number or Null {
         if (_count == 0) {
             return null;

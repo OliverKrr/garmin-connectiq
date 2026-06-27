@@ -19,6 +19,7 @@ class TimeInZone {
         _secs[z - 1] += 1;
     }
 
+    // Returns the internal array by reference for efficiency — read only, do not mutate.
     function counts() as Array<Number> {
         return _secs;
     }

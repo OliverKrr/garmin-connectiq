@@ -20,3 +20,10 @@ function runningAverage_resetClears(logger as Test.Logger) as Boolean {
     a.reset();
     return a.average() == null && a.count() == 0;
 }
+
+(:test)
+function runningAverage_truncatesToInteger(logger as Test.Logger) as Boolean {
+    var a = new RunningAverage();
+    a.add(1); a.add(2); // mean 1.5 -> truncates to 1
+    return a.average() == 1;
+}
