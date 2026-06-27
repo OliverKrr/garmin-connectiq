@@ -5,10 +5,11 @@ import Toybox.UserProfile;
 import Toybox.Lang;
 
 // Full-screen running data field: grid of pace/HR/distance/duration + clock, with
-// HR coloured by zone and a time-in-zone bar sidebar. Geometry is cached in
-// onLayout; onUpdate reads cached model values and allocates nothing.
+// HR coloured by zone and a time-in-zone bar strip along the bottom. Geometry is
+// cached in onLayout; onUpdate reads cached model values and allocates nothing.
 class RunFieldView extends WatchUi.DataField {
     private const ROLLING_WINDOW_SEC = 25;
+    private const VALUE_FONT = Graphics.FONT_TINY;
     private var _model as RunModel;
     private var _layout as GridLayout or Null = null;
 
@@ -50,49 +51,59 @@ class RunFieldView extends WatchUi.DataField {
         _cell(dc, _layout.clock(), fg, "", _model.clockStr(), Graphics.FONT_SMALL);
 
         var pc = _layout.paceCells();
-        _cell(dc, pc[0], fg, "PACE", _model.paceCurStr(), Graphics.FONT_NUMBER_MILD);
-        _cell(dc, pc[1], fg, "LAP", _model.paceLapStr(), Graphics.FONT_NUMBER_MILD);
-        _cell(dc, pc[2], fg, "AVG", _model.paceAvgStr(), Graphics.FONT_NUMBER_MILD);
+        _cell(dc, pc[0], fg, "PACE", _model.paceCurStr(), VALUE_FONT);
+        _cell(dc, pc[1], fg, "LAP", _model.paceLapStr(), VALUE_FONT);
+        _cell(dc, pc[2], fg, "AVG", _model.paceAvgStr(), VALUE_FONT);
 
         var hc = _layout.hrCells();
-        _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg), "HR " + _model.fractionalZoneStr(), _hrStr(_model.hrCur()), Graphics.FONT_NUMBER_MILD);
-        _cell(dc, hc[1], _model.hrColor(_model.hrLap(), fg), "LAP", _hrStr(_model.hrLap()), Graphics.FONT_NUMBER_MILD);
-        _cell(dc, hc[2], _model.hrColor(_model.hrAvg(), fg), "AVG", _hrStr(_model.hrAvg()), Graphics.FONT_NUMBER_MILD);
+        _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg), "HR " + _model.fractionalZoneStr(), _hrStr(_model.hrCur()), VALUE_FONT);
+        _cell(dc, hc[1], _model.hrColor(_model.hrLap(), fg), "LAP", _hrStr(_model.hrLap()), VALUE_FONT);
+        _cell(dc, hc[2], _model.hrColor(_model.hrAvg(), fg), "AVG", _hrStr(_model.hrAvg()), VALUE_FONT);
 
         var bc = _layout.bottomCells();
-        _cell(dc, bc[0], fg, "DIST", _model.distanceStr() + " km", Graphics.FONT_NUMBER_MILD);
-        _cell(dc, bc[1], fg, "TIME", _model.durationStr(), Graphics.FONT_NUMBER_MILD);
+        _cell(dc, bc[0], fg, "DIST", _model.distanceStr() + " km", VALUE_FONT);
+        _cell(dc, bc[1], fg, "TIME", _model.durationStr(), VALUE_FONT);
 
-        _drawSidebar(dc, _layout.sidebar(), fg);
+        _drawZoneBars(dc, _layout.zoneBar(), fg);
     }
 
+    // Draw a small label (top) + value (centre) inside rect [x,y,w,h].
     private function _cell(dc as Graphics.Dc, r as Array, color as Graphics.ColorType, label as String, value as String, valueFont as Graphics.FontType) as Void {
         var cx = r[0] + r[2] / 2;
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         if (!label.equals("")) {
-            dc.drawText(cx, r[1] + 1, Graphics.FONT_XTINY, label, Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, r[1], Graphics.FONT_XTINY, label, Graphics.TEXT_JUSTIFY_CENTER);
         }
-        dc.drawText(cx, r[1] + r[3] / 2, valueFont, value, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        dc.drawText(cx, r[1] + r[3] / 2 + 4, valueFont, value, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     private function _hrStr(hr as Number or Null) as String {
         return (hr == null) ? "--" : hr.format("%d");
     }
 
-    private function _drawSidebar(dc as Graphics.Dc, r as Array, fg as Graphics.ColorType) as Void {
+    // 5 vertical bars across a horizontal strip, heights proportional to time in
+    // each zone and coloured per zone (a faint baseline track shows empty bars).
+    private function _drawZoneBars(dc as Graphics.Dc, r as Array, fg as Graphics.ColorType) as Void {
         var counts = _model.zoneCounts();
         var max = _model.zoneMax();
         var n = 5;
-        var gap = 2;
+        var gap = 3;
         var barW = (r[2] - (n - 1) * gap) / n;
         var baseY = r[1] + r[3];
+        var trackH = (r[3] / 6 > 2) ? r[3] / 6 : 2;
         for (var i = 0; i < n; i++) {
             var x = r[0] + i * (barW + gap);
+            dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+            dc.fillRectangle(x, baseY - trackH, barW, trackH);
             var frac = (max > 0) ? counts[i].toFloat() / max : 0.0;
             var bh = (r[3] * frac).toNumber();
-            if (bh < 1 && counts[i] > 0) { bh = 1; }
-            dc.setColor(_model.zoneColor(i + 1), Graphics.COLOR_TRANSPARENT);
-            dc.fillRectangle(x, baseY - bh, barW, bh);
+            if (bh < 1 && counts[i] > 0) {
+                bh = 1;
+            }
+            if (bh > 0) {
+                dc.setColor(_model.zoneColor(i + 1), Graphics.COLOR_TRANSPARENT);
+                dc.fillRectangle(x, baseY - bh, barW, bh);
+            }
         }
     }
 }
