@@ -71,10 +71,14 @@ class RunFieldView extends WatchUi.DataField {
     private function _cell(dc as Graphics.Dc, r as Array, color as Graphics.ColorType, label as String, value as String, valueFont as Graphics.FontType) as Void {
         var cx = r[0] + r[2] / 2;
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
-        if (!label.equals("")) {
+        if (label.equals("")) {
+            // No label (clock): vertically centre the value.
+            dc.drawText(cx, r[1] + r[3] / 2, valueFont, value, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+        } else {
             dc.drawText(cx, r[1], Graphics.FONT_XTINY, label, Graphics.TEXT_JUSTIFY_CENTER);
+            // Value sits below the label (top-justified) so full-height digits never overlap it.
+            dc.drawText(cx, r[1] + (r[3] * 42) / 100, valueFont, value, Graphics.TEXT_JUSTIFY_CENTER);
         }
-        dc.drawText(cx, r[1] + r[3] / 2 + 4, valueFont, value, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 
     private function _hrStr(hr as Number or Null) as String {
