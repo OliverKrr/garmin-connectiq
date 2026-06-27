@@ -4,15 +4,18 @@ import Toybox.Activity;
 import Toybox.Lang;
 
 // Minimal full-screen data field used to prove the build -> sim -> sideload
-// pipeline. Real metrics and the grid + chart-sidebar layout arrive in P2.
+// pipeline. Real metrics and the grid + chart-sidebar layout come later.
 class RunFieldView extends WatchUi.DataField {
     private var _elapsedSec as Number = 0;
+    // Pre-formatted display string, rebuilt only when the value changes so the
+    // draw loop (onUpdate) never allocates (see the convention in CLAUDE.md).
+    private var _label as String = "run-field 0s";
 
     function initialize() {
         DataField.initialize();
     }
 
-    // Cache layout geometry once. (Populated in P2.)
+    // Cache layout geometry here once metrics/layout are added.
     function onLayout(dc as Graphics.Dc) as Void {
     }
 
@@ -20,7 +23,11 @@ class RunFieldView extends WatchUi.DataField {
     function compute(info as Activity.Info) as Void {
         var t = info.timerTime;
         if (t != null) {
-            _elapsedSec = (t as Number) / 1000;
+            var secs = (t as Number) / 1000;
+            if (secs != _elapsedSec) {
+                _elapsedSec = secs;
+                _label = "run-field " + secs + "s";
+            }
         }
     }
 
@@ -33,7 +40,7 @@ class RunFieldView extends WatchUi.DataField {
             dc.getWidth() / 2,
             dc.getHeight() / 2,
             Graphics.FONT_MEDIUM,
-            "run-field " + _elapsedSec + "s",
+            _label,
             Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER
         );
     }

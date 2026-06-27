@@ -18,7 +18,7 @@ A monorepo structured to host multiple apps and shared barrels.
 ## Development Setup
 
 ### Prerequisites
-- macOS (or Linux/WSL) with [`just`](https://github.com/casey/just), `openssl`, `python3`.
+- macOS (or Linux/WSL) with [`just`](https://github.com/casey/just) and `openssl`.
 - The **Connect IQ SDK**, via either:
   - GUI: `brew install --cask connectiq-sdk-manager`, sign in, download the latest SDK
     (Set as current) and the **Enduro 3** device + simulator; or
