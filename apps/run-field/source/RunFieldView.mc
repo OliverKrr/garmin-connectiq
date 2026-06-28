@@ -8,7 +8,6 @@ import Toybox.Lang;
 // HR coloured by zone and a time-in-zone bar strip along the bottom. Geometry is
 // cached in onLayout; onUpdate reads cached model values and allocates nothing.
 class RunFieldView extends WatchUi.DataField {
-    private const ROLLING_WINDOW_SEC = 25;
     private const VALUE_FONT = Graphics.FONT_TINY;
     private var _model as RunModel;
     private var _layout as GridLayout or Null = null;
@@ -19,7 +18,7 @@ class RunFieldView extends WatchUi.DataField {
         if (z == null || z.size() < 6) {
             z = [93, 111, 130, 148, 167, 185]; // sane default if unconfigured
         }
-        _model = new RunModel(ROLLING_WINDOW_SEC, new HrZoneModel(z));
+        _model = new RunModel(AppConfig.rollingWindowSec(), new HrZoneModel(z));
     }
 
     function onLayout(dc as Graphics.Dc) as Void {

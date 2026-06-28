@@ -7,8 +7,12 @@ class RunFieldApp extends Application.AppBase {
         AppBase.initialize();
     }
 
-    // The data field view is the initial (and only) view.
     function getInitialView() {
         return [ new RunFieldView() ];
+    }
+
+    // Settings changed in Garmin Connect Mobile / the simulator: redraw with them.
+    function onSettingsChanged() as Void {
+        WatchUi.requestUpdate();
     }
 }
