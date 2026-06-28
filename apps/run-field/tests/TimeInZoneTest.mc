@@ -22,5 +22,12 @@ function timeInZone_reset(logger as Test.Logger) as Boolean {
     var t = new TimeInZone();
     t.addSecond(2); t.addSecond(4);
     t.reset();
-    return t.maxCount() == 0;
+    return t.maxCount() == 0 && t.total() == 0;
+}
+
+(:test)
+function timeInZone_total(logger as Test.Logger) as Boolean {
+    var t = new TimeInZone();
+    t.addSecond(1); t.addSecond(2); t.addSecond(2); t.addSecond(5);
+    return t.total() == 4;
 }

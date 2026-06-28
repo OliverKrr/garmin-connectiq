@@ -34,6 +34,15 @@ class TimeInZone {
         return m;
     }
 
+    // Total seconds across all zones (for proportion-of-total bar heights).
+    function total() as Number {
+        var t = 0;
+        for (var i = 0; i < 5; i++) {
+            t += _secs[i];
+        }
+        return t;
+    }
+
     function reset() as Void {
         _secs = [0, 0, 0, 0, 0];
     }

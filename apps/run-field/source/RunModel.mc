@@ -102,5 +102,6 @@ class RunModel {
 
     function zoneCounts() as Array<Number> { return _tiz.counts(); }
     function zoneMax() as Number { return _tiz.maxCount(); }
+    function zoneTotal() as Number { return _tiz.total(); }
     function zoneColor(zoneIndex as Number) as Graphics.ColorType { return _zones.color(zoneIndex); }
 }
