@@ -1,3 +1,8 @@
 <strings>
     <string id="AppName">Run Field</string>
+    <string id="SetRollingWindow">Current-pace window (s)</string>
+    <string id="SetUsePower">Show power instead of pace</string>
+    <string id="SetPaceZonesEnabled">Colour pace by zone</string>
+    <string id="SetPaceZonesCsv">Pace zone boundaries (s/km)</string>
+    <string id="SetPaceZonesPrompt">4 boundaries slow to fast, e.g. 360,320,280,250</string>
 </strings>

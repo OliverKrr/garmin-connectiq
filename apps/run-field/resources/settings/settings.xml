@@ -1,0 +1,14 @@
+<settings>
+    <setting propertyKey="@Properties.rollingWindowSec" title="@Strings.SetRollingWindow">
+        <settingConfig type="numeric" min="5" max="120" />
+    </setting>
+    <setting propertyKey="@Properties.usePower" title="@Strings.SetUsePower">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.paceZonesEnabled" title="@Strings.SetPaceZonesEnabled">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.paceZonesCsv" title="@Strings.SetPaceZonesCsv" prompt="@Strings.SetPaceZonesPrompt">
+        <settingConfig type="alphaNumeric" />
+    </setting>
+</settings>
