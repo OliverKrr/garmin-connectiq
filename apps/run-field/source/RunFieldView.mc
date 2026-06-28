@@ -56,9 +56,9 @@ class RunFieldView extends WatchUi.DataField {
         _cell(dc, pc[2], fg, "AVG", _model.paceAvgStr(), VALUE_FONT);
 
         var hc = _layout.hrCells();
-        _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg), "HR " + _model.fractionalZoneStr(), _hrStr(_model.hrCur()), VALUE_FONT);
-        _cell(dc, hc[1], _model.hrColor(_model.hrLap(), fg), "LAP", _hrStr(_model.hrLap()), VALUE_FONT);
-        _cell(dc, hc[2], _model.hrColor(_model.hrAvg(), fg), "AVG", _hrStr(_model.hrAvg()), VALUE_FONT);
+        _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg), "HR " + _model.fractionalZoneStrFor(_model.hrCur()), _hrStr(_model.hrCur()), VALUE_FONT);
+        _cell(dc, hc[1], _model.hrColor(_model.hrLap(), fg), "LAP " + _model.fractionalZoneStrFor(_model.hrLap()), _hrStr(_model.hrLap()), VALUE_FONT);
+        _cell(dc, hc[2], _model.hrColor(_model.hrAvg(), fg), "AVG " + _model.fractionalZoneStrFor(_model.hrAvg()), _hrStr(_model.hrAvg()), VALUE_FONT);
 
         var bc = _layout.bottomCells();
         _cell(dc, bc[0], fg, "DIST", _model.distanceStr() + " km", VALUE_FONT);

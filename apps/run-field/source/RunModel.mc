@@ -24,7 +24,6 @@ class RunModel {
     private var _distM as Float = 0.0;
     private var _timerMs as Number = 0;
     private var _zoneCur as Number = 0;
-    private var _fracZone as Float = 1.0;
 
     function initialize(windowSec as Number, zones as HrZoneModel) {
         _zones = zones;
@@ -53,7 +52,6 @@ class RunModel {
             _hrCur = hr;
             _lapHr.add(hr);
             _zoneCur = _zones.zone(hr);
-            _fracZone = _zones.fractionalZone(hr);
             _tiz.addSecond(_zoneCur < 1 ? 1 : _zoneCur);
         } else {
             _hrCur = null;
@@ -91,9 +89,10 @@ class RunModel {
         return t.hour.format("%02d") + ":" + t.min.format("%02d");
     }
 
-    function fractionalZoneStr() as String {
-        if (_hrCur == null) { return "--"; }
-        return _fracZone.format("%.1f");
+    // Fractional zone (e.g. 2.5) for any HR value; "--" when null.
+    function fractionalZoneStrFor(hr as Number or Null) as String {
+        if (hr == null) { return "--"; }
+        return _zones.fractionalZone(hr).format("%.1f");
     }
 
     function hrColor(hr as Number or Null, fallback as Graphics.ColorType) as Graphics.ColorType {

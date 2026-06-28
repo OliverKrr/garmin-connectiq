@@ -24,8 +24,8 @@ class GridLayout {
         var zoneH = (h * 12) / 100;
         var gap = (h * 1) / 100;
 
-        var yClock = (h * 16) / 100;          // start below the narrow top
-        var yPace = yClock + clockH + gap;
+        var yClock = (h * 11) / 100;          // clock near the top
+        var yPace = (h * 26) / 100;           // value rows start below the clock
         var yHr = yPace + rowH + gap;
         var yBottom = yHr + rowH + gap;
         var yZone = yBottom + rowH + gap;
