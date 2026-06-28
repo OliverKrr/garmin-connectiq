@@ -9,11 +9,20 @@ import Toybox.Lang;
 // cached in onLayout; onUpdate reads cached model values and allocates nothing.
 class RunFieldView extends WatchUi.DataField {
     private const VALUE_FONT = Graphics.FONT_TINY;
-    private var _model as RunModel;
+    // Initialised with a throwaway default so the type checker sees it non-null;
+    // reloadSettings() (called from initialize) immediately replaces it.
+    private var _model as RunModel = new RunModel(25, new HrZoneModel([93, 111, 130, 148, 167, 185]));
     private var _layout as GridLayout or Null = null;
 
     function initialize() {
         DataField.initialize();
+        reloadSettings();
+    }
+
+    // (Re)read app settings and rebuild the model. Called at init and from the
+    // app's onSettingsChanged() so edits apply live. Rebuilding resets in-activity
+    // accumulators (lap/avg/time-in-zone) — acceptable for an occasional change.
+    function reloadSettings() as Void {
         var z = UserProfile.getHeartRateZones(UserProfile.HR_ZONE_SPORT_RUNNING);
         if (z == null || z.size() < 6) {
             z = [93, 111, 130, 148, 167, 185]; // sane default if unconfigured
