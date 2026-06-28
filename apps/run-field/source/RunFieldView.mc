@@ -26,6 +26,12 @@ class RunFieldView extends WatchUi.DataField {
                 _model.setPowerZones(new HrZoneModel(pz));
             }
         }
+        if (AppConfig.paceZonesEnabled()) {
+            var pzb = AppConfig.paceZones();
+            if (pzb != null) {
+                _model.setPaceZones(new PaceZoneModel(pzb));
+            }
+        }
     }
 
     function onLayout(dc as Graphics.Dc) as Void {
@@ -62,9 +68,9 @@ class RunFieldView extends WatchUi.DataField {
             _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg), "LAP", _model.powerStr(_model.powerLap()), VALUE_FONT);
             _cell(dc, pc[2], _model.powerColor(_model.powerAvg(), fg), "AVG", _model.powerStr(_model.powerAvg()), VALUE_FONT);
         } else {
-            _cell(dc, pc[0], fg, "PACE", _model.paceCurStr(), VALUE_FONT);
-            _cell(dc, pc[1], fg, "LAP", _model.paceLapStr(), VALUE_FONT);
-            _cell(dc, pc[2], fg, "AVG", _model.paceAvgStr(), VALUE_FONT);
+            _cell(dc, pc[0], _model.paceCurColor(fg), "PACE", _model.paceCurStr(), VALUE_FONT);
+            _cell(dc, pc[1], _model.paceLapColor(fg), "LAP", _model.paceLapStr(), VALUE_FONT);
+            _cell(dc, pc[2], _model.paceAvgColor(fg), "AVG", _model.paceAvgStr(), VALUE_FONT);
         }
 
         var hc = _layout.hrCells();

@@ -25,6 +25,7 @@ class RunModel {
     private var _powerCur as Number or Null = null;
     private var _powerAvg as Number or Null = null;
     private var _powerZones as HrZoneModel or Null = null;
+    private var _paceZones as PaceZoneModel or Null = null;
     private var _usePower as Boolean = false;
     private var _distM as Float = 0.0;
     private var _timerMs as Number = 0;
@@ -118,7 +119,17 @@ class RunModel {
 
     function setUsePower(use as Boolean) as Void { _usePower = use; }
     function setPowerZones(z as HrZoneModel or Null) as Void { _powerZones = z; }
+    function setPaceZones(z as PaceZoneModel or Null) as Void { _paceZones = z; }
     function usePower() as Boolean { return _usePower; }
+
+    // Colour for a pace value (seconds/km) by pace zone; fallback when no zones/null.
+    function paceColor(secPerKm as Float or Null, fallback as Graphics.ColorType) as Graphics.ColorType {
+        if (secPerKm == null || _paceZones == null) { return fallback; }
+        return _paceZones.color(secPerKm.toNumber());
+    }
+    function paceCurColor(fb as Graphics.ColorType) as Graphics.ColorType { return paceColor(_paceCur, fb); }
+    function paceLapColor(fb as Graphics.ColorType) as Graphics.ColorType { return paceColor(_paceLap, fb); }
+    function paceAvgColor(fb as Graphics.ColorType) as Graphics.ColorType { return paceColor(_paceAvg, fb); }
 
     function powerCur() as Number or Null { return _powerCur; }
     function powerLap() as Number or Null { return _lapPower.average(); }
