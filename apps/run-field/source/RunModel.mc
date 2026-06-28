@@ -21,6 +21,11 @@ class RunModel {
     private var _paceAvg as Float or Null = null;
     private var _hrCur as Number or Null = null;
     private var _hrAvg as Number or Null = null;
+    private var _lapPower as RunningAverage = new RunningAverage();
+    private var _powerCur as Number or Null = null;
+    private var _powerAvg as Number or Null = null;
+    private var _powerZones as HrZoneModel or Null = null;
+    private var _usePower as Boolean = false;
     private var _distM as Float = 0.0;
     private var _timerMs as Number = 0;
     private var _zoneCur as Number = 0;
@@ -57,12 +62,22 @@ class RunModel {
             _hrCur = null;
         }
         _hrAvg = (info has :averageHeartRate) ? info.averageHeartRate : null;
+
+        var power = (info has :currentPower) ? info.currentPower : null;
+        if (power != null) {
+            _powerCur = power;
+            _lapPower.add(power);
+        } else {
+            _powerCur = null;
+        }
+        _powerAvg = (info has :averagePower) ? info.averagePower : null;
     }
 
     function onLap() as Void {
         _lapStartMs = _timerMs;
         _lapStartDist = _distM;
         _lapHr.reset();
+        _lapPower.reset();
     }
 
     function onReset() as Void {
@@ -70,6 +85,7 @@ class RunModel {
         _lapStartDist = 0.0;
         _rollingPace.reset();
         _lapHr.reset();
+        _lapPower.reset();
         _tiz.reset();
     }
 
@@ -98,6 +114,23 @@ class RunModel {
     function hrColor(hr as Number or Null, fallback as Graphics.ColorType) as Graphics.ColorType {
         if (hr == null) { return fallback; }
         return _zones.color(_zones.zone(hr));
+    }
+
+    function setUsePower(use as Boolean) as Void { _usePower = use; }
+    function setPowerZones(z as HrZoneModel or Null) as Void { _powerZones = z; }
+    function usePower() as Boolean { return _usePower; }
+
+    function powerCur() as Number or Null { return _powerCur; }
+    function powerLap() as Number or Null { return _lapPower.average(); }
+    function powerAvg() as Number or Null { return _powerAvg; }
+
+    function powerStr(w as Number or Null) as String {
+        return (w == null) ? "--" : w.format("%d");
+    }
+
+    function powerColor(w as Number or Null, fallback as Graphics.ColorType) as Graphics.ColorType {
+        if (w == null || _powerZones == null) { return fallback; }
+        return _powerZones.color(_powerZones.zone(w));
     }
 
     function zoneCounts() as Array<Number> { return _tiz.counts(); }

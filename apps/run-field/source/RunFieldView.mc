@@ -19,6 +19,13 @@ class RunFieldView extends WatchUi.DataField {
             z = [93, 111, 130, 148, 167, 185]; // sane default if unconfigured
         }
         _model = new RunModel(AppConfig.rollingWindowSec(), new HrZoneModel(z));
+        _model.setUsePower(AppConfig.usePower());
+        if (UserProfile has :getPowerZones) {
+            var pz = UserProfile.getPowerZones(Activity.SPORT_RUNNING);
+            if (pz != null && pz.size() >= 6) {
+                _model.setPowerZones(new HrZoneModel(pz));
+            }
+        }
     }
 
     function onLayout(dc as Graphics.Dc) as Void {
@@ -50,9 +57,15 @@ class RunFieldView extends WatchUi.DataField {
         _cell(dc, _layout.clock(), fg, "", _model.clockStr(), Graphics.FONT_SMALL);
 
         var pc = _layout.paceCells();
-        _cell(dc, pc[0], fg, "PACE", _model.paceCurStr(), VALUE_FONT);
-        _cell(dc, pc[1], fg, "LAP", _model.paceLapStr(), VALUE_FONT);
-        _cell(dc, pc[2], fg, "AVG", _model.paceAvgStr(), VALUE_FONT);
+        if (_model.usePower()) {
+            _cell(dc, pc[0], _model.powerColor(_model.powerCur(), fg), "PWR", _model.powerStr(_model.powerCur()), VALUE_FONT);
+            _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg), "LAP", _model.powerStr(_model.powerLap()), VALUE_FONT);
+            _cell(dc, pc[2], _model.powerColor(_model.powerAvg(), fg), "AVG", _model.powerStr(_model.powerAvg()), VALUE_FONT);
+        } else {
+            _cell(dc, pc[0], fg, "PACE", _model.paceCurStr(), VALUE_FONT);
+            _cell(dc, pc[1], fg, "LAP", _model.paceLapStr(), VALUE_FONT);
+            _cell(dc, pc[2], fg, "AVG", _model.paceAvgStr(), VALUE_FONT);
+        }
 
         var hc = _layout.hrCells();
         _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg), "HR " + _model.fractionalZoneStrFor(_model.hrCur()), _hrStr(_model.hrCur()), VALUE_FONT);
