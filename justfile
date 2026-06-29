@@ -75,3 +75,21 @@ package-beta:
 bump VERSION:
     python3 -c "import re; p='apps/run-field/manifest.xml'; s=open(p).read(); s=re.sub(r'(<iq:application[^>]* version=\")[0-9.]+(\")', r'\g<1>{{VERSION}}\g<2>', s); open(p,'w').write(s)"
     @grep -oE '<iq:application[^>]* version="[0-9.]+"' apps/run-field/manifest.xml
+
+# Prepare the manual Store upload: print version, CHANGELOG notes, checklist; open the dashboard.
+# Does NOT upload — publishing is a manual, outward-facing step.
+publish-assist:
+    @echo "=== Connect IQ Store upload (MANUAL) ==="
+    @grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-field/manifest.xml | grep -oE 'version="[0-9.]+"'
+    @echo "--- What's New (top CHANGELOG entry) ---"
+    @awk '/^## \[[0-9]/{c++} c==1 && !/^## \[/{print} c==2{exit}' CHANGELOG.md
+    @echo "--- Checklist ---"
+    @echo "Public : upload bin/run-field.iq       -> visibility PUBLIC"
+    @echo "Beta   : upload bin/run-field-beta.iq  -> visibility PRIVATE/unlisted"
+    @echo "Then   : paste What's New, add screenshots, submit (manual)."
+    @echo "Dashboard: https://apps.garmin.com/en-US/developer/dashboard"
+    -@command -v open >/dev/null && open "https://apps.garmin.com/en-US/developer/dashboard"
+
+# Bump + package a release, then remind to finish manually. e.g. `just release 0.2.0`
+release VERSION: (bump VERSION) package
+    @echo "Edit CHANGELOG.md for {{VERSION}}, then run: just publish-assist"
