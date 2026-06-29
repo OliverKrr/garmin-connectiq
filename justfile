@@ -58,6 +58,13 @@ sideload watch="/Volumes/GARMIN": build
 clean:
     rm -rf bin
 
+# Regenerate Store listing images (PNG) from the SVG sources in store-assets/
+store-assets:
+    rsvg-convert -w 280 -h 280 store-assets/screen.svg -o store-assets/screen.png
+    rsvg-convert -w 500 -h 500 store-assets/cover.svg -o store-assets/cover.png
+    rsvg-convert -w 1440 -h 720 store-assets/hero.svg -o store-assets/hero.png
+    @echo "store-assets/{screen,cover,hero}.png regenerated"
+
 # Build the signed PUBLIC Store package -> bin/run-field.iq
 package:
     mkdir -p bin

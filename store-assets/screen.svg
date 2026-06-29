@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280" font-family="Helvetica, Arial, sans-serif">
+  <rect width="280" height="280" fill="#1b1b1b"/>
+  <circle cx="140" cy="140" r="139" fill="#ffffff"/>
+  <text x="140" y="46" text-anchor="middle" font-size="24" font-weight="bold" fill="#111111">21:12</text>
+  <g text-anchor="middle" fill="#111111">
+    <text x="62" y="74" font-size="12">PACE</text><text x="140" y="74" font-size="12">LAP</text><text x="218" y="74" font-size="12">AVG</text>
+    <text x="62" y="98" font-size="22" font-weight="bold">5:12</text><text x="140" y="98" font-size="22" font-weight="bold">5:08</text><text x="218" y="98" font-size="22" font-weight="bold">5:30</text>
+  </g>
+  <g text-anchor="middle">
+    <text x="62" y="122" font-size="12" fill="#3B82F6">HR 2.5</text><text x="140" y="122" font-size="12" fill="#9E9E9E">LAP 1.8</text><text x="218" y="122" font-size="12" fill="#22C55E">AVG 2.1</text>
+    <text x="62" y="146" font-size="22" font-weight="bold" fill="#3B82F6">166</text><text x="140" y="146" font-size="22" font-weight="bold" fill="#9E9E9E">149</text><text x="218" y="146" font-size="22" font-weight="bold" fill="#22C55E">152</text>
+  </g>
+  <g text-anchor="middle" fill="#111111">
+    <text x="92" y="172" font-size="12">DIST</text><text x="188" y="172" font-size="12">TIME</text>
+    <text x="92" y="194" font-size="20" font-weight="bold">8.42 km</text><text x="188" y="194" font-size="20" font-weight="bold">44:10</text>
+  </g>
+  <g>
+    <rect x="64" y="214" width="22" height="12" fill="#9E9E9E"/>
+    <rect x="90" y="206" width="22" height="20" fill="#3B82F6"/>
+    <rect x="116" y="210" width="22" height="16" fill="#22C55E"/>
+    <rect x="142" y="220" width="22" height="6" fill="#F59E0B"/>
+    <rect x="168" y="222" width="22" height="4" fill="#EF4444"/>
+  </g>
+</svg>
