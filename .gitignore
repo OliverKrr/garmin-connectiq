@@ -9,6 +9,9 @@ developer_key.pem
 developer_key.der
 *.der
 
+# Generated beta manifest (produced by `just package-beta`)
+apps/run-field/manifest-beta.xml
+
 # Editor / OS
 .DS_Store
 .vscode/settings.local.json

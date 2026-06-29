@@ -1,5 +1,6 @@
 <strings>
     <string id="AppName">Run Field</string>
+    <string id="AppNameBeta">Run Field (Beta)</string>
     <string id="SetRollingWindow">Current-pace window (s)</string>
     <string id="SetUsePower">Show power instead of pace</string>
     <string id="SetPaceZonesEnabled">Colour pace by zone</string>

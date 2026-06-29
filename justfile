@@ -58,6 +58,19 @@ sideload watch="/Volumes/GARMIN": build
 clean:
     rm -rf bin
 
+# Build the signed PUBLIC Store package -> bin/run-field.iq
+package:
+    mkdir -p bin
+    "{{sdk_bin}}/monkeyc" -e -r -o bin/run-field.iq -f {{jungle}} -y {{key}}
+    @echo "Public .iq  -> bin/run-field.iq"
+
+# Build the signed BETA Store package (separate app id + name) -> bin/run-field-beta.iq
+package-beta:
+    mkdir -p bin
+    python3 -c "s=open('apps/run-field/manifest.xml').read(); s=s.replace('024f8072155f4e17a0d6fed0b18d682e','2aa9eff51b0642519e6214de6db52342').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-field/manifest-beta.xml','w').write(s)"
+    "{{sdk_bin}}/monkeyc" -e -r -o bin/run-field-beta.iq -f apps/run-field/monkey-beta.jungle -y {{key}}
+    @echo "Beta .iq    -> bin/run-field-beta.iq"
+
 # Set the app version (semver), e.g. `just bump 0.2.0`
 bump VERSION:
     python3 -c "import re; p='apps/run-field/manifest.xml'; s=open(p).read(); s=re.sub(r'(<iq:application[^>]* version=\")[0-9.]+(\")', r'\g<1>{{VERSION}}\g<2>', s); open(p,'w').write(s)"
