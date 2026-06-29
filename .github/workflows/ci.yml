@@ -11,18 +11,35 @@ jobs:
     runs-on: ubuntu-latest
     # Skip secret-using runs for PRs from forks (secrets aren't available there anyway).
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
+      GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+      CI_SIGNING_KEY: ${{ secrets.CI_SIGNING_KEY }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install connect-iq-sdk-manager
+      # The SDK build needs Garmin secrets. Until they're set, skip it (don't fail).
+      - name: Check for Garmin secrets
+        id: gate
         run: |
-          curl -fsSL https://github.com/lindell/connect-iq-sdk-manager-cli/releases/latest/download/connect-iq-sdk-manager_Linux_x86_64.tar.gz \
-            | sudo tar -xz -C /usr/local/bin connect-iq-sdk-manager
+          if [ -n "$GARMIN_USERNAME" ] && [ -n "$GARMIN_PASSWORD" ] && [ -n "$CI_SIGNING_KEY" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Garmin secrets not set (GARMIN_USERNAME / GARMIN_PASSWORD / CI_SIGNING_KEY) — skipping the SDK build. Add them in Settings → Secrets and variables → Actions to enable CI builds."
+          fi
+
+      - name: Install connect-iq-sdk-manager
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          url=$(curl -fsSL https://api.github.com/repos/lindell/connect-iq-sdk-manager-cli/releases/latest \
+            | jq -r '.assets[] | select(.name | test("Linux_x86_64\\.tar\\.gz$")) | .browser_download_url')
+          echo "Downloading $url"
+          curl -fsSL "$url" | sudo tar -xz -C /usr/local/bin connect-iq-sdk-manager
+          connect-iq-sdk-manager --version
 
       - name: Set up Connect IQ SDK + device
-        env:
-          GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
-          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+        if: steps.gate.outputs.ready == 'true'
         run: |
           connect-iq-sdk-manager login
           connect-iq-sdk-manager sdk set 9.2.2
@@ -30,17 +47,19 @@ jobs:
           echo "$(connect-iq-sdk-manager sdk current-path --bin)" >> "$GITHUB_PATH"
 
       - name: Decode signing key
-        run: echo "${{ secrets.CI_SIGNING_KEY }}" | base64 -d > developer_key.der
+        if: steps.gate.outputs.ready == 'true'
+        run: echo "$CI_SIGNING_KEY" | base64 -d > developer_key.der
 
       - name: Build (type-check)
+        if: steps.gate.outputs.ready == 'true'
         run: monkeyc -d enduro3 -f apps/run-field/monkey.jungle -o bin/run-field.prg -y developer_key.der -w
 
       - name: Package signed .iq (tags only)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.gate.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
         run: monkeyc -e -r -o bin/run-field.iq -f apps/run-field/monkey.jungle -y developer_key.der
 
       - name: Attach .iq to GitHub Release (tags only)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.gate.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: bin/run-field.iq
