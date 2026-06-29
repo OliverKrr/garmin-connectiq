@@ -4,7 +4,7 @@ Two Connect IQ Store listings share one codebase:
 
 | Track | App id | Name | Visibility | Artifact |
 |---|---|---|---|---|
-| Public | `024f8072155f4e17a0d6fed0b18d682e` | Run Field | Public | `bin/run-field.iq` |
+| Public | `5f713bad3e2544559f1ba1cff9e59aa3` | Run Field | Public | `bin/run-field.iq` |
 | Beta | `2aa9eff51b0642519e6214de6db52342` | Run Field (Beta) | Private / unlisted | `bin/run-field-beta.iq` |
 
 There is **no Garmin upload API** — the upload is a manual web step. The pipeline prepares

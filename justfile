@@ -74,7 +74,7 @@ package:
 # Build the signed BETA Store package (separate app id + name) -> bin/run-field-beta.iq
 package-beta:
     mkdir -p bin
-    python3 -c "s=open('apps/run-field/manifest.xml').read(); s=s.replace('024f8072155f4e17a0d6fed0b18d682e','2aa9eff51b0642519e6214de6db52342').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-field/manifest-beta.xml','w').write(s)"
+    python3 -c "s=open('apps/run-field/manifest.xml').read(); s=s.replace('5f713bad3e2544559f1ba1cff9e59aa3','2aa9eff51b0642519e6214de6db52342').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-field/manifest-beta.xml','w').write(s)"
     "{{sdk_bin}}/monkeyc" -e -r -o bin/run-field-beta.iq -f apps/run-field/monkey-beta.jungle -y {{key}}
     @echo "Beta .iq    -> bin/run-field-beta.iq"
 
