@@ -24,4 +24,22 @@ class PaceZoneModel {
     function color(paceSecPerKm as Number or Null) as Graphics.ColorType {
         return ZoneColor.of(zone(paceSecPerKm));
     }
+
+    // Fractional zone, e.g. 30% from zone 2 toward zone 3 -> 2.3. Zones 1 and 5 are
+    // open-ended (no slower/faster bound) so they clamp to 1.0 / 5.0. 0.0 if null.
+    function fractionalZone(paceSecPerKm as Number or Null) as Float {
+        if (paceSecPerKm == null) {
+            return 0.0;
+        }
+        if (paceSecPerKm > _b[0]) {
+            return 1.0;
+        } else if (paceSecPerKm > _b[1]) {
+            return 2.0 + (_b[0] - paceSecPerKm).toFloat() / (_b[0] - _b[1]);
+        } else if (paceSecPerKm > _b[2]) {
+            return 3.0 + (_b[1] - paceSecPerKm).toFloat() / (_b[1] - _b[2]);
+        } else if (paceSecPerKm > _b[3]) {
+            return 4.0 + (_b[2] - paceSecPerKm).toFloat() / (_b[2] - _b[3]);
+        }
+        return 5.0;
+    }
 }

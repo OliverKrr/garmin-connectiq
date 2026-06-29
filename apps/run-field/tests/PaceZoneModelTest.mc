@@ -14,3 +14,13 @@ function paceZone_color(logger as Test.Logger) as Boolean {
     var m = new PaceZoneModel([360, 320, 280, 250]);
     return m.color(300) == Graphics.COLOR_GREEN && m.color(240) == Graphics.COLOR_RED;
 }
+
+(:test)
+function paceZone_fractional(logger as Test.Logger) as Boolean {
+    var m = new PaceZoneModel([360, 320, 280, 250]);
+    return m.fractionalZone(360) == 2.0
+        && (m.fractionalZone(340) - 2.5).abs() < 0.01
+        && (m.fractionalZone(300) - 3.5).abs() < 0.01
+        && m.fractionalZone(400) == 1.0
+        && m.fractionalZone(240) == 5.0;
+}

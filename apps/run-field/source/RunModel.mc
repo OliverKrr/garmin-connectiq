@@ -131,6 +131,21 @@ class RunModel {
     function setPaceZones(z as PaceZoneModel or Null) as Void { _paceZones = z; }
     function usePower() as Boolean { return _usePower; }
 
+    // Fractional pace zone as " x.x" for a label, or "" when pace zones aren't set.
+    function paceZoneStrFor(secPerKm as Float or Null) as String {
+        if (secPerKm == null || _paceZones == null) { return ""; }
+        return " " + _paceZones.fractionalZone(secPerKm.toNumber()).format("%.1f");
+    }
+    function paceCurZone() as String { return paceZoneStrFor(_paceCur); }
+    function paceLapZone() as String { return paceZoneStrFor(_paceLap); }
+    function paceAvgZone() as String { return paceZoneStrFor(_paceAvg); }
+
+    // Fractional power zone as " x.x" for a label, or "" when power zones aren't available.
+    function powerZoneStrFor(w as Number or Null) as String {
+        if (w == null || _powerZones == null) { return ""; }
+        return " " + _powerZones.fractionalZone(w).format("%.1f");
+    }
+
     // Colour for a pace value (seconds/km) by pace zone; fallback when no zones/null.
     function paceColor(secPerKm as Float or Null, fallback as Graphics.ColorType) as Graphics.ColorType {
         if (secPerKm == null || _paceZones == null) { return fallback; }
