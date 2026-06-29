@@ -47,7 +47,12 @@ class RunModel {
         if (timer != null) { _timerMs = timer; }
         if (dist != null) { _distM = dist; }
 
-        if (timer != null && dist != null) {
+        // Only accumulate stats while the timer is running. compute() also fires
+        // before the activity starts and while paused, when the timer is not
+        // advancing — accumulating then would (e.g.) grow the time-in-zone bars.
+        var running = (info has :timerState) ? (info.timerState == Activity.TIMER_STATE_ON) : true;
+
+        if (running && timer != null && dist != null) {
             _rollingPace.add(timer, dist);
             _paceCur = _rollingPace.paceSecPerKm();
             _paceLap = Pace.secPerKmFromDelta(dist - _lapStartDist, timer - _lapStartMs);
@@ -56,9 +61,11 @@ class RunModel {
 
         if (hr != null) {
             _hrCur = hr;
-            _lapHr.add(hr);
             _zoneCur = _zones.zone(hr);
-            _tiz.addSecond(_zoneCur < 1 ? 1 : _zoneCur);
+            if (running) {
+                _lapHr.add(hr);
+                _tiz.addSecond(_zoneCur < 1 ? 1 : _zoneCur);
+            }
         } else {
             _hrCur = null;
         }
@@ -67,7 +74,9 @@ class RunModel {
         var power = (info has :currentPower) ? info.currentPower : null;
         if (power != null) {
             _powerCur = power;
-            _lapPower.add(power);
+            if (running) {
+                _lapPower.add(power);
+            }
         } else {
             _powerCur = null;
         }
