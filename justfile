@@ -57,3 +57,8 @@ sideload watch="/Volumes/GARMIN": build
 # Remove build output
 clean:
     rm -rf bin
+
+# Set the app version (semver), e.g. `just bump 0.2.0`
+bump VERSION:
+    python3 -c "import re; p='apps/run-field/manifest.xml'; s=open(p).read(); s=re.sub(r'(<iq:application[^>]* version=\")[0-9.]+(\")', r'\g<1>{{VERSION}}\g<2>', s); open(p,'w').write(s)"
+    @grep -oE '<iq:application[^>]* version="[0-9.]+"' apps/run-field/manifest.xml
