@@ -46,6 +46,10 @@ on recent macOS — use **[OpenMTP](https://openmtp.ganeshrvel.com/)** instead
 (`brew install --cask openmtp`): connect the watch, then copy `bin/run-field.prg` into
 `GARMIN/APPS/` on the device and restart it.
 
+### Releasing
+Two Store listings (Public + private Beta) from one codebase. See [RELEASE.md](RELEASE.md) and the
+`just release` / `just publish-assist` recipes. Publishing the `.iq` is a manual dashboard step.
+
 ### VS Code
 The official **Monkey C** extension reads `apps/run-field/manifest.xml` and `monkey.jungle`
 directly — open the repo and build/debug from the extension if you prefer a GUI workflow.

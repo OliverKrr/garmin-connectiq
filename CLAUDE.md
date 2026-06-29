@@ -32,6 +32,21 @@ do not reference sibling repositories by local path; link public repos by URL on
 - `just run` — build + run in the simulator (sim must be running)
 - `just sideload` — copy the .prg to a USB-mounted watch
 
+## Develop / release workflow
+
+- **Inner loop (fast):** `just run` (simulator) · `just sideload` or OpenMTP (watch). Unit tests:
+  `just sim` then `just test`.
+- **Cut a release:** `just release X.Y.Z` (bumps version + builds `bin/run-field.iq`), edit
+  `CHANGELOG.md` for the version, then `just package-beta` for the beta `.iq`.
+- **Publish (manual):** `just publish-assist` prints the version + "What's New" + checklist and
+  opens the dashboard. Upload `bin/run-field-beta.iq` to the **private Beta** listing first; after
+  testing, upload `bin/run-field.iq` to the **Public** listing. See `RELEASE.md` for app ids/steps.
+- **CI:** type-checks on push; on a `vX.Y.Z` tag, attaches the signed `.iq` to a GitHub Release.
+
+**Guardrail:** packaging (`package`/`package-beta`) is safe and automatable. **Uploading to the
+Connect IQ Store is manual and outward-facing** — there is no API. Prepare the `.iq` and hand it to
+the user; never run an uploader and never claim the app as "published".
+
 ## Conventions
 
 - Override target device with `CIQ_DEVICE=<id> just build` (default `enduro3`).
