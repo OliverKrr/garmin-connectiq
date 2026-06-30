@@ -6,21 +6,31 @@ on:
     tags: ['v*']
   pull_request:
 
+# Least privilege: default the GITHUB_TOKEN to read-only; the build job
+# grants itself contents:write only because the release step needs it.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     # Skip secret-using runs for PRs from forks (secrets aren't available there anyway).
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    env:
-      GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
-      GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-      CI_SIGNING_KEY: ${{ secrets.CI_SIGNING_KEY }}
+    permissions:
+      contents: write # required by the release step (tags only) to attach the .iq asset
     steps:
       - uses: actions/checkout@v4
 
       # The SDK build needs Garmin secrets. Until they're set, skip it (don't fail).
+      # Secrets are scoped per-step (never job-wide) so that steps which run
+      # third-party code (the SDK-manager download, the release action) never
+      # see the Garmin credentials or signing key.
       - name: Check for Garmin secrets
         id: gate
+        env:
+          GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+          CI_SIGNING_KEY: ${{ secrets.CI_SIGNING_KEY }}
         run: |
           if [ -n "$GARMIN_USERNAME" ] && [ -n "$GARMIN_PASSWORD" ] && [ -n "$CI_SIGNING_KEY" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
@@ -40,6 +50,9 @@ jobs:
 
       - name: Set up Connect IQ SDK + device
         if: steps.gate.outputs.ready == 'true'
+        env:
+          GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
+          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
         run: |
           connect-iq-sdk-manager login
           connect-iq-sdk-manager sdk set 9.2.2
@@ -48,6 +61,8 @@ jobs:
 
       - name: Decode signing key
         if: steps.gate.outputs.ready == 'true'
+        env:
+          CI_SIGNING_KEY: ${{ secrets.CI_SIGNING_KEY }}
         run: echo "$CI_SIGNING_KEY" | base64 -d > developer_key.der
 
       - name: Build (type-check)
@@ -60,6 +75,6 @@ jobs:
 
       - name: Attach .iq to GitHub Release (tags only)
         if: steps.gate.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
         with:
           files: bin/run-field.iq
