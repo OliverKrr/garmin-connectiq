@@ -3,13 +3,16 @@
     <string id="AppNameBeta">Run Field (Beta)</string>
     <string id="SetRollingWindow">Current-pace window (s)</string>
     <string id="SetUsePower">Show power instead of pace</string>
-    <string id="SetPaceZonesEnabled">Colour pace by zone</string>
-    <string id="SetPaceZonesCsv">Pace zone boundaries (s/km)</string>
-    <string id="SetPaceZonesPrompt">4 boundaries slow to fast, e.g. 360,320,280,250</string>
+    <string id="SetPaceZonesCsv">Custom pace boundaries (s/km)</string>
+    <string id="SetPaceZonesPrompt">Custom model: 4 (5 zones) or 6 (7 zones) paces, slow to fast, e.g. 360,320,280,250</string>
     <string id="SetAutoToggle">Auto pace/power switch (s, 0=off)</string>
     <string id="SetThresholdPace">Threshold pace (m:ss per km)</string>
-    <string id="SetThresholdPacePrompt">e.g. 3:41 — zones derive from this</string>
-    <string id="SetPaceZoneCount">Pace zone count</string>
-    <string id="Zones5">5 zones</string>
-    <string id="Zones7">7 zones (intervals.icu)</string>
+    <string id="SetThresholdPacePrompt">e.g. 3:41 - zones derive from this</string>
+    <string id="SetPaceZoneModel">Pace zone model</string>
+    <string id="ModelOff">Off</string>
+    <string id="Model8020">80/20 Run (7)</string>
+    <string id="ModelFriel">Joe Friel Run (7)</string>
+    <string id="ModelCts">CTS Run (5)</string>
+    <string id="ModelMyProCoach">MyProCoach Run (5)</string>
+    <string id="ModelCustom">Custom</string>
 </strings>

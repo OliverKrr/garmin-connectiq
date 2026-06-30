@@ -8,17 +8,18 @@
     <setting propertyKey="@Properties.autoToggleSec" title="@Strings.SetAutoToggle">
         <settingConfig type="numeric" min="0" max="60" />
     </setting>
-    <setting propertyKey="@Properties.paceZonesEnabled" title="@Strings.SetPaceZonesEnabled">
-        <settingConfig type="boolean" />
+    <setting propertyKey="@Properties.paceZoneModel" title="@Strings.SetPaceZoneModel">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ModelOff</listEntry>
+            <listEntry value="1">@Strings.Model8020</listEntry>
+            <listEntry value="2">@Strings.ModelFriel</listEntry>
+            <listEntry value="3">@Strings.ModelCts</listEntry>
+            <listEntry value="4">@Strings.ModelMyProCoach</listEntry>
+            <listEntry value="5">@Strings.ModelCustom</listEntry>
+        </settingConfig>
     </setting>
     <setting propertyKey="@Properties.thresholdPace" title="@Strings.SetThresholdPace" prompt="@Strings.SetThresholdPacePrompt">
         <settingConfig type="alphaNumeric" />
-    </setting>
-    <setting propertyKey="@Properties.paceZoneCount" title="@Strings.SetPaceZoneCount">
-        <settingConfig type="list">
-            <listEntry value="5">@Strings.Zones5</listEntry>
-            <listEntry value="7">@Strings.Zones7</listEntry>
-        </settingConfig>
     </setting>
     <setting propertyKey="@Properties.paceZonesCsv" title="@Strings.SetPaceZonesCsv" prompt="@Strings.SetPaceZonesPrompt">
         <settingConfig type="alphaNumeric" />
