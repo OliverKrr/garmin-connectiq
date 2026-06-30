@@ -1,7 +1,7 @@
 name: ci
 
 # Connect IQ apps are built, type-checked and released LOCALLY — see CLAUDE.md
-# and RELEASE.md (`just build`, `just package` / `just package-beta`).
+# and RELEASE.md (`just build`, `just package` builds both signed .iq).
 #
 # CI deliberately does NOT compile. monkeyc needs the Connect IQ SDK *and*
 # per-device definitions, and fetching the device definitions requires a Garmin
@@ -48,6 +48,5 @@ jobs:
         run: |
           echo "Connect IQ build / type-check / signing run locally, not in CI:"
           echo "  just build         # compile + type-check (apps/run-field)"
-          echo "  just package       # signed .iq for the public Store listing"
-          echo "  just package-beta  # signed .iq for the private beta listing"
+          echo "  just package       # both signed .iq (public + beta listings)"
           echo "See RELEASE.md for the full release + upload steps."

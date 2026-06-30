@@ -10,6 +10,12 @@ key     := "developer_key.der"
 jungle  := "apps/run-field/monkey.jungle"
 out     := "bin/run-field.prg"
 
+# Connect IQ Store app ids (each binds an .iq to one listing; Garmin assigns them).
+# beta_app_id is the live listing. public_app_id is a placeholder until the public
+# listing is created — replace it here AND in apps/run-field/manifest.xml together.
+public_app_id := "5f713bad3e2544559f1ba1cff9e59aa3"
+beta_app_id   := "2aa9eff51b0642519e6214de6db52342"
+
 # List recipes
 default:
     @just --list
@@ -65,18 +71,16 @@ store-assets:
     rsvg-convert -w 1440 -h 720 store-assets/hero.svg -o store-assets/hero.png
     @echo "store-assets/{screen,cover,hero}.png regenerated"
 
-# Build the signed PUBLIC Store package -> bin/run-field.iq
+# Build BOTH signed Store packages (Public + Beta) at the current manifest version, so
+# the two listings never drift. The beta manifest is regenerated from manifest.xml each
+# time (same version; only the app id + name differ), then both are compiled.
 package:
     mkdir -p bin
     "{{sdk_bin}}/monkeyc" -e -r -o bin/run-field.iq -f {{jungle}} -y {{key}}
-    @echo "Public .iq  -> bin/run-field.iq"
-
-# Build the signed BETA Store package (separate app id + name) -> bin/run-field-beta.iq
-package-beta:
-    mkdir -p bin
-    python3 -c "s=open('apps/run-field/manifest.xml').read(); s=s.replace('5f713bad3e2544559f1ba1cff9e59aa3','2aa9eff51b0642519e6214de6db52342').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-field/manifest-beta.xml','w').write(s)"
+    python3 -c "s=open('apps/run-field/manifest.xml').read(); s=s.replace('{{public_app_id}}','{{beta_app_id}}').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-field/manifest-beta.xml','w').write(s)"
     "{{sdk_bin}}/monkeyc" -e -r -o bin/run-field-beta.iq -f apps/run-field/monkey-beta.jungle -y {{key}}
-    @echo "Beta .iq    -> bin/run-field-beta.iq"
+    @echo "Public .iq -> bin/run-field.iq       (app id {{public_app_id}} — pending public listing)"
+    @echo "Beta   .iq -> bin/run-field-beta.iq  (app id {{beta_app_id}} — live listing)"
 
 # Set the app version (semver), e.g. `just bump 0.2.0`
 bump VERSION:
@@ -91,8 +95,8 @@ publish-assist:
     @echo "--- What's New (top CHANGELOG entry) ---"
     @awk '/^## \[[0-9]/{c++} c==1 && !/^## \[/{print} c==2{exit}' CHANGELOG.md
     @echo "--- Checklist ---"
-    @echo "Public : upload bin/run-field.iq       -> visibility PUBLIC"
-    @echo "Beta   : upload bin/run-field-beta.iq  -> visibility PRIVATE/unlisted"
+    @echo "Beta   : upload bin/run-field-beta.iq  -> live listing (private/unlisted)"
+    @echo "Public : upload bin/run-field.iq       -> public listing (once it exists)"
     @echo "Then   : paste What's New, add screenshots, submit (manual)."
     @echo "Upload here (open in a browser): https://apps.garmin.com/en-US/developer/dashboard"
 

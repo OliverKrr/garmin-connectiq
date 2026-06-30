@@ -9,7 +9,7 @@ developer_key.pem
 developer_key.der
 *.der
 
-# Generated beta manifest (produced by `just package-beta`)
+# Generated beta manifest (produced by `just package`)
 apps/run-field/manifest-beta.xml
 
 # Editor / OS

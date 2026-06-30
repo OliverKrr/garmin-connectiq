@@ -36,16 +36,17 @@ do not reference sibling repositories by local path; link public repos by URL on
 
 - **Inner loop (fast):** `just run` (simulator) · `just sideload` or OpenMTP (watch). Unit tests:
   `just sim` then `just test`.
-- **Cut a release:** `just release X.Y.Z` (bumps version + builds `bin/run-field.iq`), edit
-  `CHANGELOG.md` for the version, then `just package-beta` for the beta `.iq`.
-- **Publish (manual):** `just publish-assist` prints the version + "What's New" + checklist and
-  opens the dashboard. Upload `bin/run-field-beta.iq` to the **private Beta** listing first; after
-  testing, upload `bin/run-field.iq` to the **Public** listing. See `RELEASE.md` for app ids/steps.
+- **Cut a release:** `just release X.Y.Z` bumps the one shared version and builds **both** signed
+  `.iq` (Public + Beta) so the listings never drift; then edit `CHANGELOG.md` for the version.
+- **Publish (manual):** `just publish-assist` prints the version + "What's New" + checklist +
+  dashboard URL (it does not open a browser or upload). The **Beta** listing (`bin/run-field-beta.iq`,
+  app id `2aa9eff5…`) is the live one; the **Public** listing (`bin/run-field.iq`, `5f713bad…`) is a
+  placeholder until that listing is created. See `RELEASE.md` for app ids/steps.
 - **CI:** type-checks on push; on a `vX.Y.Z` tag, attaches the signed `.iq` to a GitHub Release.
 
-**Guardrail:** packaging (`package`/`package-beta`) is safe and automatable. **Uploading to the
-Connect IQ Store is manual and outward-facing** — there is no API. Prepare the `.iq` and hand it to
-the user; never run an uploader and never claim the app as "published".
+**Guardrail:** packaging (`just package`, which builds both `.iq`) is safe and automatable.
+**Uploading to the Connect IQ Store is manual and outward-facing** — there is no API. Prepare the
+`.iq` and hand it to the user; never run an uploader and never claim the app as "published".
 
 ## Conventions
 

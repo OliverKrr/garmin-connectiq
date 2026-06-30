@@ -47,7 +47,8 @@ on recent macOS — use **[OpenMTP](https://openmtp.ganeshrvel.com/)** instead
 `GARMIN/APPS/` on the device and restart it.
 
 ### Releasing
-Two Store listings (Public + private Beta) from one codebase. See [RELEASE.md](RELEASE.md) and the
+Two Store listings (Public + private Beta) share one codebase and one version; `just release X.Y.Z`
+builds both signed `.iq` at that version. See [RELEASE.md](RELEASE.md) and the
 `just release` / `just publish-assist` recipes. Publishing the `.iq` is a manual dashboard step.
 
 ### VS Code
