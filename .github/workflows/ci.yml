@@ -1,83 +1,39 @@
 name: ci
 
+# Connect IQ apps are built, type-checked and released LOCALLY — see CLAUDE.md
+# and RELEASE.md (`just build`, `just package` / `just package-beta`).
+#
+# CI deliberately does NOT compile. monkeyc needs the Connect IQ SDK *and*
+# per-device definitions, and fetching the device definitions requires a Garmin
+# login. Garmin's mandatory security passcode (MFA) now blocks the headless
+# login of the connect-iq-sdk-manager CLI (it has no passcode support), so a
+# device build cannot run on a CI runner. CI is therefore limited to
+# SDK-free sanity checks.
+
 on:
   push:
     branches: [main]
-    tags: ['v*']
   pull_request:
 
-# Least privilege: default the GITHUB_TOKEN to read-only; the build job
-# grants itself contents:write only because the release step needs it.
 permissions:
   contents: read
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-latest
-    # Skip secret-using runs for PRs from forks (secrets aren't available there anyway).
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    permissions:
-      contents: write # required by the release step (tags only) to attach the .iq asset
     steps:
       - uses: actions/checkout@v4
 
-      # The SDK build needs Garmin secrets. Until they're set, skip it (don't fail).
-      # Secrets are scoped per-step (never job-wide) so that steps which run
-      # third-party code (the SDK-manager download, the release action) never
-      # see the Garmin credentials or signing key.
-      - name: Check for Garmin secrets
-        id: gate
-        env:
-          GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
-          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-          CI_SIGNING_KEY: ${{ secrets.CI_SIGNING_KEY }}
+      - name: Validate manifest & resource XML is well-formed
         run: |
-          if [ -n "$GARMIN_USERNAME" ] && [ -n "$GARMIN_PASSWORD" ] && [ -n "$CI_SIGNING_KEY" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Garmin secrets not set (GARMIN_USERNAME / GARMIN_PASSWORD / CI_SIGNING_KEY) — skipping the SDK build. Add them in Settings → Secrets and variables → Actions to enable CI builds."
-          fi
+          # SDK-free smoke check: every manifest / resource XML parses.
+          # xmllint ships preinstalled on GitHub's ubuntu runners.
+          find apps -name '*.xml' -print0 | xargs -0 -r xmllint --noout
 
-      - name: Install connect-iq-sdk-manager
-        if: steps.gate.outputs.ready == 'true'
+      - name: Note — builds & releases run locally
         run: |
-          url=$(curl -fsSL https://api.github.com/repos/lindell/connect-iq-sdk-manager-cli/releases/latest \
-            | jq -r '.assets[] | select(.name | test("Linux_x86_64\\.tar\\.gz$")) | .browser_download_url')
-          echo "Downloading $url"
-          curl -fsSL "$url" | sudo tar -xz -C /usr/local/bin connect-iq-sdk-manager
-          connect-iq-sdk-manager version
-
-      - name: Set up Connect IQ SDK + device
-        if: steps.gate.outputs.ready == 'true'
-        env:
-          GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
-          GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
-        run: |
-          # Garmin requires accepting the SDK licence agreement before login.
-          # With no hash this accepts the current agreement non-interactively.
-          connect-iq-sdk-manager agreement accept
-          connect-iq-sdk-manager login
-          connect-iq-sdk-manager sdk set 9.2.2
-          connect-iq-sdk-manager device download --manifest=apps/run-field/manifest.xml
-          echo "$(connect-iq-sdk-manager sdk current-path --bin)" >> "$GITHUB_PATH"
-
-      - name: Decode signing key
-        if: steps.gate.outputs.ready == 'true'
-        env:
-          CI_SIGNING_KEY: ${{ secrets.CI_SIGNING_KEY }}
-        run: echo "$CI_SIGNING_KEY" | base64 -d > developer_key.der
-
-      - name: Build (type-check)
-        if: steps.gate.outputs.ready == 'true'
-        run: monkeyc -d enduro3 -f apps/run-field/monkey.jungle -o bin/run-field.prg -y developer_key.der -w
-
-      - name: Package signed .iq (tags only)
-        if: steps.gate.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
-        run: monkeyc -e -r -o bin/run-field.iq -f apps/run-field/monkey.jungle -y developer_key.der
-
-      - name: Attach .iq to GitHub Release (tags only)
-        if: steps.gate.outputs.ready == 'true' && startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
-        with:
-          files: bin/run-field.iq
+          echo "Connect IQ build / type-check / signing run locally, not in CI:"
+          echo "  just build         # compile + type-check (apps/run-field)"
+          echo "  just package       # signed .iq for the public Store listing"
+          echo "  just package-beta  # signed .iq for the private beta listing"
+          echo "See RELEASE.md for the full release + upload steps."
