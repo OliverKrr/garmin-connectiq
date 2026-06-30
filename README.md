@@ -51,6 +51,8 @@ Two Store listings (Public + private Beta) share one codebase and one version; `
 builds both signed `.iq` at that version. See [RELEASE.md](RELEASE.md) and the
 `just release` / `just publish-assist` recipes. Publishing the `.iq` is a manual dashboard step.
 
+User-facing settings are documented in [store-assets/listing.md](store-assets/listing.md), which is also the maintained Connect IQ Store description.
+
 ### VS Code
 The official **Monkey C** extension reads `apps/run-field/manifest.xml` and `monkey.jungle`
 directly — open the repo and build/debug from the extension if you prefer a GUI workflow.
