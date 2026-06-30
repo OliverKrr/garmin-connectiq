@@ -6,6 +6,15 @@ versioning: [SemVer](https://semver.org/). The top released section's body is pa
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-30
+### Added
+- Pace zone model setting: pick 80/20 Run, Joe Friel Run, CTS Run, MyProCoach Run, or Custom; preset zones derive from your threshold pace.
+- Maintained Store description (store-assets/listing.md) documenting every setting with examples.
+### Changed
+- The pace zone model dropdown replaces the separate 5/7 count and the colour-by-zone toggle; pick Off to disable pace colouring.
+- Custom boundaries are now an explicit choice and accept 4 (5 zones) or 6 (7 zones) values.
+- Corrected the 7-zone label: it is the 80/20 model, not intervals.icu.
+
 ## [0.2.1] - 2026-06-30
 ### Changed
 - Build tooling: both Store listings now build together from one shared version. No user-facing changes since 0.2.0.
