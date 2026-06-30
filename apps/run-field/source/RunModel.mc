@@ -27,6 +27,7 @@ class RunModel {
     private var _powerZones as HrZoneModel or Null = null;
     private var _paceZones as PaceZoneModel or Null = null;
     private var _usePower as Boolean = false;
+    private var _autoToggleSec as Number = 0;
     private var _distM as Float = 0.0;
     private var _timerMs as Number = 0;
     private var _zoneCur as Number = 0;
@@ -130,6 +131,16 @@ class RunModel {
     function setPowerZones(z as HrZoneModel or Null) as Void { _powerZones = z; }
     function setPaceZones(z as PaceZoneModel or Null) as Void { _paceZones = z; }
     function usePower() as Boolean { return _usePower; }
+
+    function setAutoToggleSec(n as Number) as Void { _autoToggleSec = n; }
+
+    // Effective pace/power choice: auto-alternate by elapsed time, else the manual flag.
+    function showPower() as Boolean {
+        if (_autoToggleSec > 0) {
+            return ((_timerMs / 1000 / _autoToggleSec) % 2) == 1;
+        }
+        return _usePower;
+    }
 
     // Fractional pace zone as " x.x" for a label, or "" when pace zones aren't set.
     function paceZoneStrFor(secPerKm as Float or Null) as String {

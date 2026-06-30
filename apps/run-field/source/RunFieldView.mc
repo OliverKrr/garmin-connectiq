@@ -35,12 +35,20 @@ class RunFieldView extends WatchUi.DataField {
                 _model.setPowerZones(new HrZoneModel(pz));
             }
         }
+        _model.setAutoToggleSec(AppConfig.autoToggleSec());
+        var pz = null as PaceZoneModel or Null;
         if (AppConfig.paceZonesEnabled()) {
-            var pzb = AppConfig.paceZones();
-            if (pzb != null) {
-                _model.setPaceZones(new PaceZoneModel(pzb));
+            var override = AppConfig.paceZones(); // explicit boundaries, or null
+            if (override != null) {
+                pz = new PaceZoneModel(override);
+            } else {
+                var thr = AppConfig.thresholdPaceSec();
+                if (thr != null) {
+                    pz = new PaceZoneModel(AppConfig.derivePaceBoundaries(thr, AppConfig.paceZoneCount()));
+                }
             }
         }
+        _model.setPaceZones(pz);
     }
 
     function onLayout(dc as Graphics.Dc) as Void {
@@ -72,7 +80,7 @@ class RunFieldView extends WatchUi.DataField {
         _cell(dc, _layout.clock(), fg, "", _model.clockStr(), Graphics.FONT_SMALL);
 
         var pc = _layout.paceCells();
-        if (_model.usePower()) {
+        if (_model.showPower()) {
             _cell(dc, pc[0], _model.powerColor(_model.powerCur(), fg), "PWR" + _model.powerZoneStrFor(_model.powerCur()), _model.powerStr(_model.powerCur()), VALUE_FONT);
             _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg), "LAP" + _model.powerZoneStrFor(_model.powerLap()), _model.powerStr(_model.powerLap()), VALUE_FONT);
             _cell(dc, pc[2], _model.powerColor(_model.powerAvg(), fg), "AVG" + _model.powerZoneStrFor(_model.powerAvg()), _model.powerStr(_model.powerAvg()), VALUE_FONT);
@@ -124,7 +132,7 @@ class RunFieldView extends WatchUi.DataField {
         var trackH = (r[3] / 6 > 2) ? r[3] / 6 : 2;
         for (var i = 0; i < n; i++) {
             var x = r[0] + i * (barW + gap);
-            dc.setColor(Graphics.COLOR_DK_GRAY, Graphics.COLOR_TRANSPARENT);
+            dc.setColor(fg, Graphics.COLOR_TRANSPARENT);
             dc.fillRectangle(x, baseY - trackH, barW, trackH);
             // Height = this zone's share of total time, so all bars sum to full height.
             var frac = (total > 0) ? counts[i].toFloat() / total : 0.0;
