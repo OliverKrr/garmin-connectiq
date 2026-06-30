@@ -27,8 +27,22 @@ jobs:
       - name: Validate manifest & resource XML is well-formed
         run: |
           # SDK-free smoke check: every manifest / resource XML parses.
-          # xmllint ships preinstalled on GitHub's ubuntu runners.
-          find apps -name '*.xml' -print0 | xargs -0 -r xmllint --noout
+          # Uses python3 (always on the runner) so there's no apt dependency.
+          python3 - <<'PY'
+          import sys, glob, xml.etree.ElementTree as ET
+          files = sorted(glob.glob('apps/**/*.xml', recursive=True))
+          bad = []
+          for f in files:
+              try:
+                  ET.parse(f)
+              except ET.ParseError as e:
+                  bad.append(f"{f}: {e}")
+          print(f"checked {len(files)} XML file(s)")
+          if bad:
+              print("MALFORMED:")
+              print("\n".join(bad))
+              sys.exit(1)
+          PY
 
       - name: Note — builds & releases run locally
         run: |
