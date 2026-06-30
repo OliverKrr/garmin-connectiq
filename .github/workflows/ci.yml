@@ -46,7 +46,7 @@ jobs:
             | jq -r '.assets[] | select(.name | test("Linux_x86_64\\.tar\\.gz$")) | .browser_download_url')
           echo "Downloading $url"
           curl -fsSL "$url" | sudo tar -xz -C /usr/local/bin connect-iq-sdk-manager
-          connect-iq-sdk-manager --version
+          connect-iq-sdk-manager version
 
       - name: Set up Connect IQ SDK + device
         if: steps.gate.outputs.ready == 'true'
