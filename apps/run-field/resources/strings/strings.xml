@@ -6,4 +6,10 @@
     <string id="SetPaceZonesEnabled">Colour pace by zone</string>
     <string id="SetPaceZonesCsv">Pace zone boundaries (s/km)</string>
     <string id="SetPaceZonesPrompt">4 boundaries slow to fast, e.g. 360,320,280,250</string>
+    <string id="SetAutoToggle">Auto pace/power switch (s, 0=off)</string>
+    <string id="SetThresholdPace">Threshold pace (m:ss per km)</string>
+    <string id="SetThresholdPacePrompt">e.g. 3:41 — zones derive from this</string>
+    <string id="SetPaceZoneCount">Pace zone count</string>
+    <string id="Zones5">5 zones</string>
+    <string id="Zones7">7 zones (intervals.icu)</string>
 </strings>

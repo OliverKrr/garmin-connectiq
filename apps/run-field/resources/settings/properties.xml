@@ -1,6 +1,9 @@
 <properties>
     <property id="rollingWindowSec" type="number">25</property>
     <property id="usePower" type="boolean">false</property>
-    <property id="paceZonesEnabled" type="boolean">false</property>
+    <property id="autoToggleSec" type="number">0</property>
+    <property id="paceZonesEnabled" type="boolean">true</property>
+    <property id="thresholdPace" type="string"></property>
+    <property id="paceZoneCount" type="number">5</property>
     <property id="paceZonesCsv" type="string"></property>
 </properties>
