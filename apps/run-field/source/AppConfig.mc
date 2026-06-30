@@ -13,21 +13,27 @@ module AppConfig {
     }
 
     function usePower() as Boolean { return _bool("usePower", false); }
-    function paceZonesEnabled() as Boolean { return _bool("paceZonesEnabled", true); }
+
+    // Selected pace-zone model code: 0=Off, 1=80/20, 2=Friel, 3=CTS, 4=MyProCoach, 5=Custom.
+    // Out of range -> 1 (80/20). "Off"/"Custom" are handled by the caller.
+    function paceZoneModel() as Number {
+        var m = _num("paceZoneModel", 1);
+        return (m < 0 || m > 5) ? 1 : m;
+    }
 
     function paceZones() as Array<Number> or Null {
         return parsePaceZones(_str("paceZonesCsv", ""));
     }
 
-    // Parse "s,s,s,s" (4 paces in seconds/km, strictly slow->fast i.e. strictly
-    // decreasing). Returns the 4 Numbers or null on any problem. Pure.
+    // Parse "s,s,..." paces (seconds/km, strictly slow->fast i.e. strictly decreasing).
+    // Accepts 4 values (5 zones) or 6 (7 zones). Returns the Numbers or null on any problem. Pure.
     function parsePaceZones(csv as String or Null) as Array<Number> or Null {
         if (csv == null) { return null; }
         var parts = _split(csv, ',');
-        if (parts.size() != 4) { return null; }
-        var out = new [4] as Array<Number>;
+        if (parts.size() != 4 && parts.size() != 6) { return null; }
+        var out = new [parts.size()] as Array<Number>;
         var prev = -1 as Number;
-        for (var i = 0; i < 4; i++) {
+        for (var i = 0; i < parts.size(); i++) {
             var n = parts[i].toNumber();
             if (n == null || n <= 0) { return null; }
             if (i > 0 && n >= prev) { return null; }
@@ -40,10 +46,6 @@ module AppConfig {
     function autoToggleSec() as Number {
         var v = _num("autoToggleSec", 0);
         return (v < 0) ? 0 : v;
-    }
-
-    function paceZoneCount() as Number {
-        return (_num("paceZoneCount", 5) == 7) ? 7 : 5;
     }
 
     function thresholdPaceSec() as Number or Null {
@@ -61,10 +63,14 @@ module AppConfig {
         return m * 60 + sec;
     }
 
-    // Descending pace boundaries (sec/km) from threshold + zone count (5 or 7).
-    function derivePaceBoundaries(thresholdSec as Number, count as Number) as Array<Number> {
-        var pcts = (count == 7) ? [76, 87, 93, 100, 102, 115] : [78, 88, 95, 100];
-        var out = new [pcts.size()];
+    // Descending pace boundaries (sec/km) from a threshold pace + preset model code. The model's
+    // percentages are of threshold pace (100% = threshold, higher % = faster). Unknown code -> 80/20.
+    function derivePaceBoundaries(thresholdSec as Number, modelCode as Number) as Array<Number> {
+        var pcts = (modelCode == 2) ? [77.5, 87.7, 94.3, 100.0, 103.4, 111.5]  // Joe Friel
+                 : (modelCode == 3) ? [72.0, 91.0, 97.0, 102.0]                 // CTS
+                 : (modelCode == 4) ? [80.0, 90.0, 95.0, 100.0]                 // MyProCoach
+                 :                    [76.0, 87.0, 93.0, 100.0, 102.0, 115.0];  // 80/20 + fallback
+        var out = new [pcts.size()] as Array<Number>;
         for (var i = 0; i < pcts.size(); i++) {
             out[i] = (thresholdSec * 100.0 / pcts[i] + 0.5).toNumber();
         }

@@ -1,6 +1,14 @@
 import Toybox.Test;
 import Toybox.Lang;
 
+function _arrEq(a as Array<Number> or Null, b as Array<Number>) as Boolean {
+    if (a == null || a.size() != b.size()) { return false; }
+    for (var i = 0; i < b.size(); i++) {
+        if (a[i] != b[i]) { return false; }
+    }
+    return true;
+}
+
 (:test)
 function appConfig_parseValid(logger as Test.Logger) as Boolean {
     var z = AppConfig.parsePaceZones("360,320,280,250");
@@ -30,14 +38,48 @@ function appConfig_parseClock(logger as Test.Logger) as Boolean {
 }
 
 (:test)
-function appConfig_derive5(logger as Test.Logger) as Boolean {
-    var b = AppConfig.derivePaceBoundaries(221, 5);
-    return b.size() == 4 && b[0] == 283 && b[1] == 251 && b[2] == 233 && b[3] == 221;
+function appConfig_derive8020(logger as Logger) as Boolean {
+    return _arrEq(AppConfig.derivePaceBoundaries(221, 1), [291, 254, 238, 221, 217, 192]);
 }
 
 (:test)
-function appConfig_derive7(logger as Test.Logger) as Boolean {
-    var b = AppConfig.derivePaceBoundaries(221, 7);
-    return b.size() == 6 && b[0] == 291 && b[1] == 254 && b[2] == 238
-        && b[3] == 221 && b[4] == 217 && b[5] == 192;
+function appConfig_deriveFriel(logger as Logger) as Boolean {
+    return _arrEq(AppConfig.derivePaceBoundaries(221, 2), [285, 252, 234, 221, 214, 198]);
+}
+
+(:test)
+function appConfig_deriveCts(logger as Logger) as Boolean {
+    return _arrEq(AppConfig.derivePaceBoundaries(221, 3), [307, 243, 228, 217]);
+}
+
+(:test)
+function appConfig_deriveMyProCoach(logger as Logger) as Boolean {
+    return _arrEq(AppConfig.derivePaceBoundaries(221, 4), [276, 246, 233, 221]);
+}
+
+(:test)
+function appConfig_deriveUnknownIsEighty20(logger as Logger) as Boolean {
+    return _arrEq(AppConfig.derivePaceBoundaries(221, 9), [291, 254, 238, 221, 217, 192]);
+}
+
+(:test)
+function appConfig_parsePace6(logger as Logger) as Boolean {
+    var b = AppConfig.parsePaceZones("360,330,300,270,250,230");
+    return b != null && _arrEq(b, [360, 330, 300, 270, 250, 230]);
+}
+
+(:test)
+function appConfig_parsePace4(logger as Logger) as Boolean {
+    var b = AppConfig.parsePaceZones("360,320,280,250");
+    return b != null && _arrEq(b, [360, 320, 280, 250]);
+}
+
+(:test)
+function appConfig_parsePaceRejectsLen5(logger as Logger) as Boolean {
+    return AppConfig.parsePaceZones("360,330,300,270,250") == null;
+}
+
+(:test)
+function appConfig_parsePaceRejectsNonDecreasing(logger as Logger) as Boolean {
+    return AppConfig.parsePaceZones("300,320,280,250") == null;
 }

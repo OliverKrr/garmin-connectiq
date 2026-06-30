@@ -36,16 +36,17 @@ class RunFieldView extends WatchUi.DataField {
             }
         }
         _model.setAutoToggleSec(AppConfig.autoToggleSec());
+        var model = AppConfig.paceZoneModel(); // 0=Off,1=80/20,2=Friel,3=CTS,4=MyProCoach,5=Custom
         var pz = null as PaceZoneModel or Null;
-        if (AppConfig.paceZonesEnabled()) {
-            var override = AppConfig.paceZones(); // explicit boundaries, or null
-            if (override != null) {
-                pz = new PaceZoneModel(override);
-            } else {
-                var thr = AppConfig.thresholdPaceSec();
-                if (thr != null) {
-                    pz = new PaceZoneModel(AppConfig.derivePaceBoundaries(thr, AppConfig.paceZoneCount()));
-                }
+        if (model == 5) { // Custom
+            var custom = AppConfig.paceZones(); // 4 or 6 boundaries, or null
+            if (custom != null) {
+                pz = new PaceZoneModel(custom);
+            }
+        } else if (model != 0) { // a preset (1-4)
+            var thr = AppConfig.thresholdPaceSec();
+            if (thr != null) {
+                pz = new PaceZoneModel(AppConfig.derivePaceBoundaries(thr, model));
             }
         }
         _model.setPaceZones(pz);
