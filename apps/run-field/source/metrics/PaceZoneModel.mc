@@ -14,32 +14,33 @@ class PaceZoneModel {
         if (paceSecPerKm == null) {
             return 0;
         }
-        if (paceSecPerKm > _b[0]) { return 1; }
-        if (paceSecPerKm > _b[1]) { return 2; }
-        if (paceSecPerKm > _b[2]) { return 3; }
-        if (paceSecPerKm > _b[3]) { return 4; }
-        return 5;
+        for (var i = 0; i < _b.size(); i++) {
+            if (paceSecPerKm > _b[i]) {
+                return i + 1;
+            }
+        }
+        return _b.size() + 1;
     }
 
     function color(paceSecPerKm as Number or Null) as Graphics.ColorType {
-        return ZoneColor.of(zone(paceSecPerKm));
+        var z = zone(paceSecPerKm);
+        return (_b.size() == 6) ? ZoneColor.of7(z) : ZoneColor.of(z);
     }
 
-    // Fractional zone, e.g. 30% from zone 2 toward zone 3 -> 2.3. Zones 1 and 5 are
-    // open-ended (no slower/faster bound) so they clamp to 1.0 / 5.0. 0.0 if null.
+    // Fractional zone, e.g. 30% from zone 2 toward zone 3 -> 2.3. Zone 1 and the
+    // highest zone are open-ended so they clamp to 1.0 / (N+1).0. 0.0 if null.
     function fractionalZone(paceSecPerKm as Number or Null) as Float {
         if (paceSecPerKm == null) {
             return 0.0;
         }
         if (paceSecPerKm > _b[0]) {
             return 1.0;
-        } else if (paceSecPerKm > _b[1]) {
-            return 2.0 + (_b[0] - paceSecPerKm).toFloat() / (_b[0] - _b[1]);
-        } else if (paceSecPerKm > _b[2]) {
-            return 3.0 + (_b[1] - paceSecPerKm).toFloat() / (_b[1] - _b[2]);
-        } else if (paceSecPerKm > _b[3]) {
-            return 4.0 + (_b[2] - paceSecPerKm).toFloat() / (_b[2] - _b[3]);
         }
-        return 5.0;
+        for (var i = 1; i < _b.size(); i++) {
+            if (paceSecPerKm > _b[i]) {
+                return (i + 1).toFloat() + (_b[i - 1] - paceSecPerKm).toFloat() / (_b[i - 1] - _b[i]);
+            }
+        }
+        return (_b.size() + 1).toFloat();
     }
 }

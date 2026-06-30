@@ -24,3 +24,17 @@ function paceZone_fractional(logger as Test.Logger) as Boolean {
         && m.fractionalZone(400) == 1.0
         && m.fractionalZone(240) == 5.0;
 }
+
+(:test)
+function paceZone_sevenZones(logger as Test.Logger) as Boolean {
+    var m = new PaceZoneModel([291, 254, 238, 221, 217, 192]);
+    return m.zone(300) == 1 && m.zone(225) == 4 && m.zone(218) == 5
+        && m.zone(200) == 6 && m.zone(180) == 7 && m.zone(null) == 0;
+}
+
+(:test)
+function paceZone_sevenColours(logger as Test.Logger) as Boolean {
+    var seen = {};
+    for (var z = 1; z <= 7; z++) { seen[ZoneColor.of7(z)] = true; }
+    return seen.size() == 7;
+}
