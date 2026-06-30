@@ -6,6 +6,10 @@ versioning: [SemVer](https://semver.org/). The top released section's body is pa
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-30
+### Changed
+- Build tooling: both Store listings now build together from one shared version. No user-facing changes since 0.2.0.
+
 ## [0.2.0] - 2026-06-30
 ### Added
 - Pace zones derived from a threshold pace (intervals.icu style), with a choice of 5 or 7 zones.
