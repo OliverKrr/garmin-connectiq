@@ -54,6 +54,9 @@ jobs:
           GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
           GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
         run: |
+          # Garmin requires accepting the SDK licence agreement before login.
+          # With no hash this accepts the current agreement non-interactively.
+          connect-iq-sdk-manager agreement accept
           connect-iq-sdk-manager login
           connect-iq-sdk-manager sdk set 9.2.2
           connect-iq-sdk-manager device download --manifest=apps/run-field/manifest.xml
