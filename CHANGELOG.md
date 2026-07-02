@@ -6,6 +6,13 @@ versioning: [SemVer](https://semver.org/). The top released section's body is pa
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-06-30
+### Changed
+- Bigger, bolder numbers: pace and heart rate now use the large Bionic number font, sized to fit.
+- Higher-contrast zone colours tuned for the sunlight (MIP) display, with a brighter palette on dark/AMOLED backgrounds.
+- The heart-rate time-in-zone chart now fills its height (the busiest zone reaches the top) in a taller band.
+- Default current-pace averaging window is now 12 seconds (was 25) for a more responsive readout.
+
 ## [0.3.0] - 2026-06-30
 ### Added
 - Pace zone model setting: pick 80/20 Run, Joe Friel Run, CTS Run, MyProCoach Run, or Custom; preset zones derive from your threshold pace.
