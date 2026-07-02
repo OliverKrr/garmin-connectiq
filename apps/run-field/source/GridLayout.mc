@@ -21,7 +21,7 @@ class GridLayout {
 
         var clockH = (h * 10) / 100;
         var rowH = (h * 15) / 100;
-        var zoneH = (h * 12) / 100;
+        var zoneH = (h * 17) / 100;
         var gap = (h * 1) / 100;
 
         var yClock = (h * 11) / 100;          // clock near the top

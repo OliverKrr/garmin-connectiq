@@ -156,7 +156,7 @@ class RunFieldView extends WatchUi.DataField {
     // each zone and coloured per zone (a faint baseline track shows empty bars).
     private function _drawZoneBars(dc as Graphics.Dc, r as Array, fg as Graphics.ColorType, onWhite as Boolean) as Void {
         var counts = _model.zoneCounts();
-        var total = _model.zoneTotal();
+        var max = _model.zoneMax();
         var n = 5;
         var gap = 3;
         var barW = (r[2] - (n - 1) * gap) / n;
@@ -166,9 +166,8 @@ class RunFieldView extends WatchUi.DataField {
             var x = r[0] + i * (barW + gap);
             dc.setColor(fg, Graphics.COLOR_TRANSPARENT);
             dc.fillRectangle(x, baseY - trackH, barW, trackH);
-            // Height = this zone's share of total time, so all bars sum to full height.
-            var frac = (total > 0) ? counts[i].toFloat() / total : 0.0;
-            var bh = (r[3] * frac).toNumber();
+            // Height = this zone's share of the busiest zone, so the tallest bar fills the band.
+            var bh = ChartScale.barPx(counts[i], max, r[3]);
             if (bh < 1 && counts[i] > 0) {
                 bh = 1;
             }
