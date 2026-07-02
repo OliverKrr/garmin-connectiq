@@ -145,7 +145,7 @@ class RunModel {
     // Fractional pace zone as " x.x" for a label, or "" when pace zones aren't set.
     function paceZoneStrFor(secPerKm as Float or Null) as String {
         if (secPerKm == null || _paceZones == null) { return ""; }
-        return " " + _paceZones.fractionalZone(secPerKm.toNumber()).format("%.1f");
+        return " " + _paceZones.label(secPerKm.toNumber());
     }
     function paceCurZone() as String { return paceZoneStrFor(_paceCur); }
     function paceLapZone() as String { return paceZoneStrFor(_paceLap); }

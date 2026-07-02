@@ -52,11 +52,13 @@ class RunFieldView extends WatchUi.DataField {
             var custom = AppConfig.paceZones(); // 4 or 6 boundaries, or null
             if (custom != null) {
                 pz = new PaceZoneModel(custom);
+                pz.setModelCode(model);
             }
         } else if (model != 0) { // a preset (1-4)
             var thr = AppConfig.thresholdPaceSec();
             if (thr != null) {
                 pz = new PaceZoneModel(AppConfig.derivePaceBoundaries(thr, model));
+                pz.setModelCode(model);
             }
         }
         _model.setPaceZones(pz);
@@ -131,7 +133,7 @@ class RunFieldView extends WatchUi.DataField {
         _cell(dc, bc[0], fg, "DIST KM", _model.distanceStr(), _fBottom);
         _cell(dc, bc[1], fg, "TIME", _model.durationStr(), _fBottom);
 
-        _drawZoneBars(dc, _layout.zoneBar(), fg, onWhite);
+        _drawZoneBars(dc, _layout.zoneBar(), onWhite);
     }
 
     // Draw a small label (top) + value (centre) inside rect [x,y,w,h].
@@ -154,7 +156,7 @@ class RunFieldView extends WatchUi.DataField {
 
     // 5 vertical bars across a horizontal strip, heights proportional to time in
     // each zone and coloured per zone (a faint baseline track shows empty bars).
-    private function _drawZoneBars(dc as Graphics.Dc, r as Array, fg as Graphics.ColorType, onWhite as Boolean) as Void {
+    private function _drawZoneBars(dc as Graphics.Dc, r as Array, onWhite as Boolean) as Void {
         var counts = _model.zoneCounts();
         var max = _model.zoneMax();
         var n = 5;
@@ -164,7 +166,8 @@ class RunFieldView extends WatchUi.DataField {
         var trackH = (r[3] / 6 > 2) ? r[3] / 6 : 2;
         for (var i = 0; i < n; i++) {
             var x = r[0] + i * (barW + gap);
-            dc.setColor(fg, Graphics.COLOR_TRANSPARENT);
+            // Empty-bar baseline in the zone's own colour, so the chart always shows the zone key.
+            dc.setColor(_model.zoneColor(i + 1, onWhite), Graphics.COLOR_TRANSPARENT);
             dc.fillRectangle(x, baseY - trackH, barW, trackH);
             // Height = this zone's share of the busiest zone, so the tallest bar fills the band.
             var bh = ChartScale.barPx(counts[i], max, r[3]);

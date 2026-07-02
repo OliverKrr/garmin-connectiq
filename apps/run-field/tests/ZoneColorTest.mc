@@ -31,3 +31,22 @@ function zoneColor_black7(logger as Logger) as Boolean {
 function zoneColor_zone0IsGrey(logger as Logger) as Boolean {
     return ZoneColor.of(0, true) == 0x555555 && ZoneColor.of7(0, false) == 0xAAAAAA;
 }
+
+(:test)
+function zoneColor_8020White(logger as Logger) as Boolean {
+    // 1/X(3)/Y(5) greys; 2/3(4)/4(6)/5(7) the normal colours
+    return ZoneColor.of8020(1, true) == 0x555555 && ZoneColor.of8020(3, true) == 0x445566
+        && ZoneColor.of8020(5, true) == 0x665544 && ZoneColor.of8020(2, true) == 0x0000AA
+        && ZoneColor.of8020(4, true) == 0x006600 && ZoneColor.of8020(6, true) == 0xAA5500
+        && ZoneColor.of8020(7, true) == 0xAA0000;
+}
+
+(:test)
+function zoneColor_8020GreysDistinct(logger as Logger) as Boolean {
+    // the three "grey" zones (1, X, Y) are visually distinct on both themes
+    return ZoneColor.of8020(1, true) != ZoneColor.of8020(3, true)
+        && ZoneColor.of8020(3, true) != ZoneColor.of8020(5, true)
+        && ZoneColor.of8020(1, true) != ZoneColor.of8020(5, true)
+        && ZoneColor.of8020(1, false) != ZoneColor.of8020(3, false)
+        && ZoneColor.of8020(3, false) != ZoneColor.of8020(5, false);
+}

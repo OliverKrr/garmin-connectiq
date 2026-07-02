@@ -39,4 +39,27 @@ module ZoneColor {
         else if (zone == 6) { return 0xFF8800; }
         return 0xFF3333;
     }
+
+    // 80/20 Run 7-zone palette: named 1, 2, X, 3, Y, 4, 5. Zones 1/X/Y (indexes 1/3/5)
+    // are the recovery + two "avoid" grey zones — three distinct greys so they read apart
+    // while staying high-contrast; the real training zones 2/3/4/5 (indexes 2/4/6/7) keep
+    // the normal blue/green/orange/red.
+    function of8020(zone as Number, onWhite as Boolean) as Graphics.ColorType {
+        if (onWhite) {
+            if (zone <= 1) { return 0x555555; }       // 1  neutral grey
+            else if (zone == 2) { return 0x0000AA; }  // 2  blue
+            else if (zone == 3) { return 0x445566; }  // X  slate grey (avoid)
+            else if (zone == 4) { return 0x006600; }  // 3  green
+            else if (zone == 5) { return 0x665544; }  // Y  warm grey (avoid)
+            else if (zone == 6) { return 0xAA5500; }  // 4  orange
+            return 0xAA0000;                          // 5  red
+        }
+        if (zone <= 1) { return 0xAAAAAA; }           // 1
+        else if (zone == 2) { return 0x00AAFF; }      // 2
+        else if (zone == 3) { return 0x99AACC; }      // X  light slate
+        else if (zone == 4) { return 0x00CC00; }      // 3
+        else if (zone == 5) { return 0xCCAA99; }      // Y  light warm
+        else if (zone == 6) { return 0xFFAA00; }      // 4
+        return 0xFF3333;                              // 5
+    }
 }

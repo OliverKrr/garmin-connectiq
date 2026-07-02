@@ -19,13 +19,13 @@ class GridLayout {
         var radius = ((w < h) ? w : h) / 2;
         var inset = 6;
 
-        var clockH = (h * 10) / 100;
+        var clockH = (h * 8) / 100;
         var rowH = (h * 15) / 100;
         var zoneH = (h * 17) / 100;
-        var gap = (h * 1) / 100;
+        var gap = (h * 4) / 100;              // breathing room so big values don't touch the next label
 
-        var yClock = (h * 11) / 100;          // clock near the top
-        var yPace = (h * 26) / 100;           // value rows start below the clock
+        var yClock = (h * 6) / 100;           // clock near the top
+        var yPace = (h * 16) / 100;           // value rows start higher, using the space under the clock
         var yHr = yPace + rowH + gap;
         var yBottom = yHr + rowH + gap;
         var yZone = yBottom + rowH + gap;

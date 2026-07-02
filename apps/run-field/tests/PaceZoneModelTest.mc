@@ -39,3 +39,28 @@ function paceZone_sevenColours(logger as Test.Logger) as Boolean {
     for (var z = 1; z <= 7; z++) { seen[ZoneColor.of7(z, true)] = true; }
     return seen.size() == 7;
 }
+
+(:test)
+function paceZone_8020Labels(logger as Test.Logger) as Boolean {
+    var m = new PaceZoneModel([291, 254, 238, 221, 217, 192]);
+    m.setModelCode(1);
+    // zone 3 -> "X", zone 5 -> "Y", zone 1 -> "1" (name.decimal format)
+    return m.label(245).substring(0, 1).equals("X")
+        && m.label(218).substring(0, 1).equals("Y")
+        && m.label(300).substring(0, 1).equals("1");
+}
+
+(:test)
+function paceZone_8020UsesGreyPalette(logger as Test.Logger) as Boolean {
+    var m = new PaceZoneModel([291, 254, 238, 221, 217, 192]);
+    m.setModelCode(1);
+    // X zone (pace 245 -> zone 3) uses the 80/20 slate grey, not the generic of7 colour
+    return m.color(245, true) == ZoneColor.of8020(3, true);
+}
+
+(:test)
+function paceZone_numericLabelWithoutModelCode(logger as Test.Logger) as Boolean {
+    var m = new PaceZoneModel([291, 254, 238, 221, 217, 192]);
+    // default (no 80/20 model) -> numeric zone name
+    return m.label(245).substring(0, 1).equals("3");
+}
