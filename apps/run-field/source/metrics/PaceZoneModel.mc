@@ -22,9 +22,9 @@ class PaceZoneModel {
         return _b.size() + 1;
     }
 
-    function color(paceSecPerKm as Number or Null) as Graphics.ColorType {
+    function color(paceSecPerKm as Number or Null, onWhite as Boolean) as Graphics.ColorType {
         var z = zone(paceSecPerKm);
-        return (_b.size() == 6) ? ZoneColor.of7(z) : ZoneColor.of(z);
+        return (_b.size() == 6) ? ZoneColor.of7(z, onWhite) : ZoneColor.of(z, onWhite);
     }
 
     // Fractional zone, e.g. 30% from zone 2 toward zone 3 -> 2.3. Zone 1 and the

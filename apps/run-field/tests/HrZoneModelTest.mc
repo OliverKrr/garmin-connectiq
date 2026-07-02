@@ -21,7 +21,8 @@ function hrZone_fractional(logger as Test.Logger) as Boolean {
 (:test)
 function hrZone_colors(logger as Test.Logger) as Boolean {
     var m = new HrZoneModel([100, 120, 140, 160, 180, 200]);
-    return m.color(3) == Graphics.COLOR_GREEN && m.color(5) == Graphics.COLOR_RED;
+    return m.color(3, true) == ZoneColor.of(3, true) && m.color(5, true) == ZoneColor.of(5, true)
+        && m.color(3, false) == ZoneColor.of(3, false) && m.color(5, false) == ZoneColor.of(5, false);
 }
 
 (:test)

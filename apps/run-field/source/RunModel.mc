@@ -122,9 +122,9 @@ class RunModel {
         return _zones.fractionalZone(hr).format("%.1f");
     }
 
-    function hrColor(hr as Number or Null, fallback as Graphics.ColorType) as Graphics.ColorType {
+    function hrColor(hr as Number or Null, fallback as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType {
         if (hr == null) { return fallback; }
-        return _zones.color(_zones.zone(hr));
+        return _zones.color(_zones.zone(hr), onWhite);
     }
 
     function setUsePower(use as Boolean) as Void { _usePower = use; }
@@ -158,13 +158,13 @@ class RunModel {
     }
 
     // Colour for a pace value (seconds/km) by pace zone; fallback when no zones/null.
-    function paceColor(secPerKm as Float or Null, fallback as Graphics.ColorType) as Graphics.ColorType {
+    function paceColor(secPerKm as Float or Null, fallback as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType {
         if (secPerKm == null || _paceZones == null) { return fallback; }
-        return _paceZones.color(secPerKm.toNumber());
+        return _paceZones.color(secPerKm.toNumber(), onWhite);
     }
-    function paceCurColor(fb as Graphics.ColorType) as Graphics.ColorType { return paceColor(_paceCur, fb); }
-    function paceLapColor(fb as Graphics.ColorType) as Graphics.ColorType { return paceColor(_paceLap, fb); }
-    function paceAvgColor(fb as Graphics.ColorType) as Graphics.ColorType { return paceColor(_paceAvg, fb); }
+    function paceCurColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_paceCur, fb, onWhite); }
+    function paceLapColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_paceLap, fb, onWhite); }
+    function paceAvgColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_paceAvg, fb, onWhite); }
 
     function powerCur() as Number or Null { return _powerCur; }
     function powerLap() as Number or Null { return _lapPower.average(); }
@@ -174,13 +174,13 @@ class RunModel {
         return (w == null) ? "--" : w.format("%d");
     }
 
-    function powerColor(w as Number or Null, fallback as Graphics.ColorType) as Graphics.ColorType {
+    function powerColor(w as Number or Null, fallback as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType {
         if (w == null || _powerZones == null) { return fallback; }
-        return _powerZones.color(_powerZones.zone(w));
+        return _powerZones.color(_powerZones.zone(w), onWhite);
     }
 
     function zoneCounts() as Array<Number> { return _tiz.counts(); }
     function zoneMax() as Number { return _tiz.maxCount(); }
     function zoneTotal() as Number { return _tiz.total(); }
-    function zoneColor(zoneIndex as Number) as Graphics.ColorType { return _zones.color(zoneIndex); }
+    function zoneColor(zoneIndex as Number, onWhite as Boolean) as Graphics.ColorType { return _zones.color(zoneIndex, onWhite); }
 }

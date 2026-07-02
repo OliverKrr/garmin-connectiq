@@ -71,6 +71,7 @@ class RunFieldView extends WatchUi.DataField {
     function onUpdate(dc as Graphics.Dc) as Void {
         var bg = getBackgroundColor();
         var fg = (bg == Graphics.COLOR_WHITE) ? Graphics.COLOR_BLACK : Graphics.COLOR_WHITE;
+        var onWhite = (bg == Graphics.COLOR_WHITE);
         dc.setColor(Graphics.COLOR_TRANSPARENT, bg);
         dc.clear();
 
@@ -82,25 +83,25 @@ class RunFieldView extends WatchUi.DataField {
 
         var pc = _layout.paceCells();
         if (_model.showPower()) {
-            _cell(dc, pc[0], _model.powerColor(_model.powerCur(), fg), "PWR" + _model.powerZoneStrFor(_model.powerCur()), _model.powerStr(_model.powerCur()), VALUE_FONT);
-            _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg), "LAP" + _model.powerZoneStrFor(_model.powerLap()), _model.powerStr(_model.powerLap()), VALUE_FONT);
-            _cell(dc, pc[2], _model.powerColor(_model.powerAvg(), fg), "AVG" + _model.powerZoneStrFor(_model.powerAvg()), _model.powerStr(_model.powerAvg()), VALUE_FONT);
+            _cell(dc, pc[0], _model.powerColor(_model.powerCur(), fg, onWhite), "PWR" + _model.powerZoneStrFor(_model.powerCur()), _model.powerStr(_model.powerCur()), VALUE_FONT);
+            _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg, onWhite), "LAP" + _model.powerZoneStrFor(_model.powerLap()), _model.powerStr(_model.powerLap()), VALUE_FONT);
+            _cell(dc, pc[2], _model.powerColor(_model.powerAvg(), fg, onWhite), "AVG" + _model.powerZoneStrFor(_model.powerAvg()), _model.powerStr(_model.powerAvg()), VALUE_FONT);
         } else {
-            _cell(dc, pc[0], _model.paceCurColor(fg), "PACE" + _model.paceCurZone(), _model.paceCurStr(), VALUE_FONT);
-            _cell(dc, pc[1], _model.paceLapColor(fg), "LAP" + _model.paceLapZone(), _model.paceLapStr(), VALUE_FONT);
-            _cell(dc, pc[2], _model.paceAvgColor(fg), "AVG" + _model.paceAvgZone(), _model.paceAvgStr(), VALUE_FONT);
+            _cell(dc, pc[0], _model.paceCurColor(fg, onWhite), "PACE" + _model.paceCurZone(), _model.paceCurStr(), VALUE_FONT);
+            _cell(dc, pc[1], _model.paceLapColor(fg, onWhite), "LAP" + _model.paceLapZone(), _model.paceLapStr(), VALUE_FONT);
+            _cell(dc, pc[2], _model.paceAvgColor(fg, onWhite), "AVG" + _model.paceAvgZone(), _model.paceAvgStr(), VALUE_FONT);
         }
 
         var hc = _layout.hrCells();
-        _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg), "HR " + _model.fractionalZoneStrFor(_model.hrCur()), _hrStr(_model.hrCur()), VALUE_FONT);
-        _cell(dc, hc[1], _model.hrColor(_model.hrLap(), fg), "LAP " + _model.fractionalZoneStrFor(_model.hrLap()), _hrStr(_model.hrLap()), VALUE_FONT);
-        _cell(dc, hc[2], _model.hrColor(_model.hrAvg(), fg), "AVG " + _model.fractionalZoneStrFor(_model.hrAvg()), _hrStr(_model.hrAvg()), VALUE_FONT);
+        _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg, onWhite), "HR " + _model.fractionalZoneStrFor(_model.hrCur()), _hrStr(_model.hrCur()), VALUE_FONT);
+        _cell(dc, hc[1], _model.hrColor(_model.hrLap(), fg, onWhite), "LAP " + _model.fractionalZoneStrFor(_model.hrLap()), _hrStr(_model.hrLap()), VALUE_FONT);
+        _cell(dc, hc[2], _model.hrColor(_model.hrAvg(), fg, onWhite), "AVG " + _model.fractionalZoneStrFor(_model.hrAvg()), _hrStr(_model.hrAvg()), VALUE_FONT);
 
         var bc = _layout.bottomCells();
         _cell(dc, bc[0], fg, "DIST", _model.distanceStr() + " km", VALUE_FONT);
         _cell(dc, bc[1], fg, "TIME", _model.durationStr(), VALUE_FONT);
 
-        _drawZoneBars(dc, _layout.zoneBar(), fg);
+        _drawZoneBars(dc, _layout.zoneBar(), fg, onWhite);
     }
 
     // Draw a small label (top) + value (centre) inside rect [x,y,w,h].
@@ -123,7 +124,7 @@ class RunFieldView extends WatchUi.DataField {
 
     // 5 vertical bars across a horizontal strip, heights proportional to time in
     // each zone and coloured per zone (a faint baseline track shows empty bars).
-    private function _drawZoneBars(dc as Graphics.Dc, r as Array, fg as Graphics.ColorType) as Void {
+    private function _drawZoneBars(dc as Graphics.Dc, r as Array, fg as Graphics.ColorType, onWhite as Boolean) as Void {
         var counts = _model.zoneCounts();
         var total = _model.zoneTotal();
         var n = 5;
@@ -142,7 +143,7 @@ class RunFieldView extends WatchUi.DataField {
                 bh = 1;
             }
             if (bh > 0) {
-                dc.setColor(_model.zoneColor(i + 1), Graphics.COLOR_TRANSPARENT);
+                dc.setColor(_model.zoneColor(i + 1, onWhite), Graphics.COLOR_TRANSPARENT);
                 dc.fillRectangle(x, baseY - bh, barW, bh);
             }
         }

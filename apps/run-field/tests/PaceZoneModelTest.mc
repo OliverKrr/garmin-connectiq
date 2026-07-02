@@ -12,7 +12,8 @@ function paceZone_zoneBoundaries(logger as Test.Logger) as Boolean {
 (:test)
 function paceZone_color(logger as Test.Logger) as Boolean {
     var m = new PaceZoneModel([360, 320, 280, 250]);
-    return m.color(300) == Graphics.COLOR_GREEN && m.color(240) == Graphics.COLOR_RED;
+    return m.color(300, true) == ZoneColor.of(3, true) && m.color(240, true) == ZoneColor.of(5, true)
+        && m.color(300, false) == ZoneColor.of(3, false) && m.color(240, false) == ZoneColor.of(5, false);
 }
 
 (:test)
@@ -35,6 +36,6 @@ function paceZone_sevenZones(logger as Test.Logger) as Boolean {
 (:test)
 function paceZone_sevenColours(logger as Test.Logger) as Boolean {
     var seen = {};
-    for (var z = 1; z <= 7; z++) { seen[ZoneColor.of7(z)] = true; }
+    for (var z = 1; z <= 7; z++) { seen[ZoneColor.of7(z, true)] = true; }
     return seen.size() == 7;
 }

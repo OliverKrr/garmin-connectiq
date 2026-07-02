@@ -45,17 +45,8 @@ class HrZoneModel {
         return 5.0;
     }
 
-    // Garmin-style zone colour. Zone 0/1 share the grey of zone 1.
-    function color(zone as Number) as Graphics.ColorType {
-        if (zone <= 1) {
-            return Graphics.COLOR_LT_GRAY;
-        } else if (zone == 2) {
-            return Graphics.COLOR_BLUE;
-        } else if (zone == 3) {
-            return Graphics.COLOR_GREEN;
-        } else if (zone == 4) {
-            return Graphics.COLOR_ORANGE;
-        }
-        return Graphics.COLOR_RED;
+    // Garmin-style zone colour, theme-aware. Zone 0/1 share zone-1 grey.
+    function color(zone as Number, onWhite as Boolean) as Graphics.ColorType {
+        return ZoneColor.of(zone, onWhite);
     }
 }
