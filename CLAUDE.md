@@ -38,6 +38,10 @@ do not reference sibling repositories by local path; link public repos by URL on
   `just sim` then `just test`.
 - **Cut a release:** `just release X.Y.Z` bumps the one shared version and builds **both** signed
   `.iq` (Public + Beta) so the listings never drift; then edit `CHANGELOG.md` for the version.
+- **Always keep the Store description current:** `store-assets/listing.md` IS the maintained Store
+  description (uploaded alongside each version). Update it in the SAME change whenever settings,
+  features, or defaults change — its per-setting docs and examples must match what ships. Treat a
+  release with stale `listing.md` as incomplete. Keep it plain and free of `<`/`>` (the Store rejects them).
 - **Publish (manual):** `just publish-assist` prints the version + "What's New" + checklist +
   dashboard URL (it does not open a browser or upload). The **Beta** listing (`bin/run-field-beta.iq`,
   app id `2aa9eff5…`) is the live one; the **Public** listing (`bin/run-field.iq`, `5f713bad…`) is a
