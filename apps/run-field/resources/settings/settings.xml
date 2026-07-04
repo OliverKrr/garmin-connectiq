@@ -1,12 +1,16 @@
 <settings>
     <setting propertyKey="@Properties.rollingWindowSec" title="@Strings.SetRollingWindow">
-        <settingConfig type="numeric" min="5" max="120" />
+        <settingConfig type="numeric" min="0" max="120" />
     </setting>
-    <setting propertyKey="@Properties.usePower" title="@Strings.SetUsePower">
-        <settingConfig type="boolean" />
+    <setting propertyKey="@Properties.paceVsPower" title="@Strings.SetPaceVsPower">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.PaceVsPowerAuto</listEntry>
+            <listEntry value="1">@Strings.PaceVsPowerPace</listEntry>
+            <listEntry value="2">@Strings.PaceVsPowerPower</listEntry>
+        </settingConfig>
     </setting>
-    <setting propertyKey="@Properties.autoToggleSec" title="@Strings.SetAutoToggle">
-        <settingConfig type="numeric" min="0" max="60" />
+    <setting propertyKey="@Properties.gradeThreshold" title="@Strings.SetGradeThreshold">
+        <settingConfig type="numeric" min="1" max="15" />
     </setting>
     <setting propertyKey="@Properties.paceZoneModel" title="@Strings.SetPaceZoneModel">
         <settingConfig type="list">

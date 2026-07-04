@@ -1,11 +1,14 @@
 <strings>
     <string id="AppName">Run Field</string>
     <string id="AppNameBeta">Run Field (Beta)</string>
-    <string id="SetRollingWindow">Current-pace window (s)</string>
-    <string id="SetUsePower">Show power instead of pace</string>
+    <string id="SetRollingWindow">Current-pace window (s, 0 = Garmin current pace)</string>
+    <string id="SetPaceVsPower">Pace / power</string>
+    <string id="PaceVsPowerAuto">Auto (by grade)</string>
+    <string id="PaceVsPowerPace">Always pace</string>
+    <string id="PaceVsPowerPower">Always power</string>
+    <string id="SetGradeThreshold">Grade to show power (%)</string>
     <string id="SetPaceZonesCsv">Custom pace boundaries (s/km)</string>
     <string id="SetPaceZonesPrompt">Custom model: 4 (5 zones) or 6 (7 zones) paces, slow to fast, e.g. 360,320,280,250</string>
-    <string id="SetAutoToggle">Auto pace/power switch (s, 0=off)</string>
     <string id="SetThresholdPace">Threshold pace (m:ss per km)</string>
     <string id="SetThresholdPacePrompt">e.g. 3:41 - zones derive from this</string>
     <string id="SetPaceZoneModel">Pace zone model</string>

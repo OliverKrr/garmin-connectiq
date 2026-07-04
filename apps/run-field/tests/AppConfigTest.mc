@@ -83,3 +83,13 @@ function appConfig_parsePaceRejectsLen5(logger as Logger) as Boolean {
 function appConfig_parsePaceRejectsNonDecreasing(logger as Logger) as Boolean {
     return AppConfig.parsePaceZones("300,320,280,250") == null;
 }
+
+(:test)
+function appConfig_paceVsPowerDefault(logger as Logger) as Boolean {
+    return AppConfig.paceVsPower() == 0;
+}
+
+(:test)
+function appConfig_gradeThresholdDefault(logger as Logger) as Boolean {
+    return AppConfig.gradeThreshold() == 3;
+}

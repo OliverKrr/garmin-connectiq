@@ -6,10 +6,25 @@ import Toybox.Application;
 module AppConfig {
 
     function rollingWindowSec() as Number {
-        var v = _num("rollingWindowSec", 25);
+        var v = _num("rollingWindowSec", 0);
+        if (v <= 0) { return 0; }          // 0 => Garmin native current pace
         if (v < 5) { v = 5; }
         if (v > 120) { v = 120; }
         return v;
+    }
+
+    // 0 = Auto (grade), 1 = Always pace, 2 = Always power. Out of range -> 0.
+    function paceVsPower() as Number {
+        var m = _num("paceVsPower", 0);
+        return (m < 0 || m > 2) ? 0 : m;
+    }
+
+    // Grade % at which Current/Lap switch to power (Auto mode). Clamped 1..20, default 3.
+    function gradeThreshold() as Number {
+        var t = _num("gradeThreshold", 3);
+        if (t < 1) { t = 1; }
+        if (t > 20) { t = 20; }
+        return t;
     }
 
     function usePower() as Boolean { return _bool("usePower", false); }
