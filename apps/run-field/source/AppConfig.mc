@@ -27,8 +27,6 @@ module AppConfig {
         return t;
     }
 
-    function usePower() as Boolean { return _bool("usePower", false); }
-
     // Selected pace-zone model code: 0=Off, 1=80/20, 2=Friel, 3=CTS, 4=MyProCoach, 5=Custom.
     // Out of range -> 1 (80/20). "Off"/"Custom" are handled by the caller.
     function paceZoneModel() as Number {
@@ -56,11 +54,6 @@ module AppConfig {
             prev = n;
         }
         return out;
-    }
-
-    function autoToggleSec() as Number {
-        var v = _num("autoToggleSec", 0);
-        return (v < 0) ? 0 : v;
     }
 
     function thresholdPaceSec() as Number or Null {

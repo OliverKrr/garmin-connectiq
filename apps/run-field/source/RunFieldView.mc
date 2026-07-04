@@ -38,14 +38,14 @@ class RunFieldView extends WatchUi.DataField {
             z = [93, 111, 130, 148, 167, 185]; // sane default if unconfigured
         }
         _model = new RunModel(AppConfig.rollingWindowSec(), new HrZoneModel(z));
-        _model.setUsePower(AppConfig.usePower());
         if (UserProfile has :getPowerZones) {
             var pz = UserProfile.getPowerZones(Activity.SPORT_RUNNING);
             if (pz != null && pz.size() >= 6) {
                 _model.setPowerZones(new HrZoneModel(pz));
             }
         }
-        _model.setAutoToggleSec(AppConfig.autoToggleSec());
+        _model.setPaceVsPower(AppConfig.paceVsPower());
+        _model.setGradeThreshold(AppConfig.gradeThreshold());
         var model = AppConfig.paceZoneModel(); // 0=Off,1=80/20,2=Friel,3=CTS,4=MyProCoach,5=Custom
         var pz = null as PaceZoneModel or Null;
         if (model == 5) { // Custom
@@ -114,15 +114,14 @@ class RunFieldView extends WatchUi.DataField {
         _cell(dc, _layout.clock(), fg, "", _model.clockStr(), _fClock);
 
         var pc = _layout.paceCells();
-        if (_model.showPower()) {
+        if (_model.showPowerForCurLap()) {
             _cell(dc, pc[0], _model.powerColor(_model.powerCur(), fg, onWhite), "PWR" + _model.powerZoneStrFor(_model.powerCur()), _model.powerStr(_model.powerCur()), _fPace);
             _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg, onWhite), "LAP" + _model.powerZoneStrFor(_model.powerLap()), _model.powerStr(_model.powerLap()), _fPace);
-            _cell(dc, pc[2], _model.powerColor(_model.powerAvg(), fg, onWhite), "AVG" + _model.powerZoneStrFor(_model.powerAvg()), _model.powerStr(_model.powerAvg()), _fPace);
         } else {
             _cell(dc, pc[0], _model.paceCurColor(fg, onWhite), "P" + _model.paceCurZone(), _model.paceCurStr(), _fPace);
             _cell(dc, pc[1], _model.paceLapColor(fg, onWhite), "L" + _model.paceLapZone(), _model.paceLapStr(), _fPace);
-            _cell(dc, pc[2], _model.paceAvgColor(fg, onWhite), "A" + _model.paceAvgZone(), _model.paceAvgStr(), _fPace);
         }
+        _cell(dc, pc[2], _model.paceAvgColor(fg, onWhite), "A" + _model.paceAvgZone(), _model.paceAvgStr(), _fPace);
 
         var hc = _layout.hrCells();
         _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg, onWhite), "HR " + _model.fractionalZoneStrFor(_model.hrCur()), _hrStr(_model.hrCur()), _fHr);
@@ -131,8 +130,8 @@ class RunFieldView extends WatchUi.DataField {
 
         var bc = _layout.bottomCells();
         _cell(dc, bc[0], fg, "DIST", _model.distanceStr(), _fBottom);
-        _cell(dc, bc[1], fg, "CAD", _model.cadenceStr(), _fBottom);
-        _cell(dc, bc[2], fg, "TIME", _model.durationStr(), _fBottom);
+        _cell(dc, bc[1], fg, "TIME", _model.durationStr(), _fBottom);
+        _cell(dc, bc[2], _model.powerColor(_model.powerAvg(), fg, onWhite), "AVG PWR", _model.powerStr(_model.powerAvg()), _fBottom);
 
         _drawZoneBars(dc, _layout.zoneBar(), onWhite);
     }

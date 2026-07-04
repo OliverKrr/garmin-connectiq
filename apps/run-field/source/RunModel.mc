@@ -26,18 +26,21 @@ class RunModel {
     private var _powerAvg as Number or Null = null;
     private var _powerZones as HrZoneModel or Null = null;
     private var _paceZones as PaceZoneModel or Null = null;
-    private var _usePower as Boolean = false;
-    private var _autoToggleSec as Number = 0;
     private var _distM as Float = 0.0;
     private var _timerMs as Number = 0;
     private var _zoneCur as Number = 0;
-    private var _cadence as Number or Null = null;
+    private var _windowSec as Number = 0;
+    private var _grade as GradeModel = new GradeModel();
+    private var _paceVsPower as Number = 0;
+    private var _gradeThreshold as Number = 3;
+    private var _powerActive as Boolean = false;
 
     function initialize(windowSec as Number, zones as HrZoneModel) {
         _zones = zones;
         _rollingPace = new RollingPace(windowSec);
         _lapHr = new RunningAverage();
         _tiz = new TimeInZone();
+        _windowSec = windowSec;
     }
 
     function update(info as Activity.Info) as Void {
@@ -45,6 +48,7 @@ class RunModel {
         var dist = (info has :elapsedDistance) ? info.elapsedDistance : null;
         var hr = (info has :currentHeartRate) ? info.currentHeartRate : null;
         var avgSpeed = (info has :averageSpeed) ? info.averageSpeed : null;
+        var spd = (info has :currentSpeed) ? info.currentSpeed : null;
 
         if (timer != null) { _timerMs = timer; }
         if (dist != null) { _distM = dist; }
@@ -54,11 +58,15 @@ class RunModel {
         // advancing — accumulating then would (e.g.) grow the time-in-zone bars.
         var running = (info has :timerState) ? (info.timerState == Activity.TIMER_STATE_ON) : true;
 
+        if (running && dist != null && (info has :altitude)) {
+            _grade.update(_distM, info.altitude);
+        }
+
         if (running && timer != null && dist != null) {
-            _rollingPace.add(timer, dist);
-            _paceCur = _rollingPace.paceSecPerKm();
+            if (_windowSec > 0) { _rollingPace.add(timer, dist); _paceCur = _rollingPace.paceSecPerKm(); }
             _paceLap = Pace.secPerKmFromDelta(dist - _lapStartDist, timer - _lapStartMs);
         }
+        if (_windowSec == 0) { _paceCur = Pace.secPerKmFromSpeed(spd); }
         _paceAvg = Pace.secPerKmFromSpeed(avgSpeed);
 
         if (hr != null) {
@@ -83,8 +91,6 @@ class RunModel {
             _powerCur = null;
         }
         _powerAvg = (info has :averagePower) ? info.averagePower : null;
-
-        _cadence = (info has :currentCadence) ? info.currentCadence : null;
     }
 
     function onLap() as Void {
@@ -101,6 +107,7 @@ class RunModel {
         _lapHr.reset();
         _lapPower.reset();
         _tiz.reset();
+        _grade.reset();
     }
 
     function paceCurStr() as String { return PaceFormat.paceSecPerKm(_paceCur); }
@@ -113,7 +120,6 @@ class RunModel {
 
     function distanceStr() as String { return (_distM / 1000.0).format("%.2f"); }
     function durationStr() as String { return PaceFormat.durationMs(_timerMs); }
-    function cadenceStr() as String { return (_cadence == null) ? "--" : _cadence.format("%d"); }
 
     function clockStr() as String {
         var t = System.getClockTime();
@@ -131,19 +137,20 @@ class RunModel {
         return _zones.color(_zones.zone(hr), onWhite);
     }
 
-    function setUsePower(use as Boolean) as Void { _usePower = use; }
     function setPowerZones(z as HrZoneModel or Null) as Void { _powerZones = z; }
     function setPaceZones(z as PaceZoneModel or Null) as Void { _paceZones = z; }
-    function usePower() as Boolean { return _usePower; }
 
-    function setAutoToggleSec(n as Number) as Void { _autoToggleSec = n; }
+    function setPaceVsPower(m as Number) as Void { _paceVsPower = m; }
+    function setGradeThreshold(t as Number) as Void { _gradeThreshold = t; }
 
-    // Effective pace/power choice: auto-alternate by elapsed time, else the manual flag.
-    function showPower() as Boolean {
-        if (_autoToggleSec > 0) {
-            return ((_timerMs / 1000 / _autoToggleSec) % 2) == 1;
-        }
-        return _usePower;
+    // True when Current/Lap should show power: Always-power, or Auto + grade over threshold
+    // (hysteresis) and power is live. Always-pace / no power -> false.
+    function showPowerForCurLap() as Boolean {
+        if (_paceVsPower == 2) { return _powerCur != null; }
+        if (_paceVsPower == 1) { return false; }
+        if (_powerCur == null) { return false; }
+        _powerActive = PowerSwitch.active(_grade.grade(), _gradeThreshold.toFloat(), _powerActive);
+        return _powerActive;
     }
 
     // Fractional pace zone as " x.x" for a label, or "" when pace zones aren't set.
