@@ -6,6 +6,16 @@ versioning: [SemVer](https://semver.org/). The top released section's body is pa
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-07-04
+### Changed
+- Bigger, bolder numbers: pace and heart rate use the large Bionic number font, sized to fit each cell.
+- Higher-contrast zone colours tuned for the sunlight (MIP) display, with a brighter palette on dark/AMOLED backgrounds.
+- Pace zone models: 80/20 Run shows its native zone names 1, 2, X, 3, Y, 4, 5 (the easy X and Y "avoid" zones in grey).
+- Heart-rate time-in-zone chart fills its height (busiest zone reaches the top); empty bars use their zone colour.
+- Third bottom field added: cadence, next to distance and time.
+- Tidier layout: shorter P / L / A pace labels, more spacing between fields, and distance without the unit clutter.
+- Default current-pace averaging window is 12 seconds for a more responsive readout.
+
 ## [0.4.1] - 2026-07-02
 ### Changed
 - Bigger, bolder numbers: pace and heart rate now use the large Bionic number font, sized to fit.
