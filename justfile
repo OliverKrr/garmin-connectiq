@@ -47,6 +47,22 @@ sim:
 run: build
     "{{sdk_bin}}/monkeydo" {{out}} {{device}}
 
+# Self-serve start: build, launch the sim if needed, load the field (CIQ_DEVICE, default enduro3); re-run to reload
+dev: build
+    ps -Ao comm | grep -qiE '(^|/)simulator$' || { "{{sdk_bin}}/connectiq" & sleep 9; }
+    "{{sdk_bin}}/monkeydo" {{out}} {{device}}
+
+# Clear crashed/stale simulator + monkeydo instances (they make run/dev/test hang); then `just dev`
+kill:
+    pkill -f monkeydo || true
+    pkill -f "ConnectIQ.app/Contents" || true
+    @echo "cleared stale simulator + monkeydo instances"
+
+# Generate bin/run-sim.fit test data (pace sweeps zones, HR+cadence ramp); load via Simulation -> Activity Data. Needs: pip install fit-tool
+sim-fit:
+    mkdir -p bin
+    python3 tools/gen_sim_fit.py
+
 # Build with unit tests and run them in the simulator (launch it first with `just sim`)
 # Note: monkeydo -t always exits 1; we grep the output for PASSED to set the real exit code.
 test:

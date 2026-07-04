@@ -30,6 +30,9 @@ do not reference sibling repositories by local path; link public repos by URL on
 - `just build` — compile apps/run-field to bin/run-field.prg
 - `just sim` — launch the Connect IQ simulator
 - `just run` — build + run in the simulator (sim must be running)
+- `just dev` — build + auto-launch the sim if needed + load the field (self-serve start; re-run to reload)
+- `just kill` — clear crashed/stale simulator + monkeydo instances, then `just dev` again
+- `just sim-fit` — generate `bin/run-sim.fit` test data (needs `pip install fit-tool`); load via Simulation → Activity Data
 - `just sideload` — copy the .prg to a USB-mounted watch
 
 ## Develop / release workflow
