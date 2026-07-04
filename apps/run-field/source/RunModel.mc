@@ -31,6 +31,7 @@ class RunModel {
     private var _distM as Float = 0.0;
     private var _timerMs as Number = 0;
     private var _zoneCur as Number = 0;
+    private var _cadence as Number or Null = null;
 
     function initialize(windowSec as Number, zones as HrZoneModel) {
         _zones = zones;
@@ -82,6 +83,8 @@ class RunModel {
             _powerCur = null;
         }
         _powerAvg = (info has :averagePower) ? info.averagePower : null;
+
+        _cadence = (info has :currentCadence) ? info.currentCadence : null;
     }
 
     function onLap() as Void {
@@ -110,6 +113,7 @@ class RunModel {
 
     function distanceStr() as String { return (_distM / 1000.0).format("%.2f"); }
     function durationStr() as String { return PaceFormat.durationMs(_timerMs); }
+    function cadenceStr() as String { return (_cadence == null) ? "--" : _cadence.format("%d"); }
 
     function clockStr() as String {
         var t = System.getClockTime();

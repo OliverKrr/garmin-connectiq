@@ -9,7 +9,7 @@ chart. Optimised for the Enduro 3 and other modern Garmin watches.
 - Pace (or power) shown as current / lap / average, coloured by training zone.
 - Heart rate as current / lap / average, coloured by HR zone with a fractional zone number.
 - Heart-rate time-in-zone bar chart; each bar grows with the time spent in that zone and is drawn in that zone's colour.
-- Distance, elapsed time, and clock.
+- Distance, cadence, elapsed time, and clock.
 - Pace zones derived from your threshold pace using a training model you choose.
 - Large, bold numbers and high-contrast zone colours tuned for the sunlight (MIP) display, with a brighter palette on dark/AMOLED backgrounds.
 

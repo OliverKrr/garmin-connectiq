@@ -119,9 +119,9 @@ class RunFieldView extends WatchUi.DataField {
             _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg, onWhite), "LAP" + _model.powerZoneStrFor(_model.powerLap()), _model.powerStr(_model.powerLap()), _fPace);
             _cell(dc, pc[2], _model.powerColor(_model.powerAvg(), fg, onWhite), "AVG" + _model.powerZoneStrFor(_model.powerAvg()), _model.powerStr(_model.powerAvg()), _fPace);
         } else {
-            _cell(dc, pc[0], _model.paceCurColor(fg, onWhite), "PACE" + _model.paceCurZone(), _model.paceCurStr(), _fPace);
-            _cell(dc, pc[1], _model.paceLapColor(fg, onWhite), "LAP" + _model.paceLapZone(), _model.paceLapStr(), _fPace);
-            _cell(dc, pc[2], _model.paceAvgColor(fg, onWhite), "AVG" + _model.paceAvgZone(), _model.paceAvgStr(), _fPace);
+            _cell(dc, pc[0], _model.paceCurColor(fg, onWhite), "P" + _model.paceCurZone(), _model.paceCurStr(), _fPace);
+            _cell(dc, pc[1], _model.paceLapColor(fg, onWhite), "L" + _model.paceLapZone(), _model.paceLapStr(), _fPace);
+            _cell(dc, pc[2], _model.paceAvgColor(fg, onWhite), "A" + _model.paceAvgZone(), _model.paceAvgStr(), _fPace);
         }
 
         var hc = _layout.hrCells();
@@ -130,8 +130,9 @@ class RunFieldView extends WatchUi.DataField {
         _cell(dc, hc[2], _model.hrColor(_model.hrAvg(), fg, onWhite), "AVG " + _model.fractionalZoneStrFor(_model.hrAvg()), _hrStr(_model.hrAvg()), _fHr);
 
         var bc = _layout.bottomCells();
-        _cell(dc, bc[0], fg, "DIST KM", _model.distanceStr(), _fBottom);
-        _cell(dc, bc[1], fg, "TIME", _model.durationStr(), _fBottom);
+        _cell(dc, bc[0], fg, "DIST", _model.distanceStr(), _fBottom);
+        _cell(dc, bc[1], fg, "CAD", _model.cadenceStr(), _fBottom);
+        _cell(dc, bc[2], fg, "TIME", _model.durationStr(), _fBottom);
 
         _drawZoneBars(dc, _layout.zoneBar(), onWhite);
     }

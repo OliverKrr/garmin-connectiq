@@ -34,7 +34,7 @@ class GridLayout {
         _zone = _band(cx, cy, radius, inset, yZone, zoneH);
         _pace = _columns(_band(cx, cy, radius, inset, yPace, rowH), 3);
         _hr = _columns(_band(cx, cy, radius, inset, yHr, rowH), 3);
-        _bottom = _columns(_band(cx, cy, radius, inset, yBottom, rowH), 2);
+        _bottom = _columns(_band(cx, cy, radius, inset, yBottom, rowH), 3);
     }
 
     // Largest centred [x,y,w,h] band over [y, y+h] that fits inside the circle.
@@ -50,14 +50,18 @@ class GridLayout {
         return [cx - half, y, 2 * half, h];
     }
 
-    // Split a band into n equal-width column rects (last cell absorbs rounding).
+    // Split a band into n equal-width column rects with a gutter between them so adjacent
+    // values don't touch. The gutter is ~3% of the band width (min 6 px).
     private function _columns(band as Array<Number>, n as Number) as Array {
-        var colW = band[2] / n;
+        var g = (band[2] * 5) / 100;
+        if (g < 8) {
+            g = 8;
+        }
+        var colW = (band[2] - (n - 1) * g) / n;
         var cells = new [n];
         for (var i = 0; i < n; i++) {
-            var x = band[0] + i * colW;
-            var wi = (i < n - 1) ? colW : (band[0] + band[2]) - x;
-            cells[i] = [x, band[1], wi, band[3]];
+            var x = band[0] + i * (colW + g);
+            cells[i] = [x, band[1], colW, band[3]];
         }
         return cells;
     }

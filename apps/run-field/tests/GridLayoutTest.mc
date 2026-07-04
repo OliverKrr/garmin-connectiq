@@ -18,7 +18,7 @@ function gridLayout_bandsOrderedAndStacked(logger as Test.Logger) as Boolean {
 (:test)
 function gridLayout_cellCounts(logger as Test.Logger) as Boolean {
     var g = new GridLayout(280, 280);
-    return g.paceCells().size() == 3 && g.hrCells().size() == 3 && g.bottomCells().size() == 2;
+    return g.paceCells().size() == 3 && g.hrCells().size() == 3 && g.bottomCells().size() == 3;
 }
 
 (:test)
