@@ -10,6 +10,7 @@ Requires the fit-tool package:  pip install fit-tool
 Run via:  just sim-fit   (or: python3 tools/gen_sim_fit.py)
 """
 import sys
+import math
 
 try:
     from fit_tool.fit_file_builder import FitFileBuilder
@@ -46,6 +47,13 @@ fid.serial_number = 4242
 fid.time_created = BASE_MS
 builder.add(fid)
 
+# The simulator derives distance/speed (and thus the field's pace) from the GPS track, not the
+# distance record field — so we lay down a straight eastward track. Cadence is stored as strides/min
+# (the watch doubles it to steps/min), so halve the target spm.
+LAT0 = 48.0                 # start latitude (deg)
+LON0 = 8.0                  # start longitude (deg)
+M_PER_DEG_LON = 111320.0 * math.cos(math.radians(LAT0))
+
 dist = 0.0
 t = 0
 total = sum(s for s, _ in SEGMENTS)
@@ -56,10 +64,12 @@ for dur, pace in SEGMENTS:
         frac = t / float(total)
         rec = RecordMessage()
         rec.timestamp = BASE_MS + t * 1000
+        rec.position_lat = LAT0
+        rec.position_long = LON0 + dist / M_PER_DEG_LON
         rec.distance = dist
         rec.speed = speed
-        rec.heart_rate = int(118 + 62 * frac)  # 118 -> 180 bpm
-        rec.cadence = int(165 + 20 * frac)      # 165 -> 185 spm
+        rec.heart_rate = int(118 + 62 * frac)         # 118 -> 180 bpm
+        rec.cadence = int((170 + 20 * frac) / 2)       # strides/min -> ~170..190 spm on the watch
         builder.add(rec)
         t += 1
 
