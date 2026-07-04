@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Generate a short synthetic running FIT for the Connect IQ simulator.
 
-Load it in the simulator via Simulation -> Activity Data -> bin/run-sim.fit, then press play.
-Pace steps through every 80/20 zone (threshold 3:41 -> boundaries 291,254,238,221,217,192 s/km),
-including the narrow X (245) and Y (219) "avoid" zones; heart rate and cadence ramp; distance
-accumulates. ~30 seconds so a review is quick.
+Load it via Simulation -> Activity Data -> "FIT/GPX Playable File" -> bin/run-sim.fit -> play.
+It exercises the terrain-adaptive display: a flat section (Current/Lap show PACE), then a climb
+(grade > threshold -> Current/Lap switch to POWER), then a descent (back to PACE). Distance/pace come
+from a GPS track; altitude drives grade; power, heart rate and cadence are included. ~35 seconds.
 
 Requires the fit-tool package:  pip install fit-tool
 Run via:  just sim-fit   (or: python3 tools/gen_sim_fit.py)
@@ -26,16 +26,18 @@ except ImportError:
 BASE_MS = 1735689600000  # fixed base (2025-01-01 UTC) so output is reproducible
 OUT = "bin/run-sim.fit"
 
-# (seconds, pace sec/km) plateaus -> 80/20 zones 1, 2, X, 3, Y, 4, 5
+# (seconds, pace sec/km, grade %, power W) — flat -> climb -> descent to show the pace/power switch.
 SEGMENTS = [
-    (4, 320),   # zone 1
-    (4, 270),   # zone 2
-    (5, 245),   # X  (avoid)
-    (4, 230),   # zone 3
-    (5, 219),   # Y  (avoid)
-    (4, 205),   # zone 4
-    (4, 188),   # zone 5 (fastest)
+    (10, 300, 0.0, 235),    # flat: grade ~0 -> PACE
+    (13, 330, 7.0, 330),    # climb: grade 7% (> 3% threshold) -> Current/Lap switch to POWER
+    (12, 270, -3.0, 205),   # descent: grade -3% -> back to PACE
 ]
+
+# The simulator derives distance/speed (and the field's pace) from the GPS track; altitude drives the
+# app's computed grade. Cadence is stored as strides/min (the watch doubles it to steps/min).
+LAT0 = 48.0
+LON0 = 8.0
+M_PER_DEG_LON = 111320.0 * math.cos(math.radians(LAT0))
 
 builder = FitFileBuilder(auto_define=True)
 
@@ -47,29 +49,28 @@ fid.serial_number = 4242
 fid.time_created = BASE_MS
 builder.add(fid)
 
-# The simulator derives distance/speed (and thus the field's pace) from the GPS track, not the
-# distance record field — so we lay down a straight eastward track. Cadence is stored as strides/min
-# (the watch doubles it to steps/min), so halve the target spm.
-LAT0 = 48.0                 # start latitude (deg)
-LON0 = 8.0                  # start longitude (deg)
-M_PER_DEG_LON = 111320.0 * math.cos(math.radians(LAT0))
-
 dist = 0.0
+alt = 100.0
 t = 0
-total = sum(s for s, _ in SEGMENTS)
-for dur, pace in SEGMENTS:
+total = sum(s for s, _, _, _ in SEGMENTS)
+psum = 0
+for dur, pace, grade, power in SEGMENTS:
     for _ in range(dur):
         speed = 1000.0 / pace  # m/s
         dist += speed
+        alt += (grade / 100.0) * speed  # rise/fall this second
         frac = t / float(total)
+        psum += power
         rec = RecordMessage()
         rec.timestamp = BASE_MS + t * 1000
         rec.position_lat = LAT0
         rec.position_long = LON0 + dist / M_PER_DEG_LON
         rec.distance = dist
+        rec.altitude = alt
         rec.speed = speed
-        rec.heart_rate = int(118 + 62 * frac)         # 118 -> 180 bpm
-        rec.cadence = int((170 + 20 * frac) / 2)       # strides/min -> ~170..190 spm on the watch
+        rec.power = power
+        rec.heart_rate = int(118 + 62 * frac)     # 118 -> 180 bpm
+        rec.cadence = int((170 + 20 * frac) / 2)   # strides/min -> ~170..190 spm on the watch
         builder.add(rec)
         t += 1
 
@@ -90,6 +91,7 @@ ses.total_distance = dist
 ses.sport = Sport.RUNNING
 ses.sub_sport = SubSport.GENERIC
 ses.num_laps = 1
+ses.avg_power = int(psum / t)
 builder.add(ses)
 
 act = ActivityMessage()
@@ -99,4 +101,4 @@ act.num_sessions = 1
 builder.add(act)
 
 builder.build().to_file(OUT)
-print(f"wrote {OUT}  ({t} records, {dist / 1000:.2f} km)")
+print(f"wrote {OUT}  ({t} records, {dist / 1000:.2f} km, alt {100.0:.0f}->{alt:.0f} m)")
