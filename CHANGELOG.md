@@ -6,6 +6,15 @@ versioning: [SemVer](https://semver.org/). The top released section's body is pa
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-07-04
+### Added
+- Terrain-adaptive display: on climbs the current and lap cells switch from pace to power (Auto by grade), and back to pace on the flat.
+- Average power is always shown (bottom row), alongside average pace, for hilly runs where average pace alone is misleading.
+### Changed
+- Current pace now defaults to Garmin's native current pace (set the window above 0 for a smoothed rolling average).
+- New "Pace / power" setting (Auto by grade / Always pace / Always power) and a configurable grade threshold, replacing the old time-based pace/power rotation.
+- The bottom row is now distance, duration, average power (cadence was removed to make room).
+
 ## [0.4.2] - 2026-07-04
 ### Changed
 - Bigger, bolder numbers: pace and heart rate use the large Bionic number font, sized to fit each cell.
