@@ -45,11 +45,15 @@ do not reference sibling repositories by local path; link public repos by URL on
   description (uploaded alongside each version). Update it in the SAME change whenever settings,
   features, or defaults change — its per-setting docs and examples must match what ships. Treat a
   release with stale `listing.md` as incomplete. Keep it plain and free of `<`/`>` (the Store rejects them).
+- **Store screenshots** are real simulator captures — the repeatable procedure (scenario FIT,
+  AppleScript capture pipeline, temporary zone/threshold patches, sim gotchas) is in
+  `docs/store-screenshots.md`.
 - **Publish (manual):** `just publish-assist` prints the version + "What's New" + checklist +
   dashboard URL (it does not open a browser or upload). The **Beta** listing (`bin/run-field-beta.iq`,
   app id `2aa9eff5…`) is the live one; the **Public** listing (`bin/run-field.iq`, `5f713bad…`) is a
   placeholder until that listing is created. See `RELEASE.md` for app ids/steps.
-- **CI:** type-checks on push; on a `vX.Y.Z` tag, attaches the signed `.iq` to a GitHub Release.
+- **CI:** SDK-free sanity checks only (XML well-formedness). Garmin's MFA blocks headless SDK
+  logins, so compiles/tests/releases all run locally — there is no CI build or tag-release job.
 
 **Guardrail:** packaging (`just package`, which builds both `.iq`) is safe and automatable.
 **Uploading to the Connect IQ Store is manual and outward-facing** — there is no API. Prepare the
