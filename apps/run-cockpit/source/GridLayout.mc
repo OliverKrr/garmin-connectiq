@@ -1,7 +1,7 @@
 import Toybox.Lang;
 import Toybox.Math;
 
-// Computes the run-field layout rectangles once per onLayout(). A rect is
+// Computes the run-cockpit layout rectangles once per onLayout(). A rect is
 // [x, y, w, h]. Rows are sized round-aware: each horizontal band is only as wide
 // as fits inside the screen's inscribed circle at that band's height, and is
 // horizontally centred. Tuned for round screens (Enduro 3); on a rectangular

@@ -1,6 +1,6 @@
 <strings>
-    <string id="AppName">Run Field</string>
-    <string id="AppNameBeta">Run Field (Beta)</string>
+    <string id="AppName">Run Cockpit</string>
+    <string id="AppNameBeta">Run Cockpit (Beta)</string>
     <string id="SetRollingWindow">Current-pace window (s, 0 = Garmin current pace)</string>
     <string id="SetPaceVsPower">Pace / power</string>
     <string id="PaceVsPowerAuto">Auto (by grade)</string>

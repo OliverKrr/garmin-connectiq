@@ -10,7 +10,7 @@ developer_key.der
 *.der
 
 # Generated beta manifest (produced by `just package`)
-apps/run-field/manifest-beta.xml
+apps/run-cockpit/manifest-beta.xml
 
 # Editor / OS
 .DS_Store

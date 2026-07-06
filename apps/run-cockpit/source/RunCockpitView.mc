@@ -7,7 +7,7 @@ import Toybox.Lang;
 // Full-screen running data field: grid of pace/HR/distance/duration + clock, with
 // HR coloured by zone and a time-in-zone bar strip along the bottom. Geometry is
 // cached in onLayout; onUpdate reads cached model values and allocates nothing.
-class RunFieldView extends WatchUi.DataField {
+class RunCockpitView extends WatchUi.DataField {
     // Largest-first bold numeric candidates; the fit-to-cell picker in onLayout chooses per row.
     private const VALUE_FONTS = [
         Graphics.FONT_NUMBER_MEDIUM,

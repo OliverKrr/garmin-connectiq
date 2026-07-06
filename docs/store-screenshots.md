@@ -1,6 +1,6 @@
 # Store screenshots from the simulator
 
-Repeatable procedure for producing real Connect IQ Store screenshots of the run-field
+Repeatable procedure for producing real Connect IQ Store screenshots of the run-cockpit
 data field, with realistic ("faked") activity values. Screenshots are captured from the
 simulator's own **File → Save Screen Capture**, which writes the device screen at native
 resolution (280×280 on the Enduro 3) — pixel-perfect, no window chrome, and it needs
@@ -23,16 +23,16 @@ The sim cannot supply everything the field needs for colourful shots:
 
 1. **Threshold pace** — app-settings defaults only apply on first install, and the sim's
    App Settings editor does not see monkeydo-loaded apps. Patch the default:
-   in `apps/run-field/resources/settings/properties.xml` set the `thresholdPace`
+   in `apps/run-cockpit/resources/settings/properties.xml` set the `thresholdPace`
    property value to `4:00`.
 2. **HR + power zones** — the simulator's user-profile HR zones are internal defaults
    (the User Profile Editor's zone widget is display-only, not scriptable) and it has
-   no running power zones at all. Pin both in `RunFieldView.reloadSettings()`:
+   no running power zones at all. Pin both in `RunCockpitView.reloadSettings()`:
    - make the HR-zone fallback unconditional: `if (z == null || z.size() < 6) {` → `if (true) {`
    - after `var pz = UserProfile.getPowerZones(Activity.SPORT_RUNNING);` add
      `pz = [155, 210, 250, 300, 355, 420];`
 
-Revert both when done: `git checkout apps/run-field/`.
+Revert both when done: `git checkout apps/run-cockpit/`.
 
 ## Procedure
 
@@ -54,7 +54,7 @@ uv run --with fit-tool python3 tools/gen_store_fit.py
 tools/store_shoot.sh
 
 # 5. review bin/s*-*.png, copy keepers to store-assets/screenshots/, then:
-git checkout apps/run-field/               # drop the fake patches
+git checkout apps/run-cockpit/               # drop the fake patches
 just build                                 # rebuild clean
 ```
 

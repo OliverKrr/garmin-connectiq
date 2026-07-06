@@ -7,7 +7,7 @@ A monorepo structured to host multiple apps and shared barrels.
 
 | App | Type | Status |
 |---|---|---|
-| [`apps/run-field`](apps/run-field) | Data field | Running data field — full-screen stats page |
+| [`apps/run-cockpit`](apps/run-cockpit) | Data field | Running data field — full-screen stats page |
 
 ## Layout
 
@@ -23,14 +23,14 @@ A monorepo structured to host multiple apps and shared barrels.
   - GUI: `brew install --cask connectiq-sdk-manager`, sign in, download the latest SDK
     (Set as current) and the **Enduro 3** device + simulator; or
   - CLI: [`connect-iq-sdk-manager`](https://github.com/lindell/connect-iq-sdk-manager-cli)
-    (`login`, `sdk set <ver>`, `device download --manifest=apps/run-field/manifest.xml`).
+    (`login`, `sdk set <ver>`, `device download --manifest=apps/run-cockpit/manifest.xml`).
 - A developer signing key: `just key` (gitignored; never commit it).
 
 ### Everyday loop
 
 ```sh
 just doctor     # confirm SDK / device / key
-just build      # compile -> bin/run-field.prg   (override device: CIQ_DEVICE=<id> just build)
+just build      # compile -> bin/run-cockpit.prg   (override device: CIQ_DEVICE=<id> just build)
 just sim        # launch the simulator (GUI)
 just run        # build + run in the simulator
 just sideload   # copy the .prg to a USB-mounted watch
@@ -43,7 +43,7 @@ use **Simulation → Activity Data** in the simulator menu.
 Newer Garmin watches (incl. the Enduro 3) use **MTP**, which macOS does not mount as a disk
 (`/Volumes/GARMIN` will be absent). Google's Android File Transfer is deprecated and unreliable
 on recent macOS — use **[OpenMTP](https://openmtp.ganeshrvel.com/)** instead
-(`brew install --cask openmtp`): connect the watch, then copy `bin/run-field.prg` into
+(`brew install --cask openmtp`): connect the watch, then copy `bin/run-cockpit.prg` into
 `GARMIN/APPS/` on the device and restart it.
 
 ### Releasing
@@ -54,7 +54,7 @@ builds both signed `.iq` at that version. See [RELEASE.md](RELEASE.md) and the
 User-facing settings are documented in [store-assets/listing.md](store-assets/listing.md), which is also the maintained Connect IQ Store description.
 
 ### VS Code
-The official **Monkey C** extension reads `apps/run-field/manifest.xml` and `monkey.jungle`
+The official **Monkey C** extension reads `apps/run-cockpit/manifest.xml` and `monkey.jungle`
 directly — open the repo and build/debug from the extension if you prefer a GUI workflow.
 
 ## License

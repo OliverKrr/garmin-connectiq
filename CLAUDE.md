@@ -9,7 +9,7 @@ do not reference sibling repositories by local path; link public repos by URL on
 
 | Path | Purpose |
 |---|---|
-| `apps/run-field/` | Full-screen running **data field** (the first app) |
+| `apps/run-cockpit/` | Full-screen running **data field** (the first app) |
 | `barrels/` | Shared Monkey C code (Connect IQ barrels) — empty until needed |
 | `bin/` | Build output (`.prg` / `.iq`) — gitignored |
 
@@ -27,7 +27,7 @@ do not reference sibling repositories by local path; link public repos by URL on
 
 - `just doctor` — check SDK / device / key are in place
 - `just key` — generate a developer signing key (one-time)
-- `just build` — compile apps/run-field to bin/run-field.prg
+- `just build` — compile apps/run-cockpit to bin/run-cockpit.prg
 - `just sim` — launch the Connect IQ simulator
 - `just run` — build + run in the simulator (sim must be running)
 - `just dev` — build + auto-launch the sim if needed + load the field (self-serve start; re-run to reload)
@@ -49,8 +49,8 @@ do not reference sibling repositories by local path; link public repos by URL on
   AppleScript capture pipeline, temporary zone/threshold patches, sim gotchas) is in
   `docs/store-screenshots.md`.
 - **Publish (manual):** `just publish-assist` prints the version + "What's New" + checklist +
-  dashboard URL (it does not open a browser or upload). The **Beta** listing (`bin/run-field-beta.iq`,
-  app id `2aa9eff5…`) is the live one; the **Public** listing (`bin/run-field.iq`, `5f713bad…`) is a
+  dashboard URL (it does not open a browser or upload). The **Beta** listing (`bin/run-cockpit-beta.iq`,
+  app id `2aa9eff5…`) is the live one; the **Public** listing (`bin/run-cockpit.iq`, `5f713bad…`) is a
   placeholder until that listing is created. See `RELEASE.md` for app ids/steps.
 - **CI:** SDK-free sanity checks only (XML well-formedness). Garmin's MFA blocks headless SDK
   logins, so compiles/tests/releases all run locally — there is no CI build or tag-release job.

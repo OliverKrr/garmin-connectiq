@@ -7,12 +7,12 @@ sdk_bin := ciq_cfg / "bin"
 devices := env_var_or_default("CIQ_DEVICES_DIR", `echo "$HOME/Library/Application Support/Garmin/ConnectIQ/Devices"`)
 device  := env_var_or_default("CIQ_DEVICE", "enduro3")
 key     := "developer_key.der"
-jungle  := "apps/run-field/monkey.jungle"
-out     := "bin/run-field.prg"
+jungle  := "apps/run-cockpit/monkey.jungle"
+out     := "bin/run-cockpit.prg"
 
 # Connect IQ Store app ids (each binds an .iq to one listing; Garmin assigns them).
 # beta_app_id is the live listing. public_app_id is a placeholder until the public
-# listing is created — replace it here AND in apps/run-field/manifest.xml together.
+# listing is created — replace it here AND in apps/run-cockpit/manifest.xml together.
 public_app_id := "5f713bad3e2544559f1ba1cff9e59aa3"
 beta_app_id   := "2aa9eff51b0642519e6214de6db52342"
 
@@ -67,8 +67,8 @@ sim-fit:
 # Note: monkeydo -t always exits 1; we grep the output for PASSED to set the real exit code.
 test:
     mkdir -p bin
-    "{{sdk_bin}}/monkeyc" -d {{device}} -f {{jungle}} -o bin/run-field-test.prg -y {{key}} --unit-test -w
-    "{{sdk_bin}}/monkeydo" bin/run-field-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
+    "{{sdk_bin}}/monkeyc" -d {{device}} -f {{jungle}} -o bin/run-cockpit-test.prg -y {{key}} --unit-test -w
+    "{{sdk_bin}}/monkeydo" bin/run-cockpit-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
 
 # Copy the built .prg to a USB-mounted watch (override WATCH=/Volumes/GARMIN)
 sideload watch="/Volumes/GARMIN": build
@@ -92,27 +92,27 @@ store-assets:
 # time (same version; only the app id + name differ), then both are compiled.
 package:
     mkdir -p bin
-    "{{sdk_bin}}/monkeyc" -e -r -o bin/run-field.iq -f {{jungle}} -y {{key}}
-    python3 -c "s=open('apps/run-field/manifest.xml').read(); s=s.replace('{{public_app_id}}','{{beta_app_id}}').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-field/manifest-beta.xml','w').write(s)"
-    "{{sdk_bin}}/monkeyc" -e -r -o bin/run-field-beta.iq -f apps/run-field/monkey-beta.jungle -y {{key}}
-    @echo "Public .iq -> bin/run-field.iq       (app id {{public_app_id}} — pending public listing)"
-    @echo "Beta   .iq -> bin/run-field-beta.iq  (app id {{beta_app_id}} — live listing)"
+    "{{sdk_bin}}/monkeyc" -e -r -o bin/run-cockpit.iq -f {{jungle}} -y {{key}}
+    python3 -c "s=open('apps/run-cockpit/manifest.xml').read(); s=s.replace('{{public_app_id}}','{{beta_app_id}}').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-cockpit/manifest-beta.xml','w').write(s)"
+    "{{sdk_bin}}/monkeyc" -e -r -o bin/run-cockpit-beta.iq -f apps/run-cockpit/monkey-beta.jungle -y {{key}}
+    @echo "Public .iq -> bin/run-cockpit.iq       (app id {{public_app_id}} — pending public listing)"
+    @echo "Beta   .iq -> bin/run-cockpit-beta.iq  (app id {{beta_app_id}} — live listing)"
 
 # Set the app version (semver), e.g. `just bump 0.2.0`
 bump VERSION:
-    python3 -c "import re; p='apps/run-field/manifest.xml'; s=open(p).read(); s=re.sub(r'(<iq:application[^>]* version=\")[0-9.]+(\")', r'\g<1>{{VERSION}}\g<2>', s); open(p,'w').write(s)"
-    @grep -oE '<iq:application[^>]* version="[0-9.]+"' apps/run-field/manifest.xml
+    python3 -c "import re; p='apps/run-cockpit/manifest.xml'; s=open(p).read(); s=re.sub(r'(<iq:application[^>]* version=\")[0-9.]+(\")', r'\g<1>{{VERSION}}\g<2>', s); open(p,'w').write(s)"
+    @grep -oE '<iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml
 
 # Prepare the manual Store upload: print version, CHANGELOG notes, checklist, dashboard URL.
 # Does NOT upload or open a browser — publishing is a manual, outward-facing step.
 publish-assist:
     @echo "=== Connect IQ Store upload (MANUAL) ==="
-    @grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-field/manifest.xml | grep -oE 'version="[0-9.]+"'
+    @grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml | grep -oE 'version="[0-9.]+"'
     @echo "--- What's New (top CHANGELOG entry) ---"
     @awk '/^## \[[0-9]/{c++} c==1 && !/^## \[/{print} c==2{exit}' CHANGELOG.md
     @echo "--- Checklist ---"
-    @echo "Beta   : upload bin/run-field-beta.iq  -> live listing (private/unlisted)"
-    @echo "Public : upload bin/run-field.iq       -> public listing (once it exists)"
+    @echo "Beta   : upload bin/run-cockpit-beta.iq  -> live listing (private/unlisted)"
+    @echo "Public : upload bin/run-cockpit.iq       -> public listing (once it exists)"
     @echo "Then   : paste What's New, add screenshots, submit (manual)."
     @echo "Upload here (open in a browser): https://apps.garmin.com/en-US/developer/dashboard"
 

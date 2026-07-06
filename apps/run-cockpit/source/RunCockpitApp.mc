@@ -3,15 +3,15 @@ import Toybox.WatchUi;
 import Toybox.Lang;
 
 // Data field app entry point.
-class RunFieldApp extends Application.AppBase {
-    private var _view as RunFieldView or Null = null;
+class RunCockpitApp extends Application.AppBase {
+    private var _view as RunCockpitView or Null = null;
 
     function initialize() {
         AppBase.initialize();
     }
 
     function getInitialView() {
-        _view = new RunFieldView();
+        _view = new RunCockpitView();
         return [ _view ];
     }
 

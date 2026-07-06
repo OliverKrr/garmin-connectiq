@@ -47,6 +47,6 @@ jobs:
       - name: Note — builds & releases run locally
         run: |
           echo "Connect IQ build / type-check / signing run locally, not in CI:"
-          echo "  just build         # compile + type-check (apps/run-field)"
+          echo "  just build         # compile + type-check (apps/run-cockpit)"
           echo "  just package       # both signed .iq (public + beta listings)"
           echo "See RELEASE.md for the full release + upload steps."
