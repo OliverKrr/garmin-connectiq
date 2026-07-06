@@ -41,14 +41,19 @@ do not reference sibling repositories by local path; link public repos by URL on
   `just sim` then `just test`.
 - **Cut a release:** `just release X.Y.Z` bumps the one shared version and builds **both** signed
   `.iq` (Public + Beta) so the listings never drift; then edit `CHANGELOG.md` for the version.
-- **Always keep the Store description current:** `store-assets/listing.md` IS the maintained Store
-  description (uploaded alongside each version). Update it in the SAME change whenever settings,
-  features, or defaults change — its per-setting docs and examples must match what ships. Treat a
-  release with stale `listing.md` as incomplete. Keep it plain and free of `<`/`>` (the Store rejects them).
-- **Store text is hard-capped at 4000 chars** per field: the description (listing.md body) and the
-  rolling "What's New" (the whole released CHANGELOG history — old entries stay in the field).
-  `just validate-store-text` enforces both (runs automatically in `just package` / `publish-assist`);
-  when the history grows, compact old entries rather than raising the limit.
+- **Always keep the Store description current:** `store-assets/description.txt` IS the maintained
+  Store description — a pure paste file (select all + copy into the dashboard; no markers or
+  comments belong in it). Update it in the SAME change whenever settings, features, or defaults
+  change — its per-setting docs and examples must match what ships. Treat a release with a stale
+  description as incomplete. The Store renders PLAIN TEXT only (no markdown; ~400 chars show before
+  the fold — keep the pitch + repo link first).
+- **Store text is hard-capped at 4000 plain-ASCII chars** per field (non-ASCII makes the dashboard
+  fail with a misleading 'trouble communicating with our servers' error; `<`/`>` are rejected too).
+  Fields: the description, and the rolling "What's New" (the whole released CHANGELOG history —
+  old entries stay in the field). `just validate-store-text` enforces both and regenerates the
+  What's-New paste file `store-assets/whats-new.txt` from `CHANGELOG.md` (runs automatically in
+  `just package` / `publish-assist`); when the history grows, compact old entries in CHANGELOG.md
+  rather than raising the limit. Never edit `whats-new.txt` by hand — it is generated.
 - **Store screenshots** are real simulator captures — the repeatable procedure (scenario FIT,
   AppleScript capture pipeline, temporary zone/threshold patches, sim gotchas) is in
   `docs/store-screenshots.md`.

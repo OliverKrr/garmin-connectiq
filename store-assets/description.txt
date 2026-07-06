@@ -1,14 +1,3 @@
-<!--
-Connect IQ Store description — the BODY BELOW THE MARKER is pasted VERBATIM into the
-dashboard's Description field. The Store renders PLAIN TEXT only (no Markdown/HTML):
-every line = one paragraph, one blank line between sections, leading indentation
-collapses, URLs auto-link on the web store only. Only the first ~400 characters are
-visible before the "…More" fold — keep the pitch + repo link inside them. Never use
-the characters < or > (the Store rejects the whole description). Limit: 4000 chars.
-Verify a live listing's stored text via:
-https://apps.garmin.com/api/appsLibraryExternalServices/api/asw/apps/APP_ID
--->
-<!-- STORE DESCRIPTION BELOW — paste everything after this line -->
 Every running metric that matters, on one screen: current, lap, and average pace or power - coloured by training zone - heart rate with zone numbers, a live heart-rate time-in-zone chart, distance, duration, and average power. On climbs it switches from pace to power automatically, and back on the flat.
 
 Source, documentation and support: https://github.com/OliverKrr/garmin-connectiq

@@ -87,9 +87,10 @@ store-assets:
     rsvg-convert -w 1440 -h 720 store-assets/hero.svg -o store-assets/hero.png
     @echo "store-assets/{screen,cover,hero}.png regenerated"
 
-# Validate Store text: description (listing.md body) and the released CHANGELOG history
-# (the rolling "What's New") must each stay within the Store's 4000-char plain-text limit
-# and contain no < or >. Fails the build when violated.
+# Validate Store text and refresh the copy-paste files: store-assets/description.txt is
+# checked as-is; store-assets/whats-new.txt is regenerated from CHANGELOG.md's released
+# history. Both must stay within the Store's 4000-char plain-ASCII limit (no < or >).
+# Fails the build when violated.
 validate-store-text:
     python3 tools/validate_store_text.py
 
@@ -114,8 +115,9 @@ bump VERSION:
 publish-assist: validate-store-text
     @echo "=== Connect IQ Store upload (MANUAL) ==="
     @grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml | grep -oE 'version="[0-9.]+"'
-    @echo "--- What's New (top CHANGELOG entry) ---"
-    @awk '/^## \[[0-9]/{c++} c==1 && !/^## \[/{print} c==2{exit}' CHANGELOG.md
+    @echo "--- Paste files (select all + copy + paste) ---"
+    @echo "Description : store-assets/description.txt"
+    @echo "What's New  : store-assets/whats-new.txt (regenerated from CHANGELOG.md just now)"
     @echo "--- Checklist ---"
     @echo "Beta   : upload bin/run-cockpit-beta.iq  -> live listing (private/unlisted)"
     @echo "Public : upload bin/run-cockpit.iq       -> public listing (once it exists)"

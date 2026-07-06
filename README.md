@@ -51,7 +51,7 @@ Two Store listings (Public + private Beta) share one codebase and one version; `
 builds both signed `.iq` at that version. See [RELEASE.md](RELEASE.md) and the
 `just release` / `just publish-assist` recipes. Publishing the `.iq` is a manual dashboard step.
 
-User-facing settings are documented in [store-assets/listing.md](store-assets/listing.md), which is also the maintained Connect IQ Store description.
+User-facing settings are documented in [store-assets/description.txt](store-assets/description.txt) — the Connect IQ Store description, maintained as a pure paste file (`store-assets/whats-new.txt`, the Store's What's New text, is generated from CHANGELOG.md by `just validate-store-text`).
 
 ### VS Code
 The official **Monkey C** extension reads `apps/run-cockpit/manifest.xml` and `monkey.jungle`

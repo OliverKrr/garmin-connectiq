@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
-"""Validate the Connect IQ Store text against the Store's hard constraints.
+"""Validate the Connect IQ Store text and refresh the copy-paste files.
 
-Checked (both fail the build when violated):
-  1. Description  — the body of store-assets/listing.md below the paste marker.
-  2. What's New   — the WHOLE released history of CHANGELOG.md (everything from the
-                    first released "## [x.y.z]" heading to the end), because the Store
-                    field carries the rolling history and old entries stay in it.
+Sources and paste files:
+  1. Description  — store-assets/description.txt IS the paste file (pure content,
+                    select all + copy + paste into the dashboard).
+  2. What's New   — CHANGELOG.md is the source; this script REGENERATES
+                    store-assets/whats-new.txt from its whole released history
+                    (everything from the first "## [x.y.z]" heading down), because
+                    the Store field carries the rolling history. Paste that file.
 
-Rules: at most 4000 characters each (the Store rejects longer text only after the
-CAPTCHA, losing your edits); no '<' or '>' anywhere (the Store rejects the whole
-text); and plain printable ASCII only - non-ASCII characters (bullets, em-dashes,
-smart quotes, invisible whitespace) make the dashboard fail the submission with the
-misleading "trouble communicating with our servers" error. A warning is printed above
-3600 characters so the next release still has room.
+Checked for both (violations fail the build):
+  - at most 4000 characters (the Store validates only after the CAPTCHA, losing edits),
+  - no '<' or '>' (the Store rejects the whole text),
+  - plain printable ASCII only — non-ASCII (bullets, em-dashes, smart quotes,
+    invisibles) makes the dashboard fail with the misleading "trouble communicating
+    with our servers" error.
+A warning is printed above 3600 characters so the next release still has room.
 
-Run directly or via `just validate-store-text`; `just package` runs it automatically.
+Run directly or via `just validate-store-text`; `just package` / `just publish-assist`
+run it automatically.
 """
 import re
 import sys
 
 LIMIT = 4000
 WARN = 3600
-MARKER = "<!-- STORE DESCRIPTION BELOW — paste everything after this line -->\n"
 
 failures = []
 
@@ -47,20 +50,23 @@ def check(name: str, text: str) -> None:
                 )
 
 
-# 1. Store description
-listing = open("store-assets/listing.md", encoding="utf-8").read()
-if MARKER not in listing:
-    failures.append("store-assets/listing.md: paste marker not found")
-else:
-    check("description (listing.md body)", listing.split(MARKER, 1)[1])
+# 1. Description: the paste file itself.
+check("description (store-assets/description.txt)", open("store-assets/description.txt", encoding="utf-8").read())
 
-# 2. What's New rolling history
+# 2. What's New: regenerate the paste file from the changelog's released history.
 changelog = open("CHANGELOG.md", encoding="utf-8").read()
 m = re.search(r"^## \[\d", changelog, flags=re.M)
 if not m:
     failures.append("CHANGELOG.md: no released section found")
 else:
-    check("what's new (released changelog history)", changelog[m.start():])
+    history = changelog[m.start():]
+    # Store-ready: "## [0.6.0] - 2026-07-06" markdown headings would render literally,
+    # so turn them into the "Version 0.6.0 - 2026-07-06" convention of top listings.
+    history = re.sub(r"^## \[([^\]]+)\] - ", r"Version \1 - ", history, flags=re.M)
+    with open("store-assets/whats-new.txt", "w", encoding="utf-8") as f:
+        f.write(history)
+    print("store-assets/whats-new.txt regenerated from CHANGELOG.md")
+    check("what's new (store-assets/whats-new.txt)", history)
 
 if failures:
     print("\nSTORE TEXT VALIDATION FAILED:")
