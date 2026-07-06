@@ -21,7 +21,7 @@ A monorepo structured to host multiple apps and shared barrels.
 - macOS (or Linux/WSL) with [`just`](https://github.com/casey/just) and `openssl`.
 - The **Connect IQ SDK**, via either:
   - GUI: `brew install --cask connectiq-sdk-manager`, sign in, download the latest SDK
-    (Set as current) and the **Enduro 3** device + simulator; or
+    (Set as current) and the devices you target (at least one, e.g. **Enduro 3**) + simulator; or
   - CLI: [`connect-iq-sdk-manager`](https://github.com/lindell/connect-iq-sdk-manager-cli)
     (`login`, `sdk set <ver>`, `device download --manifest=apps/run-cockpit/manifest.xml`).
 - A developer signing key: `just key` (gitignored; never commit it).

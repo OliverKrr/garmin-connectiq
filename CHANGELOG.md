@@ -5,6 +5,8 @@ versioning: [SemVer](https://semver.org/). The top released section's body is pa
 "What's New" text via `just publish-assist` — keep it plain text: the Store rejects `<` and `>`.
 
 ## [Unreleased]
+### Added
+- Support for 48 more watches: fenix 6 Pro / 7 / 8 / E, epix 2 (incl. Pro), Enduro 3, Forerunner 165 / 170 / 245 Music / 255 / 265 / 570 / 745 / 945 / 955 / 965 / 970, MARQ 2, Venu 3 / 4, and vivoactive 5 / 6. Verified layouts from 218 px MIP up to 454 px AMOLED.
 ### Fixed
 - Very wide values (e.g. a 17:29/km hiking lap pace) no longer spill into the neighbouring cell: the value font shrinks per cell until the text fits.
 ### Changed
