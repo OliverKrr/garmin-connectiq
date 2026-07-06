@@ -1,73 +1,37 @@
 # Changelog
 
-All notable changes to the Run Cockpit data field (formerly "Run Field"). Format: [Keep a Changelog](https://keepachangelog.com/),
-versioning: [SemVer](https://semver.org/). The top released section's body is pasted as the Store
-"What's New" text via `just publish-assist` — keep it plain text: the Store rejects `<` and `>`.
+All notable changes to the Run Cockpit data field (formerly "Run Field"),
+versioned by [SemVer](https://semver.org/). The Store "What's New" field carries the whole
+released history below (pasted via `just publish-assist`) and allows at most **4000 plain-text
+characters** — keep entries short, focused, and free of `<` and `>`; drop detail from old
+entries before adding new ones. `just validate-store-text` (run automatically by
+`just package`) fails the build when the history or the Store description exceeds the limit.
 
 ## [Unreleased]
 
 ## [0.6.0] - 2026-07-06
-### Added
-- Support for 48 more watches: fenix 6 Pro / 7 / 8 / E, epix 2 (incl. Pro), Enduro 3, Forerunner 165 / 170 / 245 Music / 255 / 265 / 570 / 745 / 945 / 955 / 965 / 970, MARQ 2, Venu 3 / 4, and vivoactive 5 / 6. Verified layouts from 218 px MIP up to 454 px AMOLED.
-### Fixed
-- Very wide values (e.g. a 17:29/km hiking lap pace) no longer spill into the neighbouring cell: the value font shrinks per cell until the text fits.
-### Changed
 - Renamed to Run Cockpit (formerly Run Field).
-- Grade to show power now accepts up to 20 percent in the settings UI (was 15; the code always clamped to 20).
+- 48 more supported watches: fenix 6 Pro / 7 / 8 / E, epix 2, Enduro 3, Forerunner 165 / 170 / 245 Music / 255 / 265 / 570 / 745 / 945 / 955 / 965 / 970, MARQ 2, Venu 3 / 4, vivoactive 5 / 6.
+- Fixed: very wide values (e.g. a 17:29/km hiking lap pace) now shrink to fit their cell instead of spilling into the neighbouring one.
+- Grade to show power accepts up to 20 percent (was 15).
 
 ## [0.5.0] - 2026-07-04
-### Added
-- Terrain-adaptive display: on climbs the current and lap cells switch from pace to power (Auto by grade), and back to pace on the flat.
-- Average power is always shown (bottom row), alongside average pace, for hilly runs where average pace alone is misleading.
-### Changed
-- Current pace now defaults to Garmin's native current pace (set the window above 0 for a smoothed rolling average).
-- New "Pace / power" setting (Auto by grade / Always pace / Always power) and a configurable grade threshold, replacing the old time-based pace/power rotation.
-- The bottom row is now distance, duration, average power (cadence was removed to make room).
+- Terrain-adaptive display: on climbs the current and lap cells switch from pace to power and back on the flat (Auto by grade, threshold configurable), or force Always pace / Always power.
+- Average power is always shown in the bottom row (replacing cadence).
+- Current pace defaults to Garmin's native reading; set a window above 0 for a smoothed rolling average.
 
-## [0.4.2] - 2026-07-04
-### Changed
-- Bigger, bolder numbers: pace and heart rate use the large Bionic number font, sized to fit each cell.
-- Higher-contrast zone colours tuned for the sunlight (MIP) display, with a brighter palette on dark/AMOLED backgrounds.
-- Pace zone models: 80/20 Run shows its native zone names 1, 2, X, 3, Y, 4, 5 (the easy X and Y "avoid" zones in grey).
-- Heart-rate time-in-zone chart fills its height (busiest zone reaches the top); empty bars use their zone colour.
-- Third bottom field added: cadence, next to distance and time.
-- Tidier layout: shorter P / L / A pace labels, more spacing between fields, and distance without the unit clutter.
-- Default current-pace averaging window is 12 seconds for a more responsive readout.
-
-## [0.4.1] - 2026-07-02
-### Changed
-- Bigger, bolder numbers: pace and heart rate now use the large Bionic number font, sized to fit.
-- Higher-contrast zone colours tuned for the sunlight (MIP) display, with a brighter palette on dark/AMOLED backgrounds.
-- The 80/20 model shows its native zone names 1, 2, X, 3, Y, 4, 5, with the easy X and Y "avoid" zones in grey.
-- The heart-rate time-in-zone chart fills its height (the busiest zone reaches the top) in a taller band, and empty bars use their zone colour.
-- Value rows sit higher with more spacing so the larger numbers do not crowd each other.
-- Default current-pace averaging window is now 12 seconds (was 25) for a more responsive readout.
+## [0.4.2] - 2026-07-04 (includes 0.4.1)
+- Bigger, bolder numbers sized to fit each cell; higher-contrast zone colours for the sunlight (MIP) display and a brighter palette on dark/AMOLED backgrounds.
+- 80/20 zone names 1, 2, X, 3, Y, 4, 5 - the easy X and Y "avoid" zones in grey.
+- Time-in-zone chart fills its height; empty bars keep their zone colour.
+- Tidier layout: shorter labels, more spacing, cadence in the bottom row, default pace window 12 s.
 
 ## [0.3.0] - 2026-06-30
-### Added
-- Pace zone model setting: pick 80/20 Run, Joe Friel Run, CTS Run, MyProCoach Run, or Custom; preset zones derive from your threshold pace.
-- Maintained Store description (store-assets/listing.md) documenting every setting with examples.
-### Changed
-- The pace zone model dropdown replaces the separate 5/7 count and the colour-by-zone toggle; pick Off to disable pace colouring.
-- Custom boundaries are now an explicit choice and accept 4 (5 zones) or 6 (7 zones) values.
-- Corrected the 7-zone label: it is the 80/20 model, not intervals.icu.
-
-## [0.2.1] - 2026-06-30
-### Changed
-- Build tooling: both Store listings now build together from one shared version. No user-facing changes since 0.2.0.
+- Pace zone model setting: 80/20 Run, Joe Friel Run, CTS Run, MyProCoach Run, or Custom - presets derive zones from your threshold pace; Off disables pace colouring.
+- Custom boundaries accept 4 (5 zones) or 6 (7 zones) paces.
 
 ## [0.2.0] - 2026-06-30
-### Added
-- Pace zones derived from a threshold pace (intervals.icu style), with a choice of 5 or 7 zones.
-- Manual pace-zone boundary override (comma-separated paces) that takes precedence over the threshold.
-- Optional auto-toggle that alternates the pace and power triad every N seconds.
-### Changed
-- Colour pace by zone is now on by default.
-- Empty time-in-zone bars use the foreground colour instead of grey.
+- Pace zones derived from a threshold pace (5 or 7 zones) with a manual boundary override; optional timed pace/power rotation. (0.2.1: build tooling only.)
 
 ## [0.1.0] - 2026-06-29
-### Added
-- Full-screen running data field: pace/HR triads, distance, duration, clock.
-- HR (and optionally pace/power) coloured by zone with a fractional zone number.
-- Time-in-zone bar chart (share of total time).
-- Settings: rolling-pace window, pace/power toggle, pace-zone thresholds.
+- Initial running data field: current / lap / average pace and heart rate coloured by zone with fractional zone numbers, time-in-zone bar chart, distance, duration, and clock.

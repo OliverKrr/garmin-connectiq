@@ -45,6 +45,10 @@ do not reference sibling repositories by local path; link public repos by URL on
   description (uploaded alongside each version). Update it in the SAME change whenever settings,
   features, or defaults change — its per-setting docs and examples must match what ships. Treat a
   release with stale `listing.md` as incomplete. Keep it plain and free of `<`/`>` (the Store rejects them).
+- **Store text is hard-capped at 4000 chars** per field: the description (listing.md body) and the
+  rolling "What's New" (the whole released CHANGELOG history — old entries stay in the field).
+  `just validate-store-text` enforces both (runs automatically in `just package` / `publish-assist`);
+  when the history grows, compact old entries rather than raising the limit.
 - **Store screenshots** are real simulator captures — the repeatable procedure (scenario FIT,
   AppleScript capture pipeline, temporary zone/threshold patches, sim gotchas) is in
   `docs/store-screenshots.md`.

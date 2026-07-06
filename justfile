@@ -87,10 +87,16 @@ store-assets:
     rsvg-convert -w 1440 -h 720 store-assets/hero.svg -o store-assets/hero.png
     @echo "store-assets/{screen,cover,hero}.png regenerated"
 
+# Validate Store text: description (listing.md body) and the released CHANGELOG history
+# (the rolling "What's New") must each stay within the Store's 4000-char plain-text limit
+# and contain no < or >. Fails the build when violated.
+validate-store-text:
+    python3 tools/validate_store_text.py
+
 # Build BOTH signed Store packages (Public + Beta) at the current manifest version, so
 # the two listings never drift. The beta manifest is regenerated from manifest.xml each
 # time (same version; only the app id + name differ), then both are compiled.
-package:
+package: validate-store-text
     mkdir -p bin
     "{{sdk_bin}}/monkeyc" -e -r -o bin/run-cockpit.iq -f {{jungle}} -y {{key}}
     python3 -c "s=open('apps/run-cockpit/manifest.xml').read(); s=s.replace('{{public_app_id}}','{{beta_app_id}}').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-cockpit/manifest-beta.xml','w').write(s)"
@@ -105,7 +111,7 @@ bump VERSION:
 
 # Prepare the manual Store upload: print version, CHANGELOG notes, checklist, dashboard URL.
 # Does NOT upload or open a browser — publishing is a manual, outward-facing step.
-publish-assist:
+publish-assist: validate-store-text
     @echo "=== Connect IQ Store upload (MANUAL) ==="
     @grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml | grep -oE 'version="[0-9.]+"'
     @echo "--- What's New (top CHANGELOG entry) ---"
