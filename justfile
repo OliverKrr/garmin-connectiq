@@ -120,7 +120,7 @@ publish-assist: validate-store-text
     @echo "Beta   : upload bin/run-cockpit-beta.iq  -> live listing (private/unlisted)"
     @echo "Public : upload bin/run-cockpit.iq       -> public listing (once it exists)"
     @echo "Then   : paste What's New, add screenshots, submit (manual)."
-    @echo "Upload here (open in a browser): https://apps.garmin.com/en-US/developer/dashboard"
+    @echo "Upload here (open in a browser): https://apps-developer.garmin.com (new dashboard; old: https://apps.garmin.com/en-US/developer/dashboard)"
 
 # Bump + package a release, then remind to finish manually. e.g. `just release 0.2.0`
 release VERSION: (bump VERSION) package

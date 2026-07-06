@@ -8,8 +8,11 @@ Checked (both fail the build when violated):
                     field carries the rolling history and old entries stay in it.
 
 Rules: at most 4000 characters each (the Store rejects longer text only after the
-CAPTCHA, losing your edits), and no '<' or '>' anywhere (the Store rejects the whole
-text). A warning is printed above 3600 characters so the next release still has room.
+CAPTCHA, losing your edits); no '<' or '>' anywhere (the Store rejects the whole
+text); and plain printable ASCII only - non-ASCII characters (bullets, em-dashes,
+smart quotes, invisible whitespace) make the dashboard fail the submission with the
+misleading "trouble communicating with our servers" error. A warning is printed above
+3600 characters so the next release still has room.
 
 Run directly or via `just validate-store-text`; `just package` runs it automatically.
 """
@@ -35,6 +38,13 @@ def check(name: str, text: str) -> None:
     bad = sorted(set(re.findall(r"[<>]", text)))
     if bad:
         failures.append(f"{name}: contains forbidden character(s) {' '.join(bad)} — the Store rejects the whole text")
+    for lineno, line in enumerate(text.split("\n"), 1):
+        for col, ch in enumerate(line, 1):
+            if ord(ch) > 126 or ord(ch) < 32:
+                failures.append(
+                    f"{name}: non-ASCII U+{ord(ch):04X} {ch!r} at line {lineno} col {col} — "
+                    "the dashboard rejects these with a misleading 'trouble communicating with our servers' error"
+                )
 
 
 # 1. Store description
