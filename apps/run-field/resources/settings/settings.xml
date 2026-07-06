@@ -10,7 +10,7 @@
         </settingConfig>
     </setting>
     <setting propertyKey="@Properties.gradeThreshold" title="@Strings.SetGradeThreshold">
-        <settingConfig type="numeric" min="1" max="15" />
+        <settingConfig type="numeric" min="1" max="20" />
     </setting>
     <setting propertyKey="@Properties.paceZoneModel" title="@Strings.SetPaceZoneModel">
         <settingConfig type="list">

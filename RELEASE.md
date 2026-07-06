@@ -32,7 +32,8 @@ which only requires each new upload to a listing to be greater than that listing
    validation, paste the "What's New", add screenshots, set visibility, submit.
    - Beta: upload `bin/run-field-beta.iq` to the Beta listing (keep it private/unlisted).
    - Public: upload `bin/run-field.iq` to the Public listing (once it exists).
-4. On a `vX.Y.Z` git tag, CI also attaches the signed `.iq` to a GitHub Release for download.
+4. (Optional) Tag `vX.Y.Z` and attach the locally built `.iq` to a GitHub Release by hand —
+   CI cannot build (Garmin's MFA blocks headless SDK logins) and has no release job.
 
 > Claude prepares the `.iq` and notes; it does **not** upload. Never report an app as "published" —
 > hand the artifact to the human for the final submit.

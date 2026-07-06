@@ -7,7 +7,7 @@ A monorepo structured to host multiple apps and shared barrels.
 
 | App | Type | Status |
 |---|---|---|
-| [`apps/run-field`](apps/run-field) | Data field | Running data field — full-screen stats page (in development) |
+| [`apps/run-field`](apps/run-field) | Data field | Running data field — full-screen stats page |
 
 ## Layout
 
