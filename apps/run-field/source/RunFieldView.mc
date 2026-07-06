@@ -15,6 +15,18 @@ class RunFieldView extends WatchUi.DataField {
         Graphics.FONT_LARGE,
         Graphics.FONT_MEDIUM,
     ];
+    // Extension of VALUE_FONTS for the per-draw overflow shrink only: outlier values
+    // (e.g. a 17:29/km lap pace) may step below the layout-time minimum, but rows are
+    // never LAID OUT smaller than FONT_MEDIUM.
+    private const SHRINK_FONTS = [
+        Graphics.FONT_NUMBER_MEDIUM,
+        Graphics.FONT_NUMBER_MILD,
+        Graphics.FONT_LARGE,
+        Graphics.FONT_MEDIUM,
+        Graphics.FONT_SMALL,
+        Graphics.FONT_TINY,
+        Graphics.FONT_XTINY,
+    ];
     private var _fPace as Graphics.FontType = Graphics.FONT_TINY;
     private var _fHr as Graphics.FontType = Graphics.FONT_TINY;
     private var _fBottom as Graphics.FontType = Graphics.FONT_TINY;
@@ -139,15 +151,30 @@ class RunFieldView extends WatchUi.DataField {
     // Draw a small label (top) + value (centre) inside rect [x,y,w,h].
     private function _cell(dc as Graphics.Dc, r as Array, color as Graphics.ColorType, label as String, value as String, valueFont as Graphics.FontType) as Void {
         var cx = r[0] + r[2] / 2;
+        var vf = _fitValueFont(dc, value, r[2], valueFont);
         dc.setColor(color, Graphics.COLOR_TRANSPARENT);
         if (label.equals("")) {
             // No label (clock): vertically centre the value.
-            dc.drawText(cx, r[1] + r[3] / 2, valueFont, value, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
+            dc.drawText(cx, r[1] + r[3] / 2, vf, value, Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
         } else {
             dc.drawText(cx, r[1], Graphics.FONT_XTINY, label, Graphics.TEXT_JUSTIFY_CENTER);
             // Value sits below the label (top-justified) so full-height digits never overlap it.
-            dc.drawText(cx, r[1] + (r[3] * 42) / 100, valueFont, value, Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(cx, r[1] + (r[3] * 42) / 100, vf, value, Graphics.TEXT_JUSTIFY_CENTER);
         }
+    }
+
+    // The row font is sized in onLayout for typical values ("88:88"); an outlier such as a
+    // 17:29/km lap pace is wider and would spill into the neighbouring cell. Step down the
+    // candidate list per draw until this value fits the cell (stays at the smallest if none do).
+    private function _fitValueFont(dc as Graphics.Dc, value as String, cellW as Number, startFont as Graphics.FontType) as Graphics.FontType {
+        var i = SHRINK_FONTS.indexOf(startFont);
+        if (i < 0) {
+            return startFont; // not a candidate font (e.g. the clock) — leave as-is
+        }
+        while (i < SHRINK_FONTS.size() - 1 && dc.getTextWidthInPixels(value, SHRINK_FONTS[i]) > cellW - 2) {
+            i++;
+        }
+        return SHRINK_FONTS[i];
     }
 
     private function _hrStr(hr as Number or Null) as String {

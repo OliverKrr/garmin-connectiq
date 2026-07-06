@@ -5,6 +5,8 @@ versioning: [SemVer](https://semver.org/). The top released section's body is pa
 "What's New" text via `just publish-assist` — keep it plain text: the Store rejects `<` and `>`.
 
 ## [Unreleased]
+### Fixed
+- Very wide values (e.g. a 17:29/km hiking lap pace) no longer spill into the neighbouring cell: the value font shrinks per cell until the text fits.
 ### Changed
 - Grade to show power now accepts up to 20 percent in the settings UI (was 15; the code always clamped to 20).
 
