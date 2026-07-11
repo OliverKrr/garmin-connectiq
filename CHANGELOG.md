@@ -1,14 +1,24 @@
 # Changelog
 
 All notable changes to the Run Cockpit data field (formerly "Run Field"),
-versioned by [SemVer](https://semver.org/). The Store "What's New" field carries the whole
-released history below and allows at most **4000 plain-ASCII characters** — keep entries short,
-focused, ASCII-only, and free of `<` and `>`; compact old entries before adding new ones.
-`just validate-store-text` (run automatically by `just package` / `publish-assist`) regenerates
-the paste file `store-assets/whats-new.txt` from the history below and fails the build when it
-or the Store description exceeds the limit.
+versioned by [SemVer](https://semver.org/).
+
+This granular per-iteration log is the **Beta** listing's "What's New": `just validate-store-text`
+(run automatically by `just package` / `publish-assist`) regenerates the paste file
+`store-assets/whats-new.txt` from the history below. The **Public** listing shows a *folded* log
+instead — one hand-authored entry per public milestone in `store-assets/whats-new-public.txt`
+(not generated; edit it by hand when you cut a public release), so store visitors see feature
+themes rather than beta churn.
+
+Each Store "What's New" field carries the whole released history and allows at most
+**4000 plain-ASCII characters** — keep entries short, focused, ASCII-only, and free of `<` and `>`;
+compact old entries before adding new ones. `just validate-store-text` fails the build when either
+paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+
+## [1.0.0] - 2026-07-11
+- First stable release; published to the public Connect IQ Store. No functional changes since 0.6.0.
 
 ## [0.6.0] - 2026-07-06
 - Renamed to Run Cockpit (formerly Run Field).

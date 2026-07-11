@@ -49,11 +49,13 @@ do not reference sibling repositories by local path; link public repos by URL on
   the fold — keep the pitch + repo link first).
 - **Store text is hard-capped at 4000 plain-ASCII chars** per field (non-ASCII makes the dashboard
   fail with a misleading 'trouble communicating with our servers' error; `<`/`>` are rejected too).
-  Fields: the description, and the rolling "What's New" (the whole released CHANGELOG history —
-  old entries stay in the field). `just validate-store-text` enforces both and regenerates the
-  What's-New paste file `store-assets/whats-new.txt` from `CHANGELOG.md` (runs automatically in
-  `just package` / `publish-assist`); when the history grows, compact old entries in CHANGELOG.md
-  rather than raising the limit. Never edit `whats-new.txt` by hand — it is generated.
+  The two listings have independent version histories, so each has its own rolling "What's New":
+  - **Beta** — `store-assets/whats-new.txt`, generated from the full `CHANGELOG.md` history. Never
+    edit it by hand; when it grows, compact old CHANGELOG.md entries rather than raising the limit.
+  - **Public** — `store-assets/whats-new-public.txt`, **authored** (not generated): one folded entry
+    per public milestone, collapsing the betas since the last public release into feature themes.
+  `just validate-store-text` enforces the cap/ASCII/no-`<>` rule on the description and BOTH What's-New
+  files and regenerates the beta one (runs automatically in `just package` / `publish-assist`).
 - **Store screenshots** are real simulator captures — the repeatable procedure (scenario FIT,
   AppleScript capture pipeline, temporary zone/threshold patches, sim gotchas) is in
   `docs/store-screenshots.md`.

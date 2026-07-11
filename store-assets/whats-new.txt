@@ -1,3 +1,6 @@
+Version 1.0.0 - 2026-07-11
+- First stable release; published to the public Connect IQ Store. No functional changes since 0.6.0.
+
 Version 0.6.0 - 2026-07-06
 - Renamed to Run Cockpit (formerly Run Field).
 - 48 more supported watches: fenix 6 Pro / 7 / 8 / E, epix 2, Enduro 3, Forerunner 165 / 170 / 245 Music / 255 / 265 / 570 / 745 / 945 / 955 / 965 / 970, MARQ 2, Venu 3 / 4, vivoactive 5 / 6.

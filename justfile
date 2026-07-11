@@ -87,10 +87,10 @@ store-assets:
     rsvg-convert -w 1440 -h 720 store-assets/hero.svg -o store-assets/hero.png
     @echo "store-assets/{screen,cover,hero}.png regenerated"
 
-# Validate Store text and refresh the copy-paste files: store-assets/description.txt is
-# checked as-is; store-assets/whats-new.txt is regenerated from CHANGELOG.md's released
-# history. Both must stay within the Store's 4000-char plain-ASCII limit (no < or >).
-# Fails the build when violated.
+# Validate Store text and refresh the copy-paste files: store-assets/description.txt and
+# store-assets/whats-new-public.txt are checked as-is (authored); store-assets/whats-new.txt is
+# regenerated from CHANGELOG.md's released history. All three must stay within the Store's
+# 4000-char plain-ASCII limit (no < or >). Fails the build when violated.
 validate-store-text:
     python3 tools/validate_store_text.py
 
@@ -116,12 +116,13 @@ publish-assist: validate-store-text
     @echo "=== Connect IQ Store upload (MANUAL) ==="
     @grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml | grep -oE 'version="[0-9.]+"'
     @echo "--- Paste files (select all + copy + paste) ---"
-    @echo "Description : store-assets/description.txt"
-    @echo "What's New  : store-assets/whats-new.txt (regenerated from CHANGELOG.md just now)"
+    @echo "Description (both) : store-assets/description.txt"
+    @echo "What's New / Beta  : store-assets/whats-new.txt (regenerated from CHANGELOG.md just now)"
+    @echo "What's New / Public: store-assets/whats-new-public.txt (authored, folded per milestone)"
     @echo "--- Checklist ---"
-    @echo "Beta   : upload bin/run-cockpit-beta.iq  -> live listing (private/unlisted)"
-    @echo "Public : upload bin/run-cockpit.iq       -> public listing (once it exists)"
-    @echo "Then   : paste What's New, add screenshots, submit (manual)."
+    @echo "Beta   : upload bin/run-cockpit-beta.iq  -> live listing (private/unlisted); paste description + whats-new.txt"
+    @echo "Public : upload bin/run-cockpit.iq       -> public listing (once it exists); paste description + whats-new-public.txt"
+    @echo "Then   : add screenshots, set keywords/category, submit (manual)."
     @echo "Upload here (open in a browser): https://apps-developer.garmin.com (new dashboard; old: https://apps.garmin.com/en-US/developer/dashboard)"
 
 # Bump + package a release, then remind to finish manually. e.g. `just release 0.2.0`

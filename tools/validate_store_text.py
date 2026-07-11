@@ -2,12 +2,15 @@
 """Validate the Connect IQ Store text and refresh the copy-paste files.
 
 Sources and paste files:
-  1. Description  — store-assets/description.txt IS the paste file (pure content,
-                    select all + copy + paste into the dashboard).
-  2. What's New   — CHANGELOG.md is the source; this script REGENERATES
-                    store-assets/whats-new.txt from its whole released history
-                    (everything from the first "## [x.y.z]" heading down), because
-                    the Store field carries the rolling history. Paste that file.
+  1. Description       — store-assets/description.txt IS the paste file (pure content,
+                         select all + copy + paste into the dashboard); used by BOTH listings.
+  2. What's New (Beta) — CHANGELOG.md is the source; this script REGENERATES
+                         store-assets/whats-new.txt from its whole released history
+                         (everything from the first "## [x.y.z]" heading down), because
+                         the Store field carries the rolling history. Paste into the Beta listing.
+  3. What's New (Public) — store-assets/whats-new-public.txt IS an authored paste file (like the
+                         description): one folded entry per public milestone. NOT generated — edit
+                         it by hand at each public release. Paste into the Public listing.
 
 Checked for both (violations fail the build):
   - at most 4000 characters (the Store validates only after the CAPTCHA, losing edits),
@@ -50,10 +53,13 @@ def check(name: str, text: str) -> None:
                 )
 
 
-# 1. Description: the paste file itself.
+# 1. Description: the paste file itself (used by both listings).
 check("description (store-assets/description.txt)", open("store-assets/description.txt", encoding="utf-8").read())
 
-# 2. What's New: regenerate the paste file from the changelog's released history.
+# 2. What's New (Public): authored paste file, checked as-is (not regenerated).
+check("what's new / public (store-assets/whats-new-public.txt)", open("store-assets/whats-new-public.txt", encoding="utf-8").read())
+
+# 3. What's New (Beta): regenerate the paste file from the changelog's released history.
 changelog = open("CHANGELOG.md", encoding="utf-8").read()
 m = re.search(r"^## \[\d", changelog, flags=re.M)
 if not m:
@@ -66,7 +72,7 @@ else:
     with open("store-assets/whats-new.txt", "w", encoding="utf-8") as f:
         f.write(history)
     print("store-assets/whats-new.txt regenerated from CHANGELOG.md")
-    check("what's new (store-assets/whats-new.txt)", history)
+    check("what's new / beta (store-assets/whats-new.txt)", history)
 
 if failures:
     print("\nSTORE TEXT VALIDATION FAILED:")
