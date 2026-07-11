@@ -123,8 +123,49 @@ publish-assist: validate-store-text
     @echo "Beta   : upload bin/run-cockpit-beta.iq  -> live listing (private/unlisted); paste description + whats-new.txt"
     @echo "Public : upload bin/run-cockpit.iq       -> public listing (once it exists); paste description + whats-new-public.txt"
     @echo "Then   : add screenshots, set keywords/category, submit (manual)."
+    @echo "After  : once the upload is accepted -> just tag -> git push origin the tag"
+    @echo "         public milestone only        -> just github-release <version>  (pushes tag + GitHub Release + .iq)"
     @echo "Upload here (open in a browser): https://apps-developer.garmin.com (new dashboard; old: https://apps.garmin.com/en-US/developer/dashboard)"
+
+# Create an annotated, app-scoped git tag at the current manifest version (LOCAL only — push it
+# yourself after the Store upload is accepted). The tag is the only durable link from a Store version
+# to its exact source: CI cannot rebuild (Garmin MFA blocks headless SDK logins), so nothing else pins
+# the shipped binary. Tag EVERY shipped version (beta and public).
+tag:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    version=$(grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml | grep -oE 'version="[0-9.]+"' | grep -oE '[0-9.]+')
+    tag="run-cockpit-v${version}"
+    if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+        echo "tag ${tag} already exists — nothing to do"
+        exit 0
+    fi
+    git tag -a "${tag}" -m "Run Cockpit ${version}"
+    echo "created local tag ${tag}"
+    echo "after the Store upload is accepted, push it:  git push origin ${tag}"
+
+# Publish a GitHub Release for a PUBLIC milestone. OUTWARD-FACING: run this yourself, after the public
+# Store upload is accepted. Pushes the app-scoped tag, then creates the release with that version's
+# folded public note (its section of whats-new-public.txt) and the built .iq attached. Betas get no
+# GitHub Release. The .iq is the Store bundle (archival) — sideloaders build a per-device .prg instead.
+github-release VERSION:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    tag="run-cockpit-v{{VERSION}}"
+    test -f bin/run-cockpit.iq || { echo "bin/run-cockpit.iq missing — run 'just package' first"; exit 1; }
+    if ! git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
+        echo "local tag ${tag} missing — run 'just tag' first"; exit 1
+    fi
+    notes=$(awk -v t="Version {{VERSION}} " 'index($0,t)==1{p=1;print;next} p&&/^Version /{p=0} p{print}' store-assets/whats-new-public.txt)
+    if [ -z "${notes}" ]; then
+        echo "no 'Version {{VERSION}}' section in store-assets/whats-new-public.txt — add the milestone entry first"; exit 1
+    fi
+    git push origin "${tag}"
+    printf '%s\n' "${notes}" | gh release create "${tag}" bin/run-cockpit.iq --title "Run Cockpit {{VERSION}}" --notes-file -
+    echo "published GitHub Release ${tag}"
 
 # Bump + package a release, then remind to finish manually. e.g. `just release 0.2.0`
 release VERSION: (bump VERSION) package
-    @echo "Edit CHANGELOG.md for {{VERSION}}, then run: just publish-assist"
+    @echo "Next: edit CHANGELOG.md for {{VERSION}} (+ add the folded note to store-assets/whats-new-public.txt if this is a public milestone), commit, then:"
+    @echo "      just publish-assist  ->  upload in the dashboard  ->  just tag  ->  git push the tag"
+    @echo "      public milestone only, after the upload is accepted:  just github-release {{VERSION}}"

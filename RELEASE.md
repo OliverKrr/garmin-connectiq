@@ -67,8 +67,16 @@ The public listing is a first-time submit, not just an upload, so it needs more 
      paste `store-assets/description.txt` + `store-assets/whats-new.txt`.
    - Public: upload `bin/run-cockpit.iq` to the Public listing (once it exists);
      paste `store-assets/description.txt` + `store-assets/whats-new-public.txt`.
-4. (Optional) Tag `vX.Y.Z` and attach the locally built `.iq` to a GitHub Release by hand —
-   CI cannot build (Garmin's MFA blocks headless SDK logins) and has no release job.
+4. **Tag the source** — after the upload is accepted, `just tag` creates the annotated, app-scoped tag
+   `run-cockpit-vX.Y.Z` at the shipped commit (local only), then push it: `git push origin
+   run-cockpit-vX.Y.Z`. This is the only durable link from a Store version to its exact source, since CI
+   cannot rebuild the binary (Garmin's MFA blocks headless SDK logins). Tag **every** shipped version.
+5. **GitHub Release (public milestones only)** — `just github-release X.Y.Z` pushes the tag and
+   publishes a GitHub Release carrying that version's folded public note (its section of
+   `store-assets/whats-new-public.txt`) with the built `.iq` attached, so the repo the Store links to
+   shows a real release history. Betas get **no** GitHub Release. Note the `.iq` is the Store bundle
+   (archival) — sideloaders build a per-device `.prg` with `just build`, not from the `.iq`.
 
-> Claude prepares the `.iq` and notes; it does **not** upload. Never report an app as "published" —
-> hand the artifact to the human for the final submit.
+> Claude prepares the `.iq`, notes, and local tag; it does **not** upload, push, or publish a release.
+> Those outward-facing steps (`git push`, `just github-release`, the dashboard submit) are yours.
+> Never report an app as "published" — hand the artifact to the human for the final submit.
