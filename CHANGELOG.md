@@ -16,6 +16,12 @@ compact old entries before adding new ones. `just validate-store-text` fails the
 paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+- 34 more supported watches (83 in total): Forerunner 70, Venu X1, Venu 2 / 2S / 2 Plus,
+  Venu Sq 2 (+ Music), Instinct 3 AMOLED 45 / 50 mm, Instinct Crossover AMOLED,
+  D2 Air X10 / Mach 1 / Mach 2 / Mach 2 Pro, Descent G2 / Mk2 / Mk2 S / Mk3 43 mm / Mk3i 51 mm,
+  Approach S50 / S70 42 mm / S70 47 mm, fenix 5 Plus / 5S Plus / 5X / 5X Plus, MARQ gen 1 (8 models).
+- Rectangular screens (Venu Sq 2, Venu X1) now use the full screen width. The round-screen
+  layout rule left the clock band 22 px wide on a 320x360 display; round watches are unchanged.
 
 ## [1.0.0] - 2026-07-11
 - First stable release; published to the public Connect IQ Store. No functional changes since 0.6.0.

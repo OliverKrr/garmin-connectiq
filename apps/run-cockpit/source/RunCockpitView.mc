@@ -3,6 +3,7 @@ import Toybox.Graphics;
 import Toybox.Activity;
 import Toybox.UserProfile;
 import Toybox.Lang;
+import Toybox.System;
 
 // Full-screen running data field: grid of pace/HR/distance/duration + clock, with
 // HR coloured by zone and a time-in-zone bar strip along the bottom. Geometry is
@@ -77,7 +78,8 @@ class RunCockpitView extends WatchUi.DataField {
     }
 
     function onLayout(dc as Graphics.Dc) as Void {
-        _layout = new GridLayout(dc.getWidth(), dc.getHeight());
+        var rectangular = System.getDeviceSettings().screenShape == System.SCREEN_SHAPE_RECTANGLE;
+        _layout = new GridLayout(dc.getWidth(), dc.getHeight(), rectangular);
         var pc = _layout.paceCells();
         var hc = _layout.hrCells();
         var bc = _layout.bottomCells();
