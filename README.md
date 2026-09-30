@@ -8,9 +8,7 @@ coloured by training zone — **heart rate** with a fractional zone number, a li
 bar chart, plus distance, duration, average power, and the clock. On climbs it switches from pace to
 power automatically, and back on the flat.
 
-<!-- Public Connect IQ Store listing pending. Once it is live, replace the line below with the store link:
-     **[Get it on the Connect IQ Store](https://apps.garmin.com/apps/<public-app-id>)** -->
-_Coming to the Connect IQ Store._ · **[Settings & full feature docs](store-assets/description.txt)** · **[Changelog](CHANGELOG.md)**
+**[Get it on the Connect IQ Store](https://apps.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c)** · **[Settings & full feature docs](store-assets/description.txt)** · **[Changelog](CHANGELOG.md)**
 
 ## Features
 

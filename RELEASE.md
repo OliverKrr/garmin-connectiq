@@ -3,16 +3,17 @@
 Two Connect IQ Store listings share one codebase and **one version number**. `just release`
 builds both signed `.iq` files at that version, so the listings never drift.
 
-| Track | App id | Name | Visibility | Artifact | Status |
+| Track | App id | Name | Visibility | Artifact | Store page |
 |---|---|---|---|---|---|
-| Beta | `2aa9eff51b0642519e6214de6db52342` | Run Cockpit (Beta) | Private / unlisted | `bin/run-cockpit-beta.iq` | [dashboard](https://apps-developer.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c) |
-| Public | `5f713bad3e2544559f1ba1cff9e59aa3` | Run Cockpit | Public | `bin/run-cockpit.iq` | [dashboard](https://apps-developer.garmin.com/apps/5f713bad-3e25-4455-9f1b-a1cff9e59aa3) |
+| Beta | `2aa9eff51b0642519e6214de6db52342` | Run Cockpit (Beta) | Private / unlisted | `bin/run-cockpit-beta.iq` | none (private) |
+| Public | `5f713bad3e2544559f1ba1cff9e59aa3` | Run Cockpit | Public | `bin/run-cockpit.iq` | [apps.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c](https://apps.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c) |
 
 Both listings exist. An `.iq` only uploads to the listing registered with the app id it carries;
 otherwise the dashboard rejects it with "The app ID within the manifest file deviates from the one
-originally registered for this app." **The dashboard URL id is not always the app id:** it matches
-for Public, but the Beta listing's URL id is `6eef6c69…` while its registered app id is `2aa9eff5…`
-(tried and rejected 2026-09-30). Never change an app id to match a URL. `public_app_id` in `justfile`
+originally registered for this app." **A Garmin URL id is not the app id:** the public listing's
+store page is `6eef6c69…` while its app id is `5f713bad…`. Building the beta `.iq` with `6eef6c69…`
+got rejected on 2026-09-30. Never change an app id to match a URL; the registered id is the one the
+last accepted upload carried. Open either listing from https://apps-developer.garmin.com. `public_app_id` in `justfile`
 must match the `id="…"` in `apps/run-cockpit/manifest.xml`; `beta_app_id` lives only in `justfile`
 (`just package` writes it into the generated beta manifest).
 
