@@ -5,14 +5,16 @@ builds both signed `.iq` files at that version, so the listings never drift.
 
 | Track | App id | Name | Visibility | Artifact | Status |
 |---|---|---|---|---|---|
-| Beta | `6eef6c69805143f7b2e2db88d8d5d76c` | Run Cockpit (Beta) | Private / unlisted | `bin/run-cockpit-beta.iq` | [dashboard](https://apps-developer.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c) |
+| Beta | `2aa9eff51b0642519e6214de6db52342` | Run Cockpit (Beta) | Private / unlisted | `bin/run-cockpit-beta.iq` | [dashboard](https://apps-developer.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c) |
 | Public | `5f713bad3e2544559f1ba1cff9e59aa3` | Run Cockpit | Public | `bin/run-cockpit.iq` | [dashboard](https://apps-developer.garmin.com/apps/5f713bad-3e25-4455-9f1b-a1cff9e59aa3) |
 
-Both listings exist. The app id is the UUID in the listing's developer-dashboard URL, without the
-dashes; an `.iq` only uploads to the listing whose id it carries. `public_app_id` in `justfile` must
-match the `id="…"` in `apps/run-cockpit/manifest.xml`; `beta_app_id` lives only in `justfile`
-(`just package` writes it into the generated beta manifest). Until 2026-09-30 the justfile carried a
-stale beta id (`2aa9eff5…`) that belonged to no listing — check the dashboard URL before trusting an id.
+Both listings exist. An `.iq` only uploads to the listing registered with the app id it carries;
+otherwise the dashboard rejects it with "The app ID within the manifest file deviates from the one
+originally registered for this app." **The dashboard URL id is not always the app id:** it matches
+for Public, but the Beta listing's URL id is `6eef6c69…` while its registered app id is `2aa9eff5…`
+(tried and rejected 2026-09-30). Never change an app id to match a URL. `public_app_id` in `justfile`
+must match the `id="…"` in `apps/run-cockpit/manifest.xml`; `beta_app_id` lives only in `justfile`
+(`just package` writes it into the generated beta manifest).
 
 There is **no Garmin upload API** — the upload is a manual web step. The pipeline prepares
 everything; you click submit.

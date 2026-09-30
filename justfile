@@ -11,10 +11,10 @@ jungle  := "apps/run-cockpit/monkey.jungle"
 out     := "bin/run-cockpit.prg"
 
 # Connect IQ Store app ids (each binds an .iq to one listing; Garmin assigns them).
-# Both listings exist; the id is the one in the listing's developer-dashboard URL.
+# Both listings exist. The dashboard URL id is NOT always the app id (beta differs).
 # public_app_id must match the id in apps/run-cockpit/manifest.xml — change both together.
 public_app_id := "5f713bad3e2544559f1ba1cff9e59aa3"
-beta_app_id   := "6eef6c69805143f7b2e2db88d8d5d76c"
+beta_app_id   := "2aa9eff51b0642519e6214de6db52342"
 
 # List recipes
 default:
