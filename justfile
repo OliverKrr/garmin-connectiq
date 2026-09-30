@@ -82,10 +82,9 @@ clean:
 
 # Regenerate Store listing images (PNG) from the SVG sources in store-assets/
 store-assets:
-    rsvg-convert -w 280 -h 280 store-assets/screen.svg -o store-assets/screen.png
     rsvg-convert -w 500 -h 500 store-assets/cover.svg -o store-assets/cover.png
     rsvg-convert -w 1440 -h 720 store-assets/hero.svg -o store-assets/hero.png
-    @echo "store-assets/{screen,cover,hero}.png regenerated"
+    @echo "store-assets/{cover,hero}.png regenerated"
 
 # Validate Store text and refresh the copy-paste files: store-assets/description.txt and
 # store-assets/whats-new-public.txt are checked as-is (authored); store-assets/whats-new.txt is

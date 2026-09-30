@@ -90,5 +90,7 @@ just build                                 # rebuild clean
 
 - Screenshots: PNG at the device's native resolution is fine (280×280 for Enduro 3);
   up to 5 per listing.
+- The listing screenshots live in `store-assets/screenshots/` (on-watch captures from
+  real runs; the simulator pipeline above is the fallback when a scene cannot be caught on a run).
 - Also maintained in `store-assets/`: `cover.png` 500×500, `hero.png` 1440×720
   (regenerate from the SVGs with `just store-assets`).

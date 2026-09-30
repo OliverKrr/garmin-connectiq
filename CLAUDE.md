@@ -56,7 +56,8 @@ do not reference sibling repositories by local path; link public repos by URL on
     per public milestone, collapsing the betas since the last public release into feature themes.
   `just validate-store-text` enforces the cap/ASCII/no-`<>` rule on the description and BOTH What's-New
   files and regenerates the beta one (runs automatically in `just package` / `publish-assist`).
-- **Store screenshots** are real simulator captures — the repeatable procedure (scenario FIT,
+- **Store screenshots** live in `store-assets/screenshots/` (on-watch captures from real runs;
+  hot key -> `GARMIN/SCRNSHOT`, copied off via OpenMTP). The simulator fallback — procedure (scenario FIT,
   AppleScript capture pipeline, temporary zone/threshold patches, sim gotchas) is in
   `docs/store-screenshots.md`.
 - **Publish (manual):** `just publish-assist` prints the version + "What's New" + checklist +

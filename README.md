@@ -30,9 +30,11 @@ Full setup and per-setting documentation: [store-assets/description.txt](store-a
 
 ## Screenshots
 
-_On-watch captures from a real run are coming here._
-<!-- Add real screenshots: on the watch, Settings -> System -> Hot Keys -> Screenshot; files land in
-     GARMIN/SCRNSHOT. The banner above is an illustrative mockup, not a current screenshot. -->
+On-watch captures from real runs on an Enduro 3 (280x280, sunlight/MIP palette):
+
+![A surge: current pace and heart rate in zone 3](store-assets/screenshots/01-surge.png)
+![Easy start: current pace in the grey avoid zone, power coloured by zone](store-assets/screenshots/02-easy-start-power.png)
+![Steady run with heart rate just into zone 3](store-assets/screenshots/03-hr-zone3.png)
 
 ---
 
