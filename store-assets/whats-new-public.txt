@@ -1,2 +1,6 @@
+Version 1.1.0 - 2026-09-30
+- 34 more supported watches (83 in total), including Forerunner 70, Venu X1, Venu 2 and Venu Sq 2, Instinct 3 AMOLED, D2, Descent, Approach, fenix 5 Plus and MARQ gen 1.
+- Rectangular screens (Venu Sq 2, Venu X1) now use the full screen width.
+
 Version 1.0.0 - 2026-07-11
 - First public release: full-screen running data field with zone-coloured pace and power, a heart-rate time-in-zone chart, terrain-adaptive pace/power switching, and selectable pace-zone models (80/20 Run, Joe Friel, CTS, MyProCoach, or custom).
