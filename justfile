@@ -11,10 +11,10 @@ jungle  := "apps/run-cockpit/monkey.jungle"
 out     := "bin/run-cockpit.prg"
 
 # Connect IQ Store app ids (each binds an .iq to one listing; Garmin assigns them).
-# beta_app_id is the live listing. public_app_id is a placeholder until the public
-# listing is created — replace it here AND in apps/run-cockpit/manifest.xml together.
+# Both listings exist; the id is the one in the listing's developer-dashboard URL.
+# public_app_id must match the id in apps/run-cockpit/manifest.xml — change both together.
 public_app_id := "5f713bad3e2544559f1ba1cff9e59aa3"
-beta_app_id   := "2aa9eff51b0642519e6214de6db52342"
+beta_app_id   := "6eef6c69805143f7b2e2db88d8d5d76c"
 
 # List recipes
 default:
@@ -101,8 +101,8 @@ package: validate-store-text
     "{{sdk_bin}}/monkeyc" -e -r -o bin/run-cockpit.iq -f {{jungle}} -y {{key}}
     python3 -c "s=open('apps/run-cockpit/manifest.xml').read(); s=s.replace('{{public_app_id}}','{{beta_app_id}}').replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open('apps/run-cockpit/manifest-beta.xml','w').write(s)"
     "{{sdk_bin}}/monkeyc" -e -r -o bin/run-cockpit-beta.iq -f apps/run-cockpit/monkey-beta.jungle -y {{key}}
-    @echo "Public .iq -> bin/run-cockpit.iq       (app id {{public_app_id}} — pending public listing)"
-    @echo "Beta   .iq -> bin/run-cockpit-beta.iq  (app id {{beta_app_id}} — live listing)"
+    @echo "Public .iq -> bin/run-cockpit.iq       (app id {{public_app_id}} — public listing)"
+    @echo "Beta   .iq -> bin/run-cockpit-beta.iq  (app id {{beta_app_id}} — beta listing)"
 
 # Set the app version (semver), e.g. `just bump 0.2.0`
 bump VERSION:
@@ -119,8 +119,8 @@ publish-assist: validate-store-text
     @echo "What's New / Beta  : store-assets/whats-new.txt (regenerated from CHANGELOG.md just now)"
     @echo "What's New / Public: store-assets/whats-new-public.txt (authored, folded per milestone)"
     @echo "--- Checklist ---"
-    @echo "Beta   : upload bin/run-cockpit-beta.iq  -> live listing (private/unlisted); paste description + whats-new.txt"
-    @echo "Public : upload bin/run-cockpit.iq       -> public listing (once it exists); paste description + whats-new-public.txt"
+    @echo "Beta   : upload bin/run-cockpit-beta.iq  -> beta listing (private/unlisted); paste description + whats-new.txt"
+    @echo "Public : upload bin/run-cockpit.iq       -> public listing; paste description + whats-new-public.txt"
     @echo "Then   : add screenshots, set keywords/category, submit (manual)."
     @echo "After  : once the upload is accepted -> just tag -> git push origin the tag"
     @echo "         public milestone only        -> just github-release <version>  (pushes tag + GitHub Release + .iq)"

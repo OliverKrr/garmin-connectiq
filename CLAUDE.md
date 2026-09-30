@@ -26,8 +26,8 @@ never by local path.
 
 ## Releases and Store text
 
-`RELEASE.md` holds the release procedure, the two listings (Beta is live, Public is still a
-placeholder app id) and the tagging rules. Read it before cutting a version, touching an app id,
+`RELEASE.md` holds the release procedure, the two listings (Beta and Public, with their app ids
+and dashboard links) and the tagging rules. Read it before cutting a version, touching an app id,
 or editing anything in `store-assets/`.
 
 - Update `store-assets/description.txt` in the same change as any setting, feature or default it

@@ -5,14 +5,14 @@ builds both signed `.iq` files at that version, so the listings never drift.
 
 | Track | App id | Name | Visibility | Artifact | Status |
 |---|---|---|---|---|---|
-| Beta | `2aa9eff51b0642519e6214de6db52342` | Run Cockpit (Beta) | Private / unlisted | `bin/run-cockpit-beta.iq` | **live** |
-| Public | `5f713bad3e2544559f1ba1cff9e59aa3` | Run Cockpit | Public | `bin/run-cockpit.iq` | pending listing |
+| Beta | `6eef6c69805143f7b2e2db88d8d5d76c` | Run Cockpit (Beta) | Private / unlisted | `bin/run-cockpit-beta.iq` | [dashboard](https://apps-developer.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c) |
+| Public | `5f713bad3e2544559f1ba1cff9e59aa3` | Run Cockpit | Public | `bin/run-cockpit.iq` | [dashboard](https://apps-developer.garmin.com/apps/5f713bad-3e25-4455-9f1b-a1cff9e59aa3) |
 
-The **Beta** listing is the one currently registered in Garmin — `run-cockpit-beta.iq` is what
-uploads successfully. The **Public** app id is a placeholder: that listing does not exist yet, so
-`run-cockpit.iq` cannot be uploaded until it is created. To create it: add a new app in the Garmin
-developer dashboard, copy the app id Garmin assigns, and replace `public_app_id` in `justfile`
-**and** the `id="…"` in `apps/run-cockpit/manifest.xml` with it (keep the two in sync).
+Both listings exist. The app id is the UUID in the listing's developer-dashboard URL, without the
+dashes; an `.iq` only uploads to the listing whose id it carries. `public_app_id` in `justfile` must
+match the `id="…"` in `apps/run-cockpit/manifest.xml`; `beta_app_id` lives only in `justfile`
+(`just package` writes it into the generated beta manifest). Until 2026-09-30 the justfile carried a
+stale beta id (`2aa9eff5…`) that belonged to no listing — check the dashboard URL before trusting an id.
 
 There is **no Garmin upload API** — the upload is a manual web step. The pipeline prepares
 everything; you click submit.
@@ -41,7 +41,7 @@ Each listing shows its own "What's New", so they don't carry the same text:
 
 The public listing is a first-time submit, not just an upload, so it needs more than the beta:
 
-1. **Create the listing** in the developer dashboard and copy the app id Garmin assigns. Replace the
+1. *(done 2026-06-29)* **Create the listing** in the developer dashboard and copy the app id Garmin assigns. Replace the
    placeholder `public_app_id` in `justfile` **and** the `id="…"` in `apps/run-cockpit/manifest.xml`
    with it (keep the two in sync), then re-run `just package` so `bin/run-cockpit.iq` binds to it.
    Until this is done, `run-cockpit.iq` cannot be uploaded.
