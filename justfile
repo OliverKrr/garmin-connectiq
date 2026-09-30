@@ -72,7 +72,7 @@ test:
 
 # Copy the built .prg to a USB-mounted watch (override WATCH=/Volumes/GARMIN)
 sideload watch="/Volumes/GARMIN": build
-    test -d "{{watch}}/GARMIN/APPS" || { echo "No GARMIN/APPS at {{watch}} — see README (MTP/Android File Transfer)"; exit 1; }
+    test -d "{{watch}}/GARMIN/APPS" || { echo "No GARMIN/APPS at {{watch}} — MTP watches (e.g. Enduro 3) don't mount on macOS: copy {{out}} with OpenMTP (see README, Sideloading on macOS)"; exit 1; }
     cp {{out}} "{{watch}}/GARMIN/APPS/"
     @echo "Copied to {{watch}}/GARMIN/APPS/ — eject and restart the watch"
 
