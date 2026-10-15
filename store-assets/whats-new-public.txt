@@ -1,3 +1,6 @@
+Version 1.2.0 - 2026-10-15
+- 12 more supported watches (95 in total): the whole fenix 9 family (fenix 9, fenix 9 Pro incl. inReach, fenix 9 Pro Solar), D2 Delta, Descent Mk1 and Forerunner 645 Music.
+
 Version 1.1.0 - 2026-09-30
 - 34 more supported watches (83 in total), including Forerunner 70, Venu X1, Venu 2 and Venu Sq 2, Instinct 3 AMOLED, D2, Descent, Approach, fenix 5 Plus and MARQ gen 1.
 - Rectangular screens (Venu Sq 2, Venu X1) now use the full screen width.

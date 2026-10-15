@@ -16,6 +16,8 @@ compact old entries before adding new ones. `just validate-store-text` fails the
 paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+
+## [1.2.0] - 2026-10-15
 - 12 more supported watches (95 in total): fenix 9 43 / 47 mm, fenix 9 Pro 43 / 47 / 51 mm
   (incl. inReach), fenix 9 Pro Solar 47 / 51 mm, D2 Delta / Delta PX / Delta S, Descent Mk1,
   Forerunner 645 Music.
