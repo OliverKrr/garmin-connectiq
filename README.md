@@ -62,7 +62,9 @@ shared barrels.
     (Set as current) and the devices you target (at least one, e.g. **fēnix 9 Pro 51 mm**, the default) + simulator; or
   - CLI: [`connect-iq-sdk-manager`](https://github.com/lindell/connect-iq-sdk-manager-cli)
     (`login`, `sdk set <ver>`, `device download --manifest=apps/run-cockpit/manifest.xml`).
-- A developer signing key: `just key` (gitignored; never commit it).
+- A signing key, `developer_key.der` (gitignored; never commit it). Updates to an existing Store
+  listing must be signed with the key it was first uploaded with, so restore that one; `just key`
+  creates a key for a new app or your own fork.
 
 ### Everyday loop
 

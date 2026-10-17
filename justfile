@@ -6,8 +6,8 @@ ciq_cfg := env_var_or_default("CIQ_SDK_HOME", `cat "$HOME/Library/Application Su
 sdk_bin := ciq_cfg / "bin"
 devices := env_var_or_default("CIQ_DEVICES_DIR", `echo "$HOME/Library/Application Support/Garmin/ConnectIQ/Devices"`)
 device  := env_var_or_default("CIQ_DEVICE", "fenix9pro51mm")
-# Signing key (override with CIQ_KEY, e.g. a throwaway key for local builds on a second machine;
-# Store updates must be signed with the key the listing was first uploaded with)
+# Signing key: the release key the Store listings were first signed with (restore it, never
+# regenerate it). CIQ_KEY points at another key, e.g. a throwaway key inside the simulator VM.
 key     := env_var_or_default("CIQ_KEY", "developer_key.der")
 # Store packaging/release recipes below (package, bump, tag, ...) are Run Cockpit's only;
 # build/run/dev/test/sideload take the app dir name under apps/ (default run-cockpit).
@@ -28,9 +28,9 @@ doctor:
     @echo "SDK dir : {{ciq_cfg}}"
     @test -x "{{sdk_bin}}/monkeyc" && echo "monkeyc: ok" || { echo "monkeyc: MISSING — install the Connect IQ SDK"; exit 1; }
     @test -d "{{devices}}/{{device}}" && echo "device {{device}}: installed" || echo "device {{device}}: NOT installed — download it in the SDK Manager"
-    @test -f {{key}} && echo "developer key: ok" || echo "developer key: missing — run 'just key'"
+    @test -f {{key}} && echo "developer key: ok" || echo "developer key: missing — restore the release key from its backup (see CLAUDE.md); 'just key' only for a new app"
 
-# Generate a developer signing key (one-time, gitignored)
+# Generate a new signing key for a new app or contributor (gitignored; Store updates need the existing key)
 key:
     @if [ -f {{key}} ]; then echo "{{key}} already exists"; else \
         openssl genrsa -out developer_key.pem 4096 && \

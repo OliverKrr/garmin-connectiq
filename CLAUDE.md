@@ -12,12 +12,14 @@ local path.
 
 - `just --list` describes every recipe. `just doctor` checks that the SDK, the target device
   and the signing key are in place, so run it first when a build fails on a fresh machine.
-- `monkeyc` needs a per-developer signing key, `developer_key.der`. It is gitignored because
-  each contributor generates their own with `just key`.
+- `monkeyc` signs with `developer_key.der` (gitignored). The Store accepts a Run Cockpit update only
+  when it is signed with the key the listing was first uploaded with, so on a new machine restore
+  that release key from its backup and never regenerate it. `just key` is for a new contributor
+  or a new app.
 - The default device is `fenix9pro51mm` (fēnix 9 Pro 51 mm, which also covers the inReach model);
   override it with `CIQ_DEVICE=<id>`.
-- `CIQ_KEY` overrides the signing key path. On a second machine, build with a throwaway key there
-  and leave `developer_key.der` absent, because Store updates must carry the listing's original key.
+- `CIQ_KEY` points builds at another key, e.g. the throwaway key inside the simulator VM, so the
+  release key stays on the main machine.
 - The simulator GUI automation (`tools/sim_shot.sh`, `tools/store_shoot.sh`, any AppleScript that
   clicks or types into the simulator) sends real keystrokes to the logged-in desktop. Where the
   macOS VM is set up (`docs/simulator-vm.md`), use `just vm-test` and `just vm-shoot` instead:
