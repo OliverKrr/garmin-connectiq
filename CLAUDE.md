@@ -15,6 +15,9 @@ never by local path.
   override it with `CIQ_DEVICE=<id>`.
 - `CIQ_KEY` overrides the signing key path. On a second machine, build with a throwaway key there
   and leave `developer_key.der` absent, because Store updates must carry the listing's original key.
+- The simulator GUI automation (`tools/sim_shot.sh`, `tools/store_shoot.sh`, any AppleScript that
+  clicks or types into the simulator) sends real keystrokes to the logged-in desktop. Run it only
+  when nobody is working at the machine, and ask first; `just build` and `just test` need no input.
 - Only local builds compile. CI checks XML well-formedness and nothing else, because Garmin's MFA
   blocks the headless SDK-manager login that fetches device definitions. Verify a change with
   `just build` and `just test` (the simulator must be running) before calling it done.
