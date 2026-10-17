@@ -14,7 +14,7 @@
 #   tools/ciq-vm.sh start | stop      boot headless / shut down
 #
 # Everything the VM wrote to its bin/ comes back to bin/vm/, never bin/: the VM signs with a
-# throwaway key. CIQ_DEVICE is passed through.
+# throwaway key. CIQ_DEVICE and CIQ_FIT_K are passed through.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -27,7 +27,8 @@ KEY=$STATE/id_ed25519
 CIQ_HOME="Library/Application Support/Garmin/ConnectIQ" # under $HOME, on host and guest alike
 REPO=garmin-connectiq                                    # the guest's copy, under its $HOME
 GUEST_ENV="export PATH=/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:\$HOME/.local/bin:\$PATH"
-GUEST_ENV+=" CIQ_KEY=\$HOME/.ciq-vm-key.der${CIQ_DEVICE:+ CIQ_DEVICE=$CIQ_DEVICE};"
+GUEST_ENV+=" CIQ_KEY=\$HOME/.ciq-vm-key.der${CIQ_DEVICE:+ CIQ_DEVICE=$CIQ_DEVICE}"
+GUEST_ENV+="${CIQ_FIT_K:+ CIQ_FIT_K=$CIQ_FIT_K};"
 
 die() { echo "ciq-vm: $*" >&2; exit 1; }
 
@@ -126,6 +127,9 @@ sdk_bin() { echo "$(cat "$HOME/$CIQ_HOME/current-sdk.cfg")bin"; }
 # Start the simulator in the guest's logged-in desktop session if it is not running.
 sim_up() {
   pgrep -xq simulator && return 0
+  # The simulator's single-instance lock holds its PID. One killed by a VM shutdown leaves the
+  # lock behind, that PID belongs to another process after the reboot, and every launch quits.
+  rm -f "$HOME/Sim-$(id -un)"
   open -a "$(sdk_bin)/ConnectIQ.app"
   for _ in $(seq 30); do
     pgrep -xq simulator && { sleep 6; return 0; }
@@ -160,6 +164,9 @@ guest_shoot() {
   mkdir -p bin
   defaults write com.garmin.connectiq.simulator NSNavLastRootDirectory -string "$PWD/bin"
   just build
+  # The VM's simulator plays FIT records at wall speed, not a Mac host's 1.47 per second; the FIT
+  # and store_shoot.sh's capture positions both scale with it (docs/store-screenshots.md).
+  export CIQ_FIT_K=${CIQ_FIT_K:-1.0}
   uv run --with fit-tool python3 tools/gen_store_fit.py
   sim_up
   # monkeydo stays attached to the app; detach it so the SSH session can end

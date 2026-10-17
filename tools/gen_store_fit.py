@@ -17,8 +17,10 @@ Segments (threshold pace 4:00/km -> 80/20 boundaries 5:16 / 4:36 / 4:18 / 4:00 /
   descent   -4%, fast pace, HR drops
 
 Requires: pip install fit-tool.  Run: python3 tools/gen_store_fit.py
+(CIQ_FIT_K=<rate> for a simulator that plays at another rate, see K below.)
 """
 import math
+import os
 import sys
 
 try:
@@ -43,13 +45,14 @@ SEGMENTS = [
     (100, 232, -4.0, 215, 158, 152),  # descent: fast pace, HR eases
 ]
 
-# The simulator's FIT playback consumes records ~1.47x faster than wall time, while
-# the data field's timer ticks wall seconds (measured 1.455-1.47 across runs, SDK 9.2.0).
-# Current pace reads the record's speed field (unaffected), but elapsedDistance follows
-# the records — so lap/avg pace and DIST inflate by K unless compensated: shrink the
-# per-record distance/altitude deltas by K and stretch each segment's record count by K.
-# Wall-clock segment boundaries and displayed values then match the design table above.
-K = 1.47
+# The simulator's FIT playback consumes K records per wall second, while the data field's
+# timer ticks wall seconds: about 1.47 on a Mac (measured 1.455-1.47 across runs, SDK 9.2.0),
+# 1.0 in the macOS VM of docs/simulator-vm.md. Current pace reads the record's speed field
+# (unaffected), but elapsedDistance follows the records — so lap/avg pace and DIST inflate by K
+# unless compensated: shrink the per-record distance/altitude deltas by K and stretch each
+# segment's record count by K. Wall-clock segment boundaries and displayed values then match
+# the design table above. CIQ_FIT_K sets K; tools/store_shoot.sh reads the same variable.
+K = float(os.environ.get("CIQ_FIT_K", "1.47"))
 
 # Track position is cosmetic — elapsedDistance follows the records' distance field,
 # not the GPS geometry (verified: the K inflation was identical at lat 48 and lat 0).
@@ -120,4 +123,4 @@ builder.add(act)
 
 wall = int(t / K)
 builder.build().to_file(OUT)
-print(f"wrote {OUT}  ({t} records ≈ {wall} wall-s, {dist / 1000:.2f} km)")
+print(f"wrote {OUT}  ({t} records ≈ {wall} wall-s at K={K:g}, {dist / 1000:.2f} km)")

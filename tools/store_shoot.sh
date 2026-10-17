@@ -4,9 +4,15 @@
 # flat, climb, and descent moments. Run AFTER tools/sim_shot.sh's prerequisites
 # are in place (sim running, screenshot build loaded, FIT loaded and playing —
 # see docs/store-screenshots.md).
+#
+# The moments below are wall seconds of gen_store_fit.py's design table. The playback
+# position is the FIT's own time, which runs K times faster than wall time because the
+# FIT was stretched by K, so each moment is waited for at position K x wall. CIQ_FIT_K
+# must match the K the FIT was generated with (default 1.47, as in gen_store_fit.py).
 set -u
 cd "$(dirname "$0")/.."
 S=tools/sim_shot.sh
+K=${CIQ_FIT_K:-1.47}
 
 pos_s() { # playback position in seconds, or -1
   local p
@@ -39,6 +45,13 @@ wait_pos() { # wait until playback reaches $1 seconds
     if [ "$p" -ge "$1" ] 2>/dev/null; then break; fi
     sleep 5
   done
+}
+
+at() { # wait until design wall second $1, i.e. playback position K x $1
+  local p
+  p=$(awk -v w="$1" -v k="$K" 'BEGIN { printf "%d", w * k + 0.5 }')
+  echo "== $2 (wall ${1}s, position ${p}s) =="
+  wait_pos "$p"
 }
 
 # restart from the top: stop+discard the timer, rewind, start, play
@@ -83,7 +96,7 @@ tell application "System Events"
 end tell'
 }
 
-echo "== restart playback =="
+echo "== restart playback (K=$K) =="
 restart
 sleep 6
 p1=$(pos_s)
@@ -167,11 +180,9 @@ end tell')
   sleep 2
 done
 
-echo "== waiting for lap point 1 (180s) =="
-wait_pos 180
+at 180 "lap point 1"
 lap
-echo "== waiting for flat capture (295s) =="
-wait_pos 295
+at 295 "flat capture"
 "$S" shot s1-flat-white
 sleep 2
 "$S" bg Black
@@ -180,11 +191,9 @@ sleep 3
 sleep 2
 "$S" bg White
 
-echo "== waiting for climb lap (562s) =="
-wait_pos 562
+at 562 "climb lap"
 lap
-echo "== waiting for climb capture (640s) =="
-wait_pos 640
+at 640 "climb capture"
 "$S" shot s2-climb-white
 sleep 2
 "$S" bg Black
@@ -193,11 +202,9 @@ sleep 3
 sleep 2
 "$S" bg White
 
-echo "== waiting for descent lap (684s) =="
-wait_pos 684
+at 684 "descent lap"
 lap
-echo "== waiting for descent capture (740s) =="
-wait_pos 740
+at 740 "descent capture"
 "$S" shot s3-descent-white
 sleep 2
 "$S" bg Black

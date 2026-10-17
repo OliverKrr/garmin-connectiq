@@ -74,18 +74,23 @@ just build                                 # rebuild clean
   `elapsedDistance`/timer inconsistently, which makes lap/avg pace physically impossible
   (e.g. 2:47/km) — scrubbing is fine for building time-in-zone history quickly, but
   **final captures need an un-scrubbed pass**.
-- **FIT records are consumed ~1.47× faster than wall time** (measured 1.455–1.47, SDK
-  9.2.0) while the field's timer ticks wall seconds. Current pace reads the record's
+- **On a Mac, FIT records are consumed ~1.47× faster than wall time** (measured 1.455–1.47,
+  SDK 9.2.0) while the field's timer ticks wall seconds. Current pace reads the record's
   `speed` field (correct), but `elapsedDistance` follows the records — uncompensated,
-  DIST/lap/avg pace inflate by that factor. `gen_store_fit.py` compensates (constant
-  `K`): distance/altitude deltas ÷ K, record counts × K. If lap/avg pace look
-  superhuman in captures, re-measure K (two captures 30 s apart: ΔDIST/Δt vs the
-  design speed) and adjust.
-- **In the VM, FIT records play at about 1.0× wall time**, not 1.47× (`just vm-shoot`,
-  2026-10-17: TIME 10:46 at position 640 s). `gen_store_fit.py`'s `K` and the capture positions
-  in `store_shoot.sh` are tuned for the host's 1.47, so VM captures show DIST, lap and avg pace
-  about a third too slow. They serve layout and colour checks; Store-ready values from the VM
-  need `K` and those positions re-tuned for it.
+  DIST/lap/avg pace inflate by that factor. `gen_store_fit.py` compensates with `K`
+  (`CIQ_FIT_K`, default 1.47): distance/altitude deltas ÷ K, record counts × K. The playback
+  position `sim_shot.sh pos` reports is the FIT's own time, so it also runs at K× wall time,
+  and `store_shoot.sh` waits for position K × each design wall second. Give both the same
+  `CIQ_FIT_K`. If lap/avg pace look superhuman or sluggish in captures, re-measure K: the
+  position's advance over a minute of wall time while it plays (cross-check: two captures,
+  ΔDIST/ΔTIME against the design speed).
+- **In the VM, FIT records play at wall speed:** K = 1.00 (2026-10-17: position and DIST
+  both advanced 1.00× wall time over 10 min). `just vm-shoot` sets `CIQ_FIT_K=1.0`, so its
+  captures show the design values, lap pace 4:10/km on the flat. Should another VM measure
+  differently, pass its rate: `CIQ_FIT_K=<k> just vm-shoot`.
+- **The simulator quits silently at launch** when its single-instance lock `~/Sim-<user>`
+  holds the PID of a simulator killed before a reboot, a PID another process owns by now.
+  Delete the file; `tools/ciq-vm.sh` does so in the VM before each launch.
 - **The field timer (Start) runs on wall clock, independent of FIT playback.** Start
   them together and don't pause one without the other, or TIME and DIST drift apart.
 - The FIT playback ends silently at the file's last record; the timer keeps running.
