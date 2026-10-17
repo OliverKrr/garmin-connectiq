@@ -6,6 +6,7 @@
     <string id="PaceVsPowerAuto">Auto (by grade)</string>
     <string id="PaceVsPowerPace">Always pace</string>
     <string id="PaceVsPowerPower">Always power</string>
+    <string id="PaceVsPowerGap">Grade-adjusted pace (GAP)</string>
     <string id="SetGradeThreshold">Grade to show power (%)</string>
     <string id="SetPaceZonesCsv">Custom pace boundaries (s/km)</string>
     <string id="SetPaceZonesPrompt">Custom model: 4 (5 zones) or 6 (7 zones) paces, slow to fast, e.g. 360,320,280,250</string>

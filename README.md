@@ -15,6 +15,9 @@ power automatically, and back on the flat.
 - **Pace or power** as current / lap / average, coloured by training zone.
 - **Terrain-adaptive** — on climbs the current and lap cells switch from pace to power, and back to
   pace on the flat (or force pace / power).
+- **Grade-adjusted pace (GAP)** as current / lap / average, coloured by pace zones — an alternative
+  to power on hills. The curve is calibrated to Garmin's own lap GAP; `just gap-check <fit files>`
+  re-scores it against your runs.
 - **Heart rate** as current / lap / average, coloured by HR zone with a fractional zone number.
 - **Time-in-zone bar chart** — each bar grows with the time spent in that zone, drawn in that zone's colour.
 - **Distance, duration, and average power** always on screen (useful on hilly runs, where average
@@ -55,7 +58,7 @@ shared barrels.
 - macOS (or Linux/WSL) with [`just`](https://github.com/casey/just) and `openssl`.
 - The **Connect IQ SDK**, via either:
   - GUI: `brew install --cask connectiq-sdk-manager`, sign in, download the latest SDK
-    (Set as current) and the devices you target (at least one, e.g. **Enduro 3**) + simulator; or
+    (Set as current) and the devices you target (at least one, e.g. **fēnix 9 Pro 51 mm**, the default) + simulator; or
   - CLI: [`connect-iq-sdk-manager`](https://github.com/lindell/connect-iq-sdk-manager-cli)
     (`login`, `sdk set <ver>`, `device download --manifest=apps/run-cockpit/manifest.xml`).
 - A developer signing key: `just key` (gitignored; never commit it).

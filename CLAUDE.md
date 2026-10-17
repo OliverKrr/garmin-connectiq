@@ -11,7 +11,10 @@ never by local path.
   and the signing key are in place, so run it first when a build fails on a fresh machine.
 - `monkeyc` needs a per-developer signing key, `developer_key.der`. It is gitignored because
   each contributor generates their own with `just key`.
-- The default device is `enduro3`; override it with `CIQ_DEVICE=<id>`.
+- The default device is `fenix9pro51mm` (fēnix 9 Pro 51 mm, which also covers the inReach model);
+  override it with `CIQ_DEVICE=<id>`.
+- `CIQ_KEY` overrides the signing key path. On a second machine, build with a throwaway key there
+  and leave `developer_key.der` absent, because Store updates must carry the listing's original key.
 - Only local builds compile. CI checks XML well-formedness and nothing else, because Garmin's MFA
   blocks the headless SDK-manager login that fetches device definitions. Verify a change with
   `just build` and `just test` (the simulator must be running) before calling it done.

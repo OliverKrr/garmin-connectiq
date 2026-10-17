@@ -6,7 +6,8 @@ simulator's own **File → Save Screen Capture**, which writes the device screen
 resolution (280×280 on the Enduro 3) — pixel-perfect, no window chrome, and it needs
 no macOS screen-recording permission. All GUI automation is AppleScript (System Events),
 so the **calling terminal needs Accessibility access** (System Settings → Privacy &
-Security → Accessibility).
+Security → Accessibility). The recipes default to the fēnix 9 Pro 51 mm; prefix them with
+`CIQ_DEVICE=enduro3` to match the existing 280×280 Store set.
 
 ## Ingredients
 

@@ -6,7 +6,8 @@ import Toybox.Graphics;
 // Per-second state for the running data field. update(info) reads Activity.Info,
 // feeds the metric classes, and caches display-ready values that onUpdate() reads
 // without allocating. Session averages are native (Activity.Info); lap values are
-// accumulated here and reset on lap.
+// accumulated here and reset on lap. In GAP mode (paceVsPower 3) the pace values are
+// grade-adjusted: the same rolling/lap/average pipeline runs on flat-equivalent distance.
 class RunModel {
     private var _zones as HrZoneModel;
     private var _rollingPace as RollingPace;
@@ -34,6 +35,9 @@ class RunModel {
     private var _paceVsPower as Number = 0;
     private var _gradeThreshold as Number = 3;
     private var _powerActive as Boolean = false;
+    private var _gap as Boolean = false;
+    private var _flat as GapDistance = new GapDistance();
+    private var _lapStartFlat as Float = 0.0;
 
     function initialize(windowSec as Number, zones as HrZoneModel) {
         _zones = zones;
@@ -62,12 +66,24 @@ class RunModel {
             _grade.update(_distM, info.altitude);
         }
 
+        // GAP mode swaps distance for flat-equivalent distance and speed for speed * factor.
+        var f = _gap ? GapModel.factor(_grade.grade()) : 1.0;
         if (running && timer != null && dist != null) {
-            if (_windowSec > 0) { _rollingPace.add(timer, dist); _paceCur = _rollingPace.paceSecPerKm(); }
-            _paceLap = Pace.secPerKmFromDelta(dist - _lapStartDist, timer - _lapStartMs);
+            var d = dist;
+            var lapD = dist - _lapStartDist;
+            if (_gap) {
+                _flat.add(dist, f);
+                d = _flat.flatM();
+                lapD = d - _lapStartFlat;
+            }
+            if (_windowSec > 0) { _rollingPace.add(timer, d); _paceCur = _rollingPace.paceSecPerKm(); }
+            _paceLap = Pace.secPerKmFromDelta(lapD, timer - _lapStartMs);
         }
-        if (_windowSec == 0) { _paceCur = Pace.secPerKmFromSpeed(spd); }
-        _paceAvg = Pace.secPerKmFromSpeed(avgSpeed);
+        if (_windowSec == 0) {
+            if (spd != null) { spd = spd * f; }
+            _paceCur = Pace.secPerKmFromSpeed(spd);
+        }
+        _paceAvg = _gap ? Pace.secPerKmFromDelta(_flat.flatM(), _timerMs) : Pace.secPerKmFromSpeed(avgSpeed);
 
         if (hr != null) {
             _hrCur = hr;
@@ -96,6 +112,7 @@ class RunModel {
     function onLap() as Void {
         _lapStartMs = _timerMs;
         _lapStartDist = _distM;
+        _lapStartFlat = _flat.flatM();
         _lapHr.reset();
         _lapPower.reset();
     }
@@ -103,12 +120,18 @@ class RunModel {
     function onReset() as Void {
         _lapStartMs = 0;
         _lapStartDist = 0.0;
+        _lapStartFlat = 0.0;
+        _flat.reset();
         _rollingPace.reset();
         _lapHr.reset();
         _lapPower.reset();
         _tiz.reset();
         _grade.reset();
     }
+
+    function paceCurSec() as Float or Null { return _paceCur; }
+    function paceLapSec() as Float or Null { return _paceLap; }
+    function paceAvgSec() as Float or Null { return _paceAvg; }
 
     function paceCurStr() as String { return PaceFormat.paceSecPerKm(_paceCur); }
     function paceLapStr() as String { return PaceFormat.paceSecPerKm(_paceLap); }
@@ -140,14 +163,17 @@ class RunModel {
     function setPowerZones(z as HrZoneModel or Null) as Void { _powerZones = z; }
     function setPaceZones(z as PaceZoneModel or Null) as Void { _paceZones = z; }
 
-    function setPaceVsPower(m as Number) as Void { _paceVsPower = m; }
+    function setPaceVsPower(m as Number) as Void { _paceVsPower = m; _gap = (m == 3); }
     function setGradeThreshold(t as Number) as Void { _gradeThreshold = t; }
 
+    // True when the pace values are grade-adjusted (GAP mode).
+    function gapMode() as Boolean { return _gap; }
+
     // True when Current/Lap should show power: Always-power, or Auto + grade over threshold
-    // (hysteresis) and power is live. Always-pace / no power -> false.
+    // (hysteresis) and power is live. Always-pace / GAP / no power -> false.
     function showPowerForCurLap() as Boolean {
         if (_paceVsPower == 2) { return _powerCur != null; }
-        if (_paceVsPower == 1) { return false; }
+        if (_paceVsPower == 1 || _gap) { return false; }
         if (_powerCur == null) { return false; }
         _powerActive = PowerSwitch.active(_grade.grade(), _gradeThreshold.toFloat(), _powerActive);
         return _powerActive;

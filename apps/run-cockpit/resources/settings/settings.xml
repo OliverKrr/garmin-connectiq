@@ -7,6 +7,7 @@
             <listEntry value="0">@Strings.PaceVsPowerAuto</listEntry>
             <listEntry value="1">@Strings.PaceVsPowerPace</listEntry>
             <listEntry value="2">@Strings.PaceVsPowerPower</listEntry>
+            <listEntry value="3">@Strings.PaceVsPowerGap</listEntry>
         </settingConfig>
     </setting>
     <setting propertyKey="@Properties.gradeThreshold" title="@Strings.SetGradeThreshold">

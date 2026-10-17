@@ -5,8 +5,10 @@ set shell := ["bash", "-uc"]
 ciq_cfg := env_var_or_default("CIQ_SDK_HOME", `cat "$HOME/Library/Application Support/Garmin/ConnectIQ/current-sdk.cfg" 2>/dev/null || true`)
 sdk_bin := ciq_cfg / "bin"
 devices := env_var_or_default("CIQ_DEVICES_DIR", `echo "$HOME/Library/Application Support/Garmin/ConnectIQ/Devices"`)
-device  := env_var_or_default("CIQ_DEVICE", "enduro3")
-key     := "developer_key.der"
+device  := env_var_or_default("CIQ_DEVICE", "fenix9pro51mm")
+# Signing key (override with CIQ_KEY, e.g. a throwaway key for local builds on a second machine;
+# Store updates must be signed with the key the listing was first uploaded with)
+key     := env_var_or_default("CIQ_KEY", "developer_key.der")
 jungle  := "apps/run-cockpit/monkey.jungle"
 out     := "bin/run-cockpit.prg"
 
@@ -47,7 +49,7 @@ sim:
 run: build
     "{{sdk_bin}}/monkeydo" {{out}} {{device}}
 
-# Self-serve start: build, launch the sim if needed, load the field (CIQ_DEVICE, default enduro3); re-run to reload
+# Self-serve start: build, launch the sim if needed, load the field (CIQ_DEVICE, default fenix9pro51mm); re-run to reload
 dev: build
     ps -Ao comm | grep -qiE '(^|/)simulator$' || { "{{sdk_bin}}/connectiq" & sleep 9; }
     "{{sdk_bin}}/monkeydo" {{out}} {{device}}
@@ -62,6 +64,10 @@ kill:
 sim-fit:
     mkdir -p bin
     python3 tools/gen_sim_fit.py
+
+# Score GapModel against Garmin's lap GAP in real FIT files (Export Original); --fit re-tunes A/B
+gap-check +args:
+    uv run --script tools/gap_check.py {{args}}
 
 # Build with unit tests and run them in the simulator (launch it first with `just sim`)
 # Note: monkeydo -t always exits 1; we grep the output for PASSED to set the real exit code.
