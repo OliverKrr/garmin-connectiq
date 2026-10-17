@@ -4,7 +4,7 @@ import Toybox.Application;
 // Saved sessions, newest first, in Application.Storage under "sessions". Plain arrays keep the
 // stored form small and storage-safe:
 //   session = [startEpochSec, totalSec, minHr, avgHr, maxHr, maxTemp10, rounds, kcal,
-//              bodyBatteryStart, bodyBatteryEnd, stressStart]
+//              bodyBatteryStart, bodyBatteryEnd, stressStart, stressEnd]
 //   round   = [heatSec, minHr, avgHr, maxHr, maxTemp10, coolSec, hrr60, heatSecAboveEffHr,
 //              heatRmssd, coolAvgHr, coolMinHr, coolRmssd, coolTempDrop10]
 // Temperatures (…10) are °C x 10. Entries saved by 0.1.0 are shorter; read fields through at(),
@@ -27,6 +27,7 @@ module History {
     const S_BB0 = 8;
     const S_BB1 = 9;
     const S_STRESS = 10;
+    const S_STRESS1 = 11;
 
     // Round field indices.
     const R_HEAT = 0;
@@ -57,11 +58,11 @@ module History {
     }
 
     // A session entry from a finished model. extras = [kcal, bodyBatteryStart, bodyBatteryEnd,
-    // stressStart], each null when unknown.
+    // stressStart, stressEnd], each null when unknown.
     function entry(m as SessionModel, startEpoch as Number, extras as Array) as Array {
         var t = m.total;
         return [startEpoch, t.seconds, n(t.minHr), n(t.avgHr()), n(t.maxHr), t10(t.maxTemp), m.roundRows(),
-                n(extras[0]), n(extras[1]), n(extras[2]), n(extras[3])];
+                n(extras[0]), n(extras[1]), n(extras[2]), n(extras[3]), n(extras[4])];
     }
 
     // Prepend an entry, keeping at most MAX_SESSIONS.

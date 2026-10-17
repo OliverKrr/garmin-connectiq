@@ -36,17 +36,21 @@ the app starts.
 
 **Summary** after Save and in the history pages with UP/DOWN through Heat (session HR low / avg
 / high, peak temperature, total time, calories), Rest, and Recovery (Body Battery at start and
-end, stress before the session, total time above the effect HR, the HRV table).
-Garmin does not measure stress during an activity, so only the value from before is shown.
+end, stress before and, when recorded as Meditation, after the session, total time above the
+effect HR, the HRV table).
 
 **History.** The last 50 sessions are kept on the watch with their round tables, under 7- and
 30-day totals (sessions, rounds, heat minutes). MENU on a session deletes it.
 
-**Recording.** Sessions save as an "Other" activity named Sauna, not Meditation, so Garmin counts
-calories and the session stays out of stress and breathwork statistics. GPS is never switched on.
+**Recording.** Sessions save as an activity named Sauna, by default of type "Other": Garmin counts
+calories and the session stays out of stress and meditation statistics, but Garmin stops measuring
+stress during it, so the Recovery page shows only the stress value from before. The "Record as"
+setting switches to "Meditation" (what Sauna Timer uses): Garmin keeps measuring stress, the
+Recovery page shows stress before and after, but no calories are counted and the sauna's stress
+goes into the day's stress and Body Battery. GPS is never switched on.
 Developer fields, visible in Garmin Connect and exported in the FIT file: phase and watch
 temperature per second; round, phase, peak temperature, time above the effect HR and HRV per lap;
-rounds, heat time and Body Battery at start and end per session. Beat-to-beat intervals are read
+rounds, heat time, Body Battery and stress at start and end per session. Beat-to-beat intervals are read
 only while a session runs, since they keep the optical sensor in its high-rate mode.
 
 ## Settings (Garmin Connect app)
@@ -63,6 +67,7 @@ only while a session runs, since they keep the optical sensor in its high-rate m
 | Sauna effect heart rate | 120 bpm | Time at or above it is counted per heat round. 0 = off |
 | Alert: vibrate / beep / light up the screen | on / off / on | |
 | Save as activity in Garmin Connect | on | Off keeps only the on-watch history |
+| Record as | Other | Other: calories, no stress during the session. Meditation: stress measured, no calories |
 
 These map the old Sauna Timer settings: Session Time → heat target, Rest Time → cool-down target,
 Warn Temperature → watch temperature alert, with the new pre-warning 2 °C below it. There is no flashlight option because Connect IQ has

@@ -13,6 +13,8 @@ Sauna Cockpit, versioned by [SemVer](https://semver.org/). Sideload only so far;
   temperature drop).
 - HRV (RMSSD) per heat and rest phase from beat-to-beat intervals.
 - Summary pages Heat / Rest / Recovery; Recovery shows Body Battery at start and end and stress
-  before the session.
+  before the session, and after it when recorded as Meditation.
+- Record as setting: Other (default, calories counted) or Meditation (stress measured during the
+  session, as Sauna Timer does).
 - On-watch history of 50 sessions with 7- and 30-day totals; delete one or clear all.
 - Records as an "Other" activity named Sauna (calories counted, no GPS) with developer fields.

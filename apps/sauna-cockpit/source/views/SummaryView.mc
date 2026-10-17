@@ -64,8 +64,10 @@ class SummaryView extends WatchUi.View {
             var bb1 = History.at(_e, History.S_BB1);
             Theme.text(dc, cx, h * 30 / 100, f, "Body Battery " + Fmt.num(bb0) + " > " + Fmt.num(bb1), Theme.FG, center);
             var eff = Config.effectHr();
+            var s1 = History.at(_e, History.S_STRESS1);
             Theme.text(dc, cx, h * 37 / 100, f,
-                "stress " + Fmt.num(History.at(_e, History.S_STRESS)) + "   " + (eff > 0 ? eff + "+ bpm " + Fmt.clock(above) : ""), Theme.DIM, center);
+                "stress " + Fmt.num(History.at(_e, History.S_STRESS)) + (s1 == History.NONE ? "" : " > " + Fmt.num(s1)) + "   " +
+                (eff > 0 ? eff + "+ bpm " + Fmt.clock(above) : ""), Theme.DIM, center);
         }
         RoundsTable.draw(dc, kind, rows, pages[page][1], h * 44 / 100, SUMMARY_ROWS);
         Theme.text(dc, cx, h * 90 / 100, f, (page + 1) + "/" + pages.size(), Theme.DIM, center);

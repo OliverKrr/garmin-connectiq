@@ -41,6 +41,8 @@ class SessionController {
     private var _fLapHrv as FitContributor.Field or Null = null;
     private var _fBb0 as FitContributor.Field or Null = null;
     private var _fBb1 as FitContributor.Field or Null = null;
+    private var _fStress0 as FitContributor.Field or Null = null;
+    private var _fStress1 as FitContributor.Field or Null = null;
     // Body Battery and stress when the session started (null when the watch has none).
     private var _bb0 as Number or Null = null;
     private var _stress0 as Number or Null = null;
@@ -118,11 +120,11 @@ class SessionController {
         _bb0 = bodyBattery();
         _stress0 = stress();
         if (Config.recordActivity()) {
-            // "Other" rather than Meditation: Garmin then counts calories and keeps the
-            // session out of stress and breathwork statistics.
+            // "Other" by default: Garmin counts calories and keeps the session out of stress and
+            // meditation statistics. "Meditation" keeps the stress measurement running instead.
             _session = ActivityRecording.createSession({
                 :name => "Sauna",
-                :sport => Activity.SPORT_GENERIC,
+                :sport => Config.recordAsMeditation() ? Activity.SPORT_MEDITATION : Activity.SPORT_GENERIC,
                 :subSport => Activity.SUB_SPORT_GENERIC,
             });
             createFields();
@@ -149,6 +151,8 @@ class SessionController {
         _fLapHrv = s.createField("lap_rmssd", 8, FitContributor.DATA_TYPE_UINT16, {:mesgType => FitContributor.MESG_TYPE_LAP, :units => "ms"});
         _fBb0 = s.createField("body_battery_start", 9, FitContributor.DATA_TYPE_UINT8, {:mesgType => FitContributor.MESG_TYPE_SESSION});
         _fBb1 = s.createField("body_battery_end", 10, FitContributor.DATA_TYPE_UINT8, {:mesgType => FitContributor.MESG_TYPE_SESSION});
+        _fStress0 = s.createField("stress_start", 11, FitContributor.DATA_TYPE_UINT8, {:mesgType => FitContributor.MESG_TYPE_SESSION});
+        _fStress1 = s.createField("stress_end", 12, FitContributor.DATA_TYPE_UINT8, {:mesgType => FitContributor.MESG_TYPE_SESSION});
     }
 
     // Timer callbacks can arrive late; advance the model by every whole second that passed.
@@ -210,6 +214,9 @@ class SessionController {
     function save() as Array {
         var m = model as SessionModel;
         var bb1 = bodyBattery();
+        // Only a Meditation recording keeps stress measured; otherwise the newest sample is still
+        // the one from before the session and would read as "no change".
+        var stress1 = Config.recordAsMeditation() ? stress() : null;
         if (_session != null) {
             var s = _session as ActivityRecording.Session;
             if (s.isRecording()) { s.stop(); }
@@ -218,10 +225,12 @@ class SessionController {
             (_fHeat as FitContributor.Field).setData(m.heatSeconds());
             if (_bb0 != null) { (_fBb0 as FitContributor.Field).setData(_bb0); }
             if (bb1 != null) { (_fBb1 as FitContributor.Field).setData(bb1); }
+            if (_stress0 != null) { (_fStress0 as FitContributor.Field).setData(_stress0); }
+            if (stress1 != null) { (_fStress1 as FitContributor.Field).setData(stress1); }
             s.save();
         }
         var info = Activity.getActivityInfo();
-        var e = History.entry(m, _startEpoch, [info != null ? info.calories : null, _bb0, bb1, _stress0]);
+        var e = History.entry(m, _startEpoch, [info != null ? info.calories : null, _bb0, bb1, _stress0, stress1]);
         if (m.roundsDone() > 0) { History.add(e); }
         reset();
         return e;

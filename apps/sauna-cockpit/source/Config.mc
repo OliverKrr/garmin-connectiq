@@ -42,6 +42,10 @@ module Config {
     function alertLight() as Boolean { return _bool("alertLight", true); }
     function recordActivity() as Boolean { return _bool("recordActivity", true); }
 
+    // Activity type: false = Other (calories counted), true = Meditation (Garmin keeps measuring
+    // stress during the session, but counts no calories and books the sauna's stress into the day).
+    function recordAsMeditation() as Boolean { return _num("recordAs", 0) == 1; }
+
     function _clamp(v as Number, lo as Number, hi as Number) as Number {
         return v < lo ? lo : (v > hi ? hi : v);
     }

@@ -12,6 +12,11 @@
     <string id="SetAlertTone">Alert: beep</string>
     <string id="SetAlertLight">Alert: light up the screen</string>
     <string id="SetRecordActivity">Save as activity in Garmin Connect</string>
+    <string id="SetRecordAs">Record as</string>
+    <string id="RecordAsOther">Other: calories counted, no stress during the session</string>
+    <string id="RecordAsMeditation">Meditation: stress measured, no calories</string>
+    <string id="FitStress0">Stress start</string>
+    <string id="FitStress1">Stress end</string>
     <string id="FitPhase">Phase</string>
     <string id="FitWatchTemp">Watch temp</string>
     <string id="FitRound">Round</string>

@@ -35,4 +35,10 @@
     <setting propertyKey="@Properties.recordActivity" title="@Strings.SetRecordActivity">
         <settingConfig type="boolean" />
     </setting>
+    <setting propertyKey="@Properties.recordAs" title="@Strings.SetRecordAs">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.RecordAsOther</listEntry>
+            <listEntry value="1">@Strings.RecordAsMeditation</listEntry>
+        </settingConfig>
+    </setting>
 </settings>

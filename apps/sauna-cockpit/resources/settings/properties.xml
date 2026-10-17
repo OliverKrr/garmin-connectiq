@@ -11,4 +11,5 @@
     <property id="alertTone" type="boolean">false</property>
     <property id="alertLight" type="boolean">true</property>
     <property id="recordActivity" type="boolean">true</property>
+    <property id="recordAs" type="number">0</property>
 </properties>

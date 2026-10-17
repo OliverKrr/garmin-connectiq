@@ -150,10 +150,10 @@ function history_totalsSince(logger as Test.Logger) as Boolean {
 function history_entryFromModel(logger as Test.Logger) as Boolean {
     var m = new SessionModel(0, 0, 0, 0, 0, 0);
     tickN(m, 3, 120, 36.0);
-    var e = History.entry(m, 1234, [null, 62, 55, 28]);
+    var e = History.entry(m, 1234, [null, 62, 55, 28, null]);
     return e[History.S_START] == 1234 && e[History.S_TOTAL] == 3 && e[History.S_AVG] == 120
         && e[History.S_TEMP] == 360 && (e[History.S_ROUNDS] as Array).size() == 1 && e[History.S_KCAL] == History.NONE
-        && e[History.S_BB0] == 62 && e[History.S_BB1] == 55 && e[History.S_STRESS] == 28;
+        && e[History.S_BB0] == 62 && e[History.S_BB1] == 55 && e[History.S_STRESS] == 28 && e[History.S_STRESS1] == History.NONE;
 }
 
 (:test)
