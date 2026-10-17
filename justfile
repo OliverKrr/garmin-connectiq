@@ -9,8 +9,9 @@ device  := env_var_or_default("CIQ_DEVICE", "fenix9pro51mm")
 # Signing key (override with CIQ_KEY, e.g. a throwaway key for local builds on a second machine;
 # Store updates must be signed with the key the listing was first uploaded with)
 key     := env_var_or_default("CIQ_KEY", "developer_key.der")
+# Store packaging/release recipes below (package, bump, tag, ...) are Run Cockpit's only;
+# build/run/dev/test/sideload take the app dir name under apps/ (default run-cockpit).
 jungle  := "apps/run-cockpit/monkey.jungle"
-out     := "bin/run-cockpit.prg"
 
 # Connect IQ Store app ids (each binds an .iq to one listing; Garmin assigns them).
 # Both listings exist. A Store/dashboard URL id is NOT the app id (see RELEASE.md).
@@ -36,23 +37,23 @@ key:
         openssl pkcs8 -topk8 -inform PEM -outform DER -in developer_key.pem -out {{key}} -nocrypt && \
         echo "generated {{key}}"; fi
 
-# Compile the data field to a .prg for the target device
-build:
+# Compile an app (dir under apps/, default run-cockpit) to bin/<app>.prg for the target device
+build app="run-cockpit":
     mkdir -p bin
-    "{{sdk_bin}}/monkeyc" -d {{device}} -f {{jungle}} -o {{out}} -y {{key}} -w
+    "{{sdk_bin}}/monkeyc" -d {{device}} -f apps/{{app}}/monkey.jungle -o bin/{{app}}.prg -y {{key}} -w
 
 # Launch the Connect IQ simulator (GUI)
 sim:
     "{{sdk_bin}}/connectiq" &
 
-# Build, then push to the running simulator
-run: build
-    "{{sdk_bin}}/monkeydo" {{out}} {{device}}
+# Build an app, then push it to the running simulator
+run app="run-cockpit": (build app)
+    "{{sdk_bin}}/monkeydo" bin/{{app}}.prg {{device}}
 
-# Self-serve start: build, launch the sim if needed, load the field (CIQ_DEVICE, default fenix9pro51mm); re-run to reload
-dev: build
+# Self-serve start: build an app, launch the sim if needed, load it (CIQ_DEVICE, default fenix9pro51mm); re-run to reload
+dev app="run-cockpit": (build app)
     ps -Ao comm | grep -qiE '(^|/)simulator$' || { "{{sdk_bin}}/connectiq" & sleep 9; }
-    "{{sdk_bin}}/monkeydo" {{out}} {{device}}
+    "{{sdk_bin}}/monkeydo" bin/{{app}}.prg {{device}}
 
 # Clear crashed/stale simulator + monkeydo instances (they make run/dev/test hang); then `just dev`
 kill:
@@ -69,17 +70,17 @@ sim-fit:
 gap-check +args:
     uv run --script tools/gap_check.py {{args}}
 
-# Build with unit tests and run them in the simulator (launch it first with `just sim`)
-# Note: monkeydo -t always exits 1; we grep the output for PASSED to set the real exit code.
-test:
+# monkeydo -t always exits 1; the recipe greps the output for PASSED to set the real exit code.
+# Build an app with unit tests and run them in the simulator (launch it first with `just sim`)
+test app="run-cockpit":
     mkdir -p bin
-    "{{sdk_bin}}/monkeyc" -d {{device}} -f {{jungle}} -o bin/run-cockpit-test.prg -y {{key}} --unit-test -w
-    "{{sdk_bin}}/monkeydo" bin/run-cockpit-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
+    "{{sdk_bin}}/monkeyc" -d {{device}} -f apps/{{app}}/monkey.jungle -o bin/{{app}}-test.prg -y {{key}} --unit-test -w
+    "{{sdk_bin}}/monkeydo" bin/{{app}}-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
 
-# Copy the built .prg to a USB-mounted watch (override WATCH=/Volumes/GARMIN)
-sideload watch="/Volumes/GARMIN": build
-    test -d "{{watch}}/GARMIN/APPS" || { echo "No GARMIN/APPS at {{watch}} — MTP watches (e.g. Enduro 3) don't mount on macOS: copy {{out}} with OpenMTP (see README, Sideloading on macOS)"; exit 1; }
-    cp {{out}} "{{watch}}/GARMIN/APPS/"
+# Copy an app's built .prg to a USB-mounted watch, e.g. `just sideload sauna-timer`
+sideload app="run-cockpit" watch="/Volumes/GARMIN": (build app)
+    test -d "{{watch}}/GARMIN/APPS" || { echo "No GARMIN/APPS at {{watch}} — MTP watches (e.g. Enduro 3, fenix 9) don't mount on macOS: copy bin/{{app}}.prg with OpenMTP (see README, Sideloading on macOS)"; exit 1; }
+    cp bin/{{app}}.prg "{{watch}}/GARMIN/APPS/"
     @echo "Copied to {{watch}}/GARMIN/APPS/ — eject and restart the watch"
 
 # Remove build output

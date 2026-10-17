@@ -1,0 +1,9 @@
+<fitContributions>
+    <fitField id="0" displayInChart="true" sortOrder="0" precision="0" chartTitle="@Strings.FitPhase" dataLabel="@Strings.FitPhase" unitLabel="@Strings.UnitPhase" fillColor="#FF6A00" />
+    <fitField id="1" displayInChart="true" sortOrder="1" precision="1" chartTitle="@Strings.FitWatchTemp" dataLabel="@Strings.FitWatchTemp" unitLabel="@Strings.UnitC" fillColor="#FF2A2A" />
+    <fitField id="2" displayInActivityLaps="true" sortOrder="2" precision="0" dataLabel="@Strings.FitRound" unitLabel="@Strings.UnitCount" />
+    <fitField id="3" displayInActivityLaps="true" sortOrder="3" precision="0" dataLabel="@Strings.FitLapPhase" unitLabel="@Strings.UnitPhase" />
+    <fitField id="4" displayInActivityLaps="true" sortOrder="4" precision="1" dataLabel="@Strings.FitLapMaxTemp" unitLabel="@Strings.UnitC" />
+    <fitField id="5" displayInActivitySummary="true" sortOrder="5" precision="0" dataLabel="@Strings.FitRounds" unitLabel="@Strings.UnitCount" />
+    <fitField id="6" displayInActivitySummary="true" sortOrder="6" precision="0" dataLabel="@Strings.FitHeatTime" unitLabel="@Strings.UnitS" />
+</fitContributions>

@@ -47,6 +47,7 @@ shared barrels.
 | App | Type | Status |
 |---|---|---|
 | [`apps/run-cockpit`](apps/run-cockpit) | Data field | Full-screen running stats page |
+| [`apps/sauna-cockpit`](apps/sauna-cockpit) | Watch app | Sauna rounds: phase countdown, HR and watch-temperature alerts, round stats, session history (sideload only) |
 
 - `apps/` — Connect IQ applications (one dir per app)
 - `barrels/` — Shared Monkey C code (Connect IQ "barrels")
@@ -68,6 +69,7 @@ shared barrels.
 ```sh
 just doctor     # confirm SDK / device / key
 just build      # compile -> bin/run-cockpit.prg   (override device: CIQ_DEVICE=<id> just build)
+just build sauna-cockpit   # build/run/dev/test/sideload take the app dir name; default run-cockpit
 just sim        # launch the simulator (GUI)
 just run        # build + run in the simulator
 just sideload   # copy the .prg to a USB-mounted watch

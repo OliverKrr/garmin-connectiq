@@ -1,0 +1,32 @@
+<settings>
+    <setting propertyKey="@Properties.heatMin" title="@Strings.SetHeatMin">
+        <settingConfig type="numeric" min="1" max="60" />
+    </setting>
+    <setting propertyKey="@Properties.warnHeatEnd" title="@Strings.SetWarnHeatEnd">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.coolMin" title="@Strings.SetCoolMin">
+        <settingConfig type="numeric" min="1" max="60" />
+    </setting>
+    <setting propertyKey="@Properties.warnCoolEnd" title="@Strings.SetWarnCoolEnd">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.tempLimit" title="@Strings.SetTempLimit">
+        <settingConfig type="numeric" min="0" max="70" />
+    </setting>
+    <setting propertyKey="@Properties.hrLimit" title="@Strings.SetHrLimit">
+        <settingConfig type="numeric" min="0" max="230" />
+    </setting>
+    <setting propertyKey="@Properties.alertVibrate" title="@Strings.SetAlertVibrate">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.alertTone" title="@Strings.SetAlertTone">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.alertLight" title="@Strings.SetAlertLight">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.recordActivity" title="@Strings.SetRecordActivity">
+        <settingConfig type="boolean" />
+    </setting>
+</settings>
