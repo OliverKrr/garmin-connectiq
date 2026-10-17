@@ -3,9 +3,11 @@ import Toybox.Graphics;
 import Toybox.WatchUi;
 import Toybox.System;
 
+const LIVE_ROWS = 4;
+
 // The in-session screen. Page 0 is the cockpit: a bezel ring filling toward the phase target,
 // the phase countdown (or elapsed time without a target), HR in zone colour, the watch
-// temperature, and the phase's HR min/avg/max. Page 1 is the per-round table.
+// temperature, and the phase's HR min/avg/max. Pages 1 and 2 are the heat and rest tables.
 class SessionView extends WatchUi.View {
     var page as Number = 0;
     private var _c as SessionController;
@@ -23,7 +25,7 @@ class SessionView extends WatchUi.View {
         if (page == 0) {
             drawCockpit(dc, m);
         } else {
-            drawRounds(dc, m);
+            drawRounds(dc, m, page == 1 ? TABLE_HEAT : TABLE_REST);
         }
         drawBanner(dc);
     }
@@ -66,17 +68,27 @@ class SessionView extends WatchUi.View {
         Theme.text(dc, cx, h * 91 / 100, Graphics.FONT_XTINY, now.hour.format("%d") + ":" + now.min.format("%02d"), Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
-    private function drawRounds(dc as Graphics.Dc, m as SessionModel) as Void {
+    // Live round table (heat or rest), showing the newest LIVE_ROWS rounds.
+    private function drawRounds(dc as Graphics.Dc, m as SessionModel, kind as Number) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
-        Theme.text(dc, w / 2, h * 16 / 100, Graphics.FONT_SMALL, "ROUNDS", Theme.HEAT, Graphics.TEXT_JUSTIFY_CENTER);
+        var f = Graphics.FONT_XTINY;
+        var center = Graphics.TEXT_JUSTIFY_CENTER;
         var t = m.total;
-        Theme.text(dc, w / 2, h * 26 / 100, Graphics.FONT_XTINY,
-            "heat " + Fmt.clock(m.heatSeconds()) + "  total " + Fmt.clock(t.seconds), Theme.FG, Graphics.TEXT_JUSTIFY_CENTER);
-        Theme.text(dc, w / 2, h * 33 / 100, Graphics.FONT_XTINY,
-            "HR " + Fmt.num(History.n(t.minHr)) + " / " + Fmt.num(History.n(t.avgHr())) + " / " + Fmt.num(History.n(t.maxHr)),
-            Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
-        RoundsTable.draw(dc, m.roundRows(), 0, h * 42 / 100, 4);
+        if (kind == TABLE_HEAT) {
+            Theme.text(dc, w / 2, h * 16 / 100, Graphics.FONT_SMALL, "HEAT", Theme.HEAT, center);
+            Theme.text(dc, w / 2, h * 26 / 100, f, "heat " + Fmt.clock(m.heatSeconds()) + "  total " + Fmt.clock(t.seconds), Theme.FG, center);
+            Theme.text(dc, w / 2, h * 33 / 100, f,
+                "HR " + Fmt.num(History.n(t.minHr)) + " / " + Fmt.num(History.n(t.avgHr())) + " / " + Fmt.num(History.n(t.maxHr)),
+                Theme.DIM, center);
+        } else {
+            Theme.text(dc, w / 2, h * 16 / 100, Graphics.FONT_SMALL, "REST", Theme.COOL, center);
+            Theme.text(dc, w / 2, h * 26 / 100, f, "rest " + Fmt.clock(t.seconds - m.heatSeconds()), Theme.FG, center);
+            Theme.text(dc, w / 2, h * 33 / 100, f, "HRV now " + Fmt.num(History.n(m.current.rmssd())) + " ms", Theme.DIM, center);
+        }
+        var rows = m.roundRows();
+        var first = rows.size() > LIVE_ROWS ? rows.size() - LIVE_ROWS : 0;
+        RoundsTable.draw(dc, kind, rows, first, h * 42 / 100, LIVE_ROWS);
     }
 
     private function drawBanner(dc as Graphics.Dc) as Void {
@@ -91,7 +103,7 @@ class SessionView extends WatchUi.View {
     }
 }
 
-// START pauses (opening Resume / Save / Discard), BACK switches phase, UP/DOWN flip pages.
+// START pauses (opening Resume / Save / Discard), BACK switches phase, UP/DOWN cycle the pages.
 // Touch is ignored: wet fingers and towels in the sauna would otherwise switch phases.
 class SessionDelegate extends WatchUi.BehaviorDelegate {
     private var _c as SessionController;
@@ -119,11 +131,11 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
 
-    function onNextPage() as Boolean { return flip(); }
-    function onPreviousPage() as Boolean { return flip(); }
+    function onNextPage() as Boolean { return flip(1); }
+    function onPreviousPage() as Boolean { return flip(-1); }
 
-    private function flip() as Boolean {
-        _v.page = 1 - _v.page;
+    private function flip(d as Number) as Boolean {
+        _v.page = (_v.page + d + 3) % 3;
         WatchUi.requestUpdate();
         return true;
     }

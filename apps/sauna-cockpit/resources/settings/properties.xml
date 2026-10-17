@@ -6,6 +6,7 @@
     <property id="tempWarn" type="number">42</property>
     <property id="tempLimit" type="number">44</property>
     <property id="hrLimit" type="number">0</property>
+    <property id="effectHr" type="number">120</property>
     <property id="alertVibrate" type="boolean">true</property>
     <property id="alertTone" type="boolean">false</property>
     <property id="alertLight" type="boolean">true</property>

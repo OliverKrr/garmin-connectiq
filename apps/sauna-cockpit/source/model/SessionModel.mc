@@ -17,8 +17,8 @@ const EV_TEMP_WARN = 16;  // watch temperature reached the pre-warning (cover th
 class SessionModel {
     var phase as Number = PHASE_HEAT;
     var round as Number = 1;
-    var total as PhaseStats = new PhaseStats();
-    var current as PhaseStats = new PhaseStats();
+    var total as PhaseStats;
+    var current as PhaseStats;
     // Completed phases in order, each [phaseCode, PhaseStats].
     var done as Array<Array> = [] as Array<Array>;
     var lastHr as Number or Null = null;
@@ -28,10 +28,16 @@ class SessionModel {
     private var _tempAlarm as ThresholdAlarm;
     private var _tempWarn as ThresholdAlarm;
     private var _hrAlarm as ThresholdAlarm;
+    private var _effHr as Number;
 
     // Targets in seconds (0 = no target alert); limits in °C and bpm (0 = off). The temperature
-    // pre-warning fires below the limit; one at or above the limit is ignored.
-    function initialize(heatTargetSec as Number, coolTargetSec as Number, tempWarn as Number, tempLimit as Number, hrLimit as Number) {
+    // pre-warning fires below the limit; one at or above the limit is ignored. effHr is the
+    // "sauna effect" heart rate whose time-above each phase counts (0 = off).
+    function initialize(heatTargetSec as Number, coolTargetSec as Number, tempWarn as Number, tempLimit as Number,
+                        hrLimit as Number, effHr as Number) {
+        _effHr = effHr;
+        total = new PhaseStats(effHr);
+        current = new PhaseStats(effHr);
         _heatTarget = heatTargetSec;
         _coolTarget = coolTargetSec;
         // 1 °C re-arm: covering the watch drops the reading, and the next rise warns again.
@@ -57,11 +63,17 @@ class SessionModel {
         return ev;
     }
 
+    // Beat-to-beat intervals (ms) from the HR sensor, for HRV.
+    function addBeats(ivs as Array<Number>) as Void {
+        current.addBeats(ivs);
+        total.addBeats(ivs);
+    }
+
     // Lap button: close the current phase and start the other one. A phase left before its first
     // second is dropped, and the round number counts only heat phases that actually ran.
     function switchPhase() as Void {
         if (current.seconds > 0) { done.add([phase, current]); }
-        current = new PhaseStats();
+        current = new PhaseStats(_effHr);
         if (phase == PHASE_HEAT) {
             phase = PHASE_COOL;
         } else {
@@ -109,7 +121,8 @@ class SessionModel {
     }
 
     // Rounds as History rows (see History.mc), closing the running phase into them. A cool-down
-    // before the first heat phase is dropped; a session without heat yields no rows.
+    // before the first heat phase is dropped; a session without heat yields no rows. The rest
+    // columns come from the first cool-down after the heat phase; further ones only add time.
     function roundRows() as Array<Array<Number>> {
         var phases = done.slice(0, null);
         if (current.seconds > 0) { phases.add([phase, current]); }
@@ -120,10 +133,20 @@ class SessionModel {
             if (phases[i][0] == PHASE_HEAT) {
                 if (row != null) { rows.add(row); }
                 row = [s.seconds, History.n(s.minHr), History.n(s.avgHr()), History.n(s.maxHr),
-                       History.t10(s.maxTemp), 0, History.NONE] as Array<Number>;
+                       History.t10(s.maxTemp), 0, History.NONE, s.aboveSec, History.n(s.rmssd()),
+                       History.NONE, History.NONE, History.NONE, History.NONE] as Array<Number>;
             } else if (row != null) {
-                row[5] = row[5] + s.seconds;
-                if (row[6] == History.NONE && s.hrr60 != null) { row[6] = s.hrr60; }
+                var r = row as Array<Number>;
+                if (r[History.R_COOL] == 0) {
+                    r[History.R_HRR] = History.n(s.hrr60);
+                    r[History.R_CAVG] = History.n(s.avgHr());
+                    r[History.R_CMIN] = History.n(s.minHr);
+                    r[History.R_CHRV] = History.n(s.rmssd());
+                    if (s.firstTemp != null && s.lastTemp != null) {
+                        r[History.R_CDROP] = History.t10((s.firstTemp as Float) - (s.lastTemp as Float));
+                    }
+                }
+                r[History.R_COOL] = r[History.R_COOL] + s.seconds;
             }
         }
         if (row != null) { rows.add(row); }

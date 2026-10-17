@@ -2,44 +2,73 @@ import Toybox.Lang;
 import Toybox.Graphics;
 import Toybox.WatchUi;
 
-// One session's summary: totals, session HR min/avg/max, calories, peak watch temperature and
-// the round table. Shown right after Save (index -1) and from the history (index >= 0, where
-// MENU offers to delete it). UP/DOWN scroll the rounds when there are more than fit.
+// One session's summary, paged with UP/DOWN: the heat table (with session HR, peak temperature,
+// total time and calories above it), the rest table, then recovery (Body Battery before and
+// after, stress before, time above the effect HR, HRV per round). Tables longer than
+// SUMMARY_ROWS rounds take several pages. Shown right after Save (index -1) and from the history
+// (index >= 0, where MENU offers to delete it).
 const SUMMARY_ROWS = 4;
 
 class SummaryView extends WatchUi.View {
-    var first as Number = 0;
+    var page as Number = 0;
+    // Pages as [table kind, first row].
+    var pages as Array<Array<Number>> = [] as Array<Array<Number>>;
     private var _e as Array;
 
     function initialize(e as Array) {
         View.initialize();
         _e = e;
-    }
-
-    function rowCount() as Number {
-        return (_e[History.S_ROUNDS] as Array).size();
+        var n = (e[History.S_ROUNDS] as Array).size();
+        var kinds = [TABLE_HEAT, TABLE_REST, TABLE_HRV];
+        for (var k = 0; k < kinds.size(); k++) {
+            for (var first = 0; first == 0 || first < n; first += SUMMARY_ROWS) {
+                pages.add([kinds[k], first]);
+            }
+        }
     }
 
     function onUpdate(dc as Graphics.Dc) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
         var cx = w / 2;
+        var f = Graphics.FONT_XTINY;
+        var center = Graphics.TEXT_JUSTIFY_CENTER;
         dc.setColor(Theme.FG, Theme.BG);
         dc.clear();
         var rows = _e[History.S_ROUNDS] as Array<Array<Number>>;
         var heat = 0;
-        for (var i = 0; i < rows.size(); i++) { heat += rows[i][History.R_HEAT]; }
+        var rest = 0;
+        var above = 0;
+        for (var i = 0; i < rows.size(); i++) {
+            heat += rows[i][History.R_HEAT];
+            rest += History.at(rows[i], History.R_COOL);
+            var a = History.at(rows[i], History.R_EFF);
+            if (a > 0) { above += a; }
+        }
+        var kind = pages[page][0];
 
-        Theme.text(dc, cx, h * 13 / 100, Graphics.FONT_XTINY, Theme.date(_e[History.S_START] as Number), Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
+        Theme.text(dc, cx, h * 13 / 100, f, Theme.date(_e[History.S_START] as Number), Theme.DIM, center);
         Theme.text(dc, cx, h * 22 / 100, Graphics.FONT_SMALL,
-            rows.size() + (rows.size() == 1 ? " round" : " rounds") + ", " + Fmt.minutes(heat) + " heat", Theme.HEAT, Graphics.TEXT_JUSTIFY_CENTER);
-        Theme.text(dc, cx, h * 30 / 100, Graphics.FONT_XTINY,
-            "HR " + Fmt.num(_e[History.S_MIN] as Number) + " / " + Fmt.num(_e[History.S_AVG] as Number) + " / " + Fmt.num(_e[History.S_MAX] as Number) +
-            "   max " + Fmt.temp10(_e[History.S_TEMP] as Number), Theme.FG, Graphics.TEXT_JUSTIFY_CENTER);
-        var kcal = _e.size() > History.S_KCAL ? _e[History.S_KCAL] as Number : History.NONE;
-        Theme.text(dc, cx, h * 37 / 100, Graphics.FONT_XTINY,
-            "total " + Fmt.clock(_e[History.S_TOTAL] as Number) + "   " + Fmt.num(kcal) + " kcal", Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
-        RoundsTable.draw(dc, rows, first, h * 44 / 100, SUMMARY_ROWS);
+            rows.size() + (rows.size() == 1 ? " round" : " rounds") + ", " + Fmt.minutes(heat) + " heat", Theme.HEAT, center);
+        if (kind == TABLE_HEAT) {
+            Theme.text(dc, cx, h * 30 / 100, f,
+                "HR " + Fmt.num(History.at(_e, History.S_MIN)) + " / " + Fmt.num(History.at(_e, History.S_AVG)) + " / " +
+                Fmt.num(History.at(_e, History.S_MAX)) + "   max " + Fmt.temp10(History.at(_e, History.S_TEMP)), Theme.FG, center);
+            Theme.text(dc, cx, h * 37 / 100, f,
+                "total " + Fmt.clock(_e[History.S_TOTAL] as Number) + "   " + Fmt.num(History.at(_e, History.S_KCAL)) + " kcal", Theme.DIM, center);
+        } else if (kind == TABLE_REST) {
+            Theme.text(dc, cx, h * 30 / 100, f, "REST  " + Fmt.clock(rest), Theme.COOL, center);
+            Theme.text(dc, cx, h * 37 / 100, f, "HRR: HR drop in the first minute", Theme.DIM, center);
+        } else {
+            var bb0 = History.at(_e, History.S_BB0);
+            var bb1 = History.at(_e, History.S_BB1);
+            Theme.text(dc, cx, h * 30 / 100, f, "Body Battery " + Fmt.num(bb0) + " > " + Fmt.num(bb1), Theme.FG, center);
+            var eff = Config.effectHr();
+            Theme.text(dc, cx, h * 37 / 100, f,
+                "stress " + Fmt.num(History.at(_e, History.S_STRESS)) + "   " + (eff > 0 ? eff + "+ bpm " + Fmt.clock(above) : ""), Theme.DIM, center);
+        }
+        RoundsTable.draw(dc, kind, rows, pages[page][1], h * 44 / 100, SUMMARY_ROWS);
+        Theme.text(dc, cx, h * 90 / 100, f, (page + 1) + "/" + pages.size(), Theme.DIM, center);
     }
 }
 
@@ -53,14 +82,12 @@ class SummaryDelegate extends WatchUi.BehaviorDelegate {
         _index = index;
     }
 
-    function onNextPage() as Boolean { return scroll(1); }
-    function onPreviousPage() as Boolean { return scroll(-1); }
+    function onNextPage() as Boolean { return flip(1); }
+    function onPreviousPage() as Boolean { return flip(-1); }
 
-    private function scroll(d as Number) as Boolean {
-        var max = _v.rowCount() - SUMMARY_ROWS;
-        var f = _v.first + d;
-        _v.first = f > max ? max : f;
-        if (_v.first < 0) { _v.first = 0; }
+    private function flip(d as Number) as Boolean {
+        var n = _v.pages.size();
+        _v.page = (_v.page + d + n) % n;
         WatchUi.requestUpdate();
         return true;
     }

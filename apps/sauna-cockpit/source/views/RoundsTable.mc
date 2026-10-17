@@ -1,32 +1,53 @@
 import Toybox.Lang;
 import Toybox.Graphics;
 
-// Per-round table (History round rows): round, heat time, avg / max HR, peak watch temperature
-// and the HR drop in the first minute of the following cool-down. Shared by the live rounds
-// page, the post-session summary and the history detail.
+const TABLE_HEAT = 0;
+const TABLE_REST = 1;
+const TABLE_HRV = 2;
+
+// Per-round tables over History round rows, shared by the live session pages, the post-session
+// summary and the history detail:
+//   heat: round, heat time, avg / max HR, peak watch temperature, time at or above the effect HR
+//   rest: round, rest time, avg / min HR, HRR (HR drop in the first minute), watch-temperature drop
+//   hrv:  round, HRV (RMSSD, ms) in the heat phase and in the following rest
 module RoundsTable {
-    const HEADS = ["#", "heat", "avg", "max", "°C", "HRR"];
     // Widest expected cell per column, measured against its header to size the column.
-    const SAMPLES = ["9", "88:88", "888", "888", "88°", "-88"];
+    const SAMPLES = [
+        ["9", "88:88", "888", "888", "88°", "88:88"],
+        ["9", "88:88", "888", "888", "-88", "-88°"],
+        ["9", "888", "888"],
+    ];
+    // Share of the screen width each table spreads over.
+    const SPREAD = [80, 80, 60];
 
-    // Column right edges for a screen width and font, cached: fonts are fixed per device.
-    var _edges as Array<Number> or Null = null;
+    // Column right edges per table, cached: fonts and headers are fixed while the app runs.
+    var _edges as Array = [null, null, null];
 
-    // Right-aligned columns sized to their widest content, spread over 80 % of the width
+    function heads(kind as Number) as Array<String> {
+        if (kind == TABLE_HEAT) {
+            var e = Config.effectHr();
+            return ["#", "heat", "avg", "max", "°C", e > 0 ? e + "+" : "--"];
+        }
+        return kind == TABLE_REST ? ["#", "rest", "avg", "min", "HRR", "drop"] : ["", "HRV heat", "HRV rest"];
+    }
+
+    // Right-aligned columns sized to their widest content, spread over SPREAD % of the width
     // (rows sit near the middle, where a round screen is widest), then centred.
-    function edges(dc as Graphics.Dc, f as Graphics.FontType) as Array<Number> {
-        if (_edges != null) { return _edges as Array<Number>; }
+    function edges(dc as Graphics.Dc, f as Graphics.FontType, kind as Number) as Array<Number> {
+        if (_edges[kind] != null) { return _edges[kind] as Array<Number>; }
         var w = dc.getWidth();
-        var n = HEADS.size();
+        var hs = heads(kind);
+        var ss = SAMPLES[kind] as Array<String>;
+        var n = hs.size();
         var widths = new [n] as Array<Number>;
         var sum = 0;
         for (var c = 0; c < n; c++) {
-            var a = dc.getTextWidthInPixels(HEADS[c], f);
-            var b = dc.getTextWidthInPixels(SAMPLES[c], f);
+            var a = dc.getTextWidthInPixels(hs[c], f);
+            var b = dc.getTextWidthInPixels(ss[c], f);
             widths[c] = a > b ? a : b;
             sum += widths[c];
         }
-        var gap = (w * 80 / 100 - sum) / (n - 1);
+        var gap = (w * SPREAD[kind] / 100 - sum) / (n - 1);
         if (gap < 4) { gap = 4; }
         if (gap > w * 6 / 100) { gap = w * 6 / 100; }
         var x = (w - sum - gap * (n - 1)) / 2;
@@ -36,30 +57,44 @@ module RoundsTable {
             out[c] = x;
             x += gap;
         }
-        _edges = out;
+        _edges[kind] = out;
         return out;
     }
 
-    // Draws rows[first..] from y down, at most `maxRows`; returns the y below the last row.
-    function draw(dc as Graphics.Dc, rows as Array<Array<Number>>, first as Number, y as Number, maxRows as Number) as Number {
+    // Draws rows[first..] of one table from y down, at most `maxRows`; returns the y below it.
+    function draw(dc as Graphics.Dc, kind as Number, rows as Array<Array<Number>>, first as Number, y as Number, maxRows as Number) as Number {
         var w = dc.getWidth();
         var f = Graphics.FONT_XTINY;
         var lh = dc.getFontHeight(f);
-        var x = edges(dc, f);
+        var x = edges(dc, f, kind);
+        var hs = heads(kind);
         var right = Graphics.TEXT_JUSTIFY_RIGHT;
-        for (var c = 0; c < HEADS.size(); c++) {
-            Theme.text(dc, x[c], y, f, HEADS[c], Theme.DIM, right);
+        for (var c = 0; c < hs.size(); c++) {
+            Theme.text(dc, x[c], y, f, hs[c], Theme.DIM, right);
         }
         y += lh;
         var last = first + maxRows < rows.size() ? first + maxRows : rows.size();
         for (var i = first; i < last; i++) {
             var r = rows[i];
             Theme.text(dc, x[0], y, f, (i + 1).format("%d"), Theme.HEAT, right);
-            Theme.text(dc, x[1], y, f, Fmt.clock(r[History.R_HEAT]), Theme.FG, right);
-            Theme.text(dc, x[2], y, f, Fmt.num(r[History.R_AVG]), Theme.zoneColor(nn(r[History.R_AVG])), right);
-            Theme.text(dc, x[3], y, f, Fmt.num(r[History.R_MAX]), Theme.zoneColor(nn(r[History.R_MAX])), right);
-            Theme.text(dc, x[4], y, f, Fmt.temp10(r[History.R_TEMP]), Theme.FG, right);
-            Theme.text(dc, x[5], y, f, Fmt.num(r[History.R_HRR]), Theme.COOL, right);
+            if (kind == TABLE_HEAT) {
+                Theme.text(dc, x[1], y, f, Fmt.clock(r[History.R_HEAT]), Theme.FG, right);
+                hr(dc, x[2], y, f, History.at(r, History.R_AVG));
+                hr(dc, x[3], y, f, History.at(r, History.R_MAX));
+                Theme.text(dc, x[4], y, f, Fmt.temp10(History.at(r, History.R_TEMP)), Theme.FG, right);
+                var eff = History.at(r, History.R_EFF);
+                Theme.text(dc, x[5], y, f, eff == History.NONE ? "--" : Fmt.clock(eff), Theme.HEAT, right);
+            } else if (kind == TABLE_REST) {
+                var cool = History.at(r, History.R_COOL);
+                Theme.text(dc, x[1], y, f, cool <= 0 ? "--" : Fmt.clock(cool), Theme.FG, right);
+                hr(dc, x[2], y, f, History.at(r, History.R_CAVG));
+                hr(dc, x[3], y, f, History.at(r, History.R_CMIN));
+                Theme.text(dc, x[4], y, f, Fmt.num(History.at(r, History.R_HRR)), Theme.COOL, right);
+                Theme.text(dc, x[5], y, f, Fmt.temp10(History.at(r, History.R_CDROP)), Theme.COOL, right);
+            } else {
+                Theme.text(dc, x[1], y, f, Fmt.num(History.at(r, History.R_HRV)), Theme.HEAT, right);
+                Theme.text(dc, x[2], y, f, Fmt.num(History.at(r, History.R_CHRV)), Theme.COOL, right);
+            }
             y += lh;
         }
         if (rows.size() > maxRows) {
@@ -69,7 +104,8 @@ module RoundsTable {
         return y;
     }
 
-    function nn(v as Number) as Number or Null {
-        return v == History.NONE ? null : v;
+    // An HR cell in zone colour.
+    function hr(dc as Graphics.Dc, x as Number, y as Number, f as Graphics.FontType, v as Number) as Void {
+        Theme.text(dc, x, y, f, Fmt.num(v), Theme.zoneColor(v == History.NONE ? null : v), Graphics.TEXT_JUSTIFY_RIGHT);
     }
 }

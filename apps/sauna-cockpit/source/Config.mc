@@ -31,6 +31,12 @@ module Config {
         return v <= 0 ? 0 : _clamp(v, 80, 230);
     }
 
+    // "Sauna effect" heart rate in bpm: time at or above it is counted per heat phase; 0 = off.
+    function effectHr() as Number {
+        var v = _num("effectHr", 120);
+        return v <= 0 ? 0 : _clamp(v, 80, 200);
+    }
+
     function alertVibrate() as Boolean { return _bool("alertVibrate", true); }
     function alertTone() as Boolean { return _bool("alertTone", false); }
     function alertLight() as Boolean { return _bool("alertLight", true); }

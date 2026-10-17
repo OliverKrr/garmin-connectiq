@@ -20,6 +20,9 @@
     <setting propertyKey="@Properties.hrLimit" title="@Strings.SetHrLimit">
         <settingConfig type="numeric" min="0" max="230" />
     </setting>
+    <setting propertyKey="@Properties.effectHr" title="@Strings.SetEffectHr">
+        <settingConfig type="numeric" min="0" max="200" />
+    </setting>
     <setting propertyKey="@Properties.alertVibrate" title="@Strings.SetAlertVibrate">
         <settingConfig type="boolean" />
     </setting>

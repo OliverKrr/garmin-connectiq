@@ -8,7 +8,11 @@ Sauna Cockpit, versioned by [SemVer](https://semver.org/). Sideload only so far;
 - Live HR in zone colour with per-phase low / average / high, watch temperature, total time.
 - Alerts: end of heat / cool-down, a watch-temperature pre-warning (default 42 C, cover the
   watch) and alert (default 44 C, leave), heart rate; vibrate, beep, screen light.
-- Round table columns sized to their content, so they no longer overlap on the fenix 9 Pro.
-- Round table with heat time, avg / max HR, peak temperature and 60 s HR recovery.
+- Round tables with columns sized to their content: heat (time, avg / max HR, peak temperature,
+  time above the effect HR, default 120 bpm) and rest (time, avg / min HR, 60 s HR recovery,
+  temperature drop).
+- HRV (RMSSD) per heat and rest phase from beat-to-beat intervals.
+- Summary pages Heat / Rest / Recovery; Recovery shows Body Battery at start and end and stress
+  before the session.
 - On-watch history of 50 sessions with 7- and 30-day totals; delete one or clear all.
 - Records as an "Other" activity named Sauna (calories counted, no GPS) with developer fields.

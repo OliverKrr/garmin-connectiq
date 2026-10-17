@@ -3,9 +3,12 @@ import Toybox.Application;
 
 // Saved sessions, newest first, in Application.Storage under "sessions". Plain arrays keep the
 // stored form small and storage-safe:
-//   session = [startEpochSec, totalSec, minHr, avgHr, maxHr, maxTemp10, rounds, kcal]
-//   round   = [heatSec, minHr, avgHr, maxHr, maxTemp10, coolSec, hrr60]
-// maxTemp10 is °C x 10. NONE marks a missing value; it is not -1 because hrr60 and temperatures
+//   session = [startEpochSec, totalSec, minHr, avgHr, maxHr, maxTemp10, rounds, kcal,
+//              bodyBatteryStart, bodyBatteryEnd, stressStart]
+//   round   = [heatSec, minHr, avgHr, maxHr, maxTemp10, coolSec, hrr60, heatSecAboveEffHr,
+//              heatRmssd, coolAvgHr, coolMinHr, coolRmssd, coolTempDrop10]
+// Temperatures (…10) are °C x 10. Entries saved by 0.1.0 are shorter; read fields through at(),
+// which returns NONE past the end. NONE marks a missing value; it is not -1 because hrr60 and temperatures
 // can be negative. Everything but the Storage functions (load, save, add, removeAt) is pure.
 module History {
     const NONE = -32768;
@@ -21,6 +24,9 @@ module History {
     const S_TEMP = 5;
     const S_ROUNDS = 6;
     const S_KCAL = 7;
+    const S_BB0 = 8;
+    const S_BB1 = 9;
+    const S_STRESS = 10;
 
     // Round field indices.
     const R_HEAT = 0;
@@ -30,6 +36,17 @@ module History {
     const R_TEMP = 4;
     const R_COOL = 5;
     const R_HRR = 6;
+    const R_EFF = 7;
+    const R_HRV = 8;
+    const R_CAVG = 9;
+    const R_CMIN = 10;
+    const R_CHRV = 11;
+    const R_CDROP = 12;
+
+    // Field i of a session or round, NONE when an older, shorter entry lacks it.
+    function at(a as Array, i as Number) as Number {
+        return i < a.size() && a[i] instanceof Number ? a[i] as Number : NONE;
+    }
 
     function n(v as Number or Null) as Number {
         return v == null ? NONE : v;
@@ -39,10 +56,12 @@ module History {
         return v == null ? NONE : (v * 10.0).toNumber();
     }
 
-    // A session entry from a finished model.
-    function entry(m as SessionModel, startEpoch as Number, kcal as Number or Null) as Array {
+    // A session entry from a finished model. extras = [kcal, bodyBatteryStart, bodyBatteryEnd,
+    // stressStart], each null when unknown.
+    function entry(m as SessionModel, startEpoch as Number, extras as Array) as Array {
         var t = m.total;
-        return [startEpoch, t.seconds, n(t.minHr), n(t.avgHr()), n(t.maxHr), t10(t.maxTemp), m.roundRows(), n(kcal)];
+        return [startEpoch, t.seconds, n(t.minHr), n(t.avgHr()), n(t.maxHr), t10(t.maxTemp), m.roundRows(),
+                n(extras[0]), n(extras[1]), n(extras[2]), n(extras[3])];
     }
 
     // Prepend an entry, keeping at most MAX_SESSIONS.

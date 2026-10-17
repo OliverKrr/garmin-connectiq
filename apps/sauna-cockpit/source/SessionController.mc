@@ -3,6 +3,7 @@ import Toybox.Activity;
 import Toybox.ActivityRecording;
 import Toybox.Attention;
 import Toybox.FitContributor;
+import Toybox.Math;
 import Toybox.Sensor;
 import Toybox.SensorHistory;
 import Toybox.System;
@@ -36,6 +37,13 @@ class SessionController {
     private var _fLapTemp as FitContributor.Field or Null = null;
     private var _fRounds as FitContributor.Field or Null = null;
     private var _fHeat as FitContributor.Field or Null = null;
+    private var _fLapEff as FitContributor.Field or Null = null;
+    private var _fLapHrv as FitContributor.Field or Null = null;
+    private var _fBb0 as FitContributor.Field or Null = null;
+    private var _fBb1 as FitContributor.Field or Null = null;
+    // Body Battery and stress when the session started (null when the watch has none).
+    private var _bb0 as Number or Null = null;
+    private var _stress0 as Number or Null = null;
 
     function initialize() {
     }
@@ -44,6 +52,45 @@ class SessionController {
     function enableSensors() as Void {
         Sensor.setEnabledSensors([Sensor.SENSOR_HEARTRATE, Sensor.SENSOR_TEMPERATURE] as Array<Sensor.SensorType>);
         Sensor.enableSensorEvents(method(:onSensor));
+    }
+
+    // Beat-to-beat intervals for HRV, only while a session runs: the listener keeps the optical
+    // sensor in its high-rate mode, which costs battery.
+    private function enableBeats(on as Boolean) as Void {
+        if (!(Sensor has :registerSensorDataListener)) { return; }
+        if (on) {
+            try {
+                Sensor.registerSensorDataListener(method(:onSensorData), {
+                    :period => 1,
+                    :heartBeatIntervals => {:enabled => true},
+                });
+            } catch (e) { }
+        } else {
+            Sensor.unregisterSensorDataListener();
+        }
+    }
+
+    function onSensorData(data as Sensor.SensorData) as Void {
+        var hd = data.heartRateData;
+        if (state == STATE_RUNNING && model != null && hd != null && hd.heartBeatIntervals != null) {
+            (model as SessionModel).addBeats(hd.heartBeatIntervals as Array<Number>);
+        }
+    }
+
+    // Newest Body Battery and stress samples, rounded; null when the watch does not offer them.
+    function bodyBattery() as Number or Null {
+        if (!(Toybox has :SensorHistory) || !(SensorHistory has :getBodyBatteryHistory)) { return null; }
+        return newest(SensorHistory.getBodyBatteryHistory({:period => 1}));
+    }
+
+    function stress() as Number or Null {
+        if (!(Toybox has :SensorHistory) || !(SensorHistory has :getStressHistory)) { return null; }
+        return newest(SensorHistory.getStressHistory({:period => 1}));
+    }
+
+    private function newest(it as SensorHistory.SensorHistoryIterator or Null) as Number or Null {
+        var s = it != null ? it.next() : null;
+        return (s != null && s.data != null) ? Math.round(s.data as Numeric).toNumber() : null;
     }
 
     function onSensor(info as Sensor.Info) as Void {
@@ -65,8 +112,11 @@ class SessionController {
     }
 
     function start() as Void {
-        model = new SessionModel(Config.heatTargetSec(), Config.coolTargetSec(), Config.tempWarn(), Config.tempLimit(), Config.hrLimit());
+        model = new SessionModel(Config.heatTargetSec(), Config.coolTargetSec(), Config.tempWarn(), Config.tempLimit(),
+            Config.hrLimit(), Config.effectHr());
         _startEpoch = Time.now().value();
+        _bb0 = bodyBattery();
+        _stress0 = stress();
         if (Config.recordActivity()) {
             // "Other" rather than Meditation: Garmin then counts calories and keeps the
             // session out of stress and breathwork statistics.
@@ -82,6 +132,7 @@ class SessionController {
         _lastMs = System.getTimer();
         _timer = new Timer.Timer();
         _timer.start(method(:onTimer), 1000, true);
+        enableBeats(true);
         vibe(1);
     }
 
@@ -94,6 +145,10 @@ class SessionController {
         _fLapTemp = s.createField("lap_max_temp", 4, FitContributor.DATA_TYPE_FLOAT, {:mesgType => FitContributor.MESG_TYPE_LAP, :units => "C"});
         _fRounds = s.createField("rounds", 5, FitContributor.DATA_TYPE_UINT8, {:mesgType => FitContributor.MESG_TYPE_SESSION});
         _fHeat = s.createField("heat_time", 6, FitContributor.DATA_TYPE_UINT32, {:mesgType => FitContributor.MESG_TYPE_SESSION, :units => "s"});
+        _fLapEff = s.createField("lap_effect_time", 7, FitContributor.DATA_TYPE_UINT16, {:mesgType => FitContributor.MESG_TYPE_LAP, :units => "s"});
+        _fLapHrv = s.createField("lap_rmssd", 8, FitContributor.DATA_TYPE_UINT16, {:mesgType => FitContributor.MESG_TYPE_LAP, :units => "ms"});
+        _fBb0 = s.createField("body_battery_start", 9, FitContributor.DATA_TYPE_UINT8, {:mesgType => FitContributor.MESG_TYPE_SESSION});
+        _fBb1 = s.createField("body_battery_end", 10, FitContributor.DATA_TYPE_UINT8, {:mesgType => FitContributor.MESG_TYPE_SESSION});
     }
 
     // Timer callbacks can arrive late; advance the model by every whole second that passed.
@@ -132,6 +187,9 @@ class SessionController {
         (_fLapRound as FitContributor.Field).setData(m.round);
         (_fLapPhase as FitContributor.Field).setData(m.phase);
         if (m.current.maxTemp != null) { (_fLapTemp as FitContributor.Field).setData(m.current.maxTemp); }
+        (_fLapEff as FitContributor.Field).setData(m.current.aboveSec);
+        var hrv = m.current.rmssd();
+        if (hrv != null) { (_fLapHrv as FitContributor.Field).setData(hrv); }
     }
 
     function pause() as Void {
@@ -151,16 +209,19 @@ class SessionController {
     // Saves the recording and the history entry; returns the entry for the summary screen.
     function save() as Array {
         var m = model as SessionModel;
+        var bb1 = bodyBattery();
         if (_session != null) {
             var s = _session as ActivityRecording.Session;
             if (s.isRecording()) { s.stop(); }
             writeLapFields(m);
             (_fRounds as FitContributor.Field).setData(m.roundsDone());
             (_fHeat as FitContributor.Field).setData(m.heatSeconds());
+            if (_bb0 != null) { (_fBb0 as FitContributor.Field).setData(_bb0); }
+            if (bb1 != null) { (_fBb1 as FitContributor.Field).setData(bb1); }
             s.save();
         }
         var info = Activity.getActivityInfo();
-        var e = History.entry(m, _startEpoch, info != null ? info.calories : null);
+        var e = History.entry(m, _startEpoch, [info != null ? info.calories : null, _bb0, bb1, _stress0]);
         if (m.roundsDone() > 0) { History.add(e); }
         reset();
         return e;
@@ -176,6 +237,7 @@ class SessionController {
     }
 
     private function reset() as Void {
+        enableBeats(false);
         if (_timer != null) { (_timer as Timer.Timer).stop(); }
         _timer = null;
         _session = null;

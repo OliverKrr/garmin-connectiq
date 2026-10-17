@@ -11,7 +11,7 @@ support. Status: 0.1.0, sideload only, not on the Connect IQ Store.
 |---|---|---|
 | START | Start a session (heat phase, round 1) | Pause, then Resume / Save / Discard |
 | BACK | Exit | Switch phase: heat → cool-down → heat (next round). Each switch is a FIT lap |
-| UP / DOWN | Open the history | Flip between the cockpit and the round table |
+| UP / DOWN | Open the history | Cycle the pages: cockpit, heat table, rest table |
 | Touch | ignored | ignored, so wet fingers and towels cannot switch phases |
 
 **Cockpit page.** The bezel ring fills toward the phase target (orange heat, blue cool-down, red
@@ -19,17 +19,35 @@ once over). The big number counts down to the target, then counts up as `+m:ss` 
 target it shows elapsed time. Below it: heart rate in zone colour, the watch temperature (yellow
 from the pre-warning, red at the alert), the phase's HR low / average / high, total time and the clock.
 
-**Round table** (live page, post-session summary and history detail): heat time, average and
-maximum HR, peak watch temperature, and HRR, the heart-rate drop in the first 60 s of the
-following cool-down (a larger drop means faster recovery).
+Heart rate is coloured by your own zones: the general zones from your Garmin profile, read when
+the app starts.
+
+**Round tables** (live pages, post-session summary and history detail):
+
+- **Heat:** heat time, average and maximum HR, peak watch temperature, and the time at or above
+  the "sauna effect" heart rate (default 120 bpm, the range sauna studies describe).
+- **Rest** (the cool-down after each heat round): rest time, average and lowest HR, HRR (the HR
+  drop in the first 60 s; a larger drop means faster recovery) and how far the watch temperature
+  fell. The live rest page also shows the current phase's HRV.
+- **HRV** (summary only): RMSSD in ms per heat and rest phase, from the optical sensor's
+  beat-to-beat intervals. Heat typically pushes it down, and a quick rebound in the rest phase is
+  a good sign. Wrist HRV is noisy, so compare sessions with each other, not with chest-strap
+  values; a phase with too few clean beats shows `--`.
+
+**Summary** after Save and in the history pages with UP/DOWN through Heat (session HR low / avg
+/ high, peak temperature, total time, calories), Rest, and Recovery (Body Battery at start and
+end, stress before the session, total time above the effect HR, the HRV table).
+Garmin does not measure stress during an activity, so only the value from before is shown.
 
 **History.** The last 50 sessions are kept on the watch with their round tables, under 7- and
 30-day totals (sessions, rounds, heat minutes). MENU on a session deletes it.
 
 **Recording.** Sessions save as an "Other" activity named Sauna, not Meditation, so Garmin counts
 calories and the session stays out of stress and breathwork statistics. GPS is never switched on.
-Developer fields: phase and watch temperature per second; round, phase and peak temperature per
-lap; rounds and heat time per session.
+Developer fields, visible in Garmin Connect and exported in the FIT file: phase and watch
+temperature per second; round, phase, peak temperature, time above the effect HR and HRV per lap;
+rounds, heat time and Body Battery at start and end per session. Beat-to-beat intervals are read
+only while a session runs, since they keep the optical sensor in its high-rate mode.
 
 ## Settings (Garmin Connect app)
 
@@ -42,6 +60,7 @@ lap; rounds and heat time per session.
 | Watch temperature pre-warning | 42 °C | Two buzzes, "cover": shade the watch with your hand. Warns again after the reading drops 1 °C and climbs back. 0 = off |
 | Watch temperature alert | 44 °C | Three buzzes, "leave". 0 = off. See below |
 | Heart rate alert | 0 (off) | bpm |
+| Sauna effect heart rate | 120 bpm | Time at or above it is counted per heat round. 0 = off |
 | Alert: vibrate / beep / light up the screen | on / off / on | |
 | Save as activity in Garmin Connect | on | Off keeps only the on-watch history |
 
