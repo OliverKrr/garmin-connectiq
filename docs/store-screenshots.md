@@ -9,12 +9,18 @@ so the **calling terminal needs Accessibility access** (System Settings → Priv
 Security → Accessibility). The recipes default to the fēnix 9 Pro 51 mm; prefix them with
 `CIQ_DEVICE=enduro3` to match the existing 280×280 Store set.
 
+**Run it in the VM when anyone is using the machine.** `just vm-shoot` runs the whole procedure
+below (patches, build, FIT, arming, choreography) inside a local macOS VM
+([simulator-vm.md](simulator-vm.md)), so its keystrokes and save panels never reach the desktop
+and the patches never touch the working tree. The PNGs land in `bin/vm/`. Run the procedure by
+hand on the host only on a desktop nobody is using.
+
 ## Ingredients
 
 | Piece | Purpose |
 |---|---|
 | `tools/gen_store_fit.py` | Generates `bin/store-run.fit`: a ~13-min synthetic run (Z2 warm-up → zone-3 steady → 8 % climb → fast descent) whose paces/HR/power are designed for photogenic zone colours |
-| `tools/sim_shot.sh` | Low-level helpers: `scrub <s>`, `pos`, `bg White\|Black`, `shot <name>` |
+| `tools/sim_shot.sh` | Low-level helpers: `arm <fit>`, `scrub <s>`, `pos`, `bg White\|Black`, `shot <name>` |
 | `tools/store_shoot.sh` | The full choreography: one clean playback pass, Lap presses at segment boundaries, white+black captures at flat / climb / descent moments → `bin/s{1,2,3}-*.png` |
 | Two **temporary source patches** (below) | Fake the settings/zones the sim cannot provide |
 
@@ -47,9 +53,9 @@ uv run --with fit-tool python3 tools/gen_store_fit.py
 #    in the simulator, then re-run `just dev` (the sim persists old app settings,
 #    which override patched defaults!)
 
-# 3. arm playback (manual, ~20 s — or script it like tools/store_shoot.sh does):
-#    Simulation → Activity Data → Data Source: "FIT/GPX Playable File"
-#    → Load File → bin/store-run.fit → Start (timer) → ▶ (playback)
+# 3. arm playback: Simulation → Activity Data → Data Source "FIT/GPX Playable File"
+#    → Load File → bin/store-run.fit (store_shoot.sh then presses Start and ▶)
+tools/sim_shot.sh arm "$PWD/bin/store-run.fit"
 
 # 4. the choreography (runs ~13 min; don't type into the sim while it runs):
 tools/store_shoot.sh
@@ -75,6 +81,11 @@ just build                                 # rebuild clean
   `K`): distance/altitude deltas ÷ K, record counts × K. If lap/avg pace look
   superhuman in captures, re-measure K (two captures 30 s apart: ΔDIST/Δt vs the
   design speed) and adjust.
+- **In the VM, FIT records play at about 1.0× wall time**, not 1.47× (`just vm-shoot`,
+  2026-10-17: TIME 10:46 at position 640 s). `gen_store_fit.py`'s `K` and the capture positions
+  in `store_shoot.sh` are tuned for the host's 1.47, so VM captures show DIST, lap and avg pace
+  about a third too slow. They serve layout and colour checks; Store-ready values from the VM
+  need `K` and those positions re-tuned for it.
 - **The field timer (Start) runs on wall clock, independent of FIT playback.** Start
   them together and don't pause one without the other, or TIME and DIST drift apart.
 - The FIT playback ends silently at the file's last record; the timer keeps running.

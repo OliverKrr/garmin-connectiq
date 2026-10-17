@@ -1,9 +1,67 @@
 #!/usr/bin/env bash
 # Helpers to drive the Connect IQ simulator for Store screenshots (macOS).
-# Requires: simulator running with the field loaded, Activity Data dialog open,
-# a FIT loaded as "FIT/GPX Playable File", and Accessibility access for the
-# calling terminal. See docs/store-screenshots.md for the full procedure.
+# Requires: simulator running with the field loaded, Accessibility access for the
+# calling terminal, and (for scrub/pos) a FIT loaded with `arm`. See
+# docs/store-screenshots.md for the full procedure.
 set -u
+
+# Open Simulation > Activity Data, choose "FIT/GPX Playable File" and load the FIT
+# at the absolute path $1 (through the Open panel's Go to Folder field).
+arm() {
+  osascript - "$1" <<'EOF'
+-- One step on the Activity Data dialog. Window indexes shift whenever focus moves or
+-- a menu opens, so every step finds the dialog again.
+on dialogStep(what)
+  tell application "System Events" to tell process "simulator"
+    repeat with w in windows
+      try
+        if exists button "Load File" of w then
+          if what is "find" then return true
+          if what is "source" then
+            if value of pop up button 1 of w is "FIT/GPX Playable File" then return false
+            click pop up button 1 of w
+          else if what is "pick" then
+            click menu item "FIT/GPX Playable File" of menu 1 of pop up button 1 of w
+          else if what is "load" then
+            click button "Load File" of w
+          end if
+          return true
+        end if
+      end try
+    end repeat
+  end tell
+  if what is "find" then return false
+  error "Activity Data dialog not found (" & what & ")"
+end dialogStep
+
+on run argv
+  tell application "System Events" to tell process "simulator"
+    set frontmost to true
+    delay 1
+    if not my dialogStep("find") then
+      click menu item "Activity Data" of menu 1 of menu bar item "Simulation" of menu bar 1
+      delay 1.5
+    end if
+    if my dialogStep("source") then
+      delay 0.6
+      my dialogStep("pick")
+      delay 0.8
+    end if
+    my dialogStep("load")
+    delay 1.5
+    keystroke "g" using {command down, shift down}
+    delay 1
+    keystroke (item 1 of argv)
+    delay 0.8
+    keystroke return
+    delay 1.2
+    keystroke return
+    delay 2
+  end tell
+end run
+EOF
+  echo "armed $1: $(pos)"
+}
 
 # Scrub FIT playback to POSITION seconds (the slider is a position scrubber).
 scrub() {

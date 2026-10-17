@@ -77,6 +77,14 @@ test app="run-cockpit":
     "{{sdk_bin}}/monkeyc" -d {{device}} -f apps/{{app}}/monkey.jungle -o bin/{{app}}-test.prg -y {{key}} --unit-test -w
     "{{sdk_bin}}/monkeydo" bin/{{app}}-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
 
+# `just test` inside the macOS VM, so no simulator window opens on this desktop (docs/simulator-vm.md)
+vm-test app="run-cockpit":
+    tools/ciq-vm.sh test {{app}}
+
+# Store screenshot choreography inside the macOS VM, fake patches included; PNGs land in bin/vm/
+vm-shoot:
+    tools/ciq-vm.sh shoot
+
 # Copy an app's built .prg to a USB-mounted watch, e.g. `just sideload sauna-timer`
 sideload app="run-cockpit" watch="/Volumes/GARMIN": (build app)
     test -d "{{watch}}/GARMIN/APPS" || { echo "No GARMIN/APPS at {{watch}} — MTP watches (e.g. Enduro 3, fenix 9) don't mount on macOS: copy bin/{{app}}.prg with OpenMTP (see README, Sideloading on macOS)"; exit 1; }
