@@ -11,6 +11,9 @@
     <setting propertyKey="@Properties.warnCoolEnd" title="@Strings.SetWarnCoolEnd">
         <settingConfig type="boolean" />
     </setting>
+    <setting propertyKey="@Properties.tempWarn" title="@Strings.SetTempWarn">
+        <settingConfig type="numeric" min="0" max="70" />
+    </setting>
     <setting propertyKey="@Properties.tempLimit" title="@Strings.SetTempLimit">
         <settingConfig type="numeric" min="0" max="70" />
     </setting>

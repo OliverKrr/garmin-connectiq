@@ -54,8 +54,7 @@ class SessionView extends WatchUi.View {
         Theme.text(dc, cx - w * 3 / 100, h * 63 / 100, Graphics.FONT_NUMBER_MILD, hr != null ? hr.format("%d") : "--",
             m.hrHigh() ? Theme.WARN : Theme.zoneColor(hr), Graphics.TEXT_JUSTIFY_RIGHT);
         var t = m.lastTemp;
-        var limit = Config.tempLimit();
-        var tc = m.tempHigh() ? Theme.WARN : ((t != null && limit > 0 && t >= limit - 3) ? Theme.CAUTION : Theme.FG);
+        var tc = m.tempHigh() ? Theme.WARN : (m.tempWarm() ? Theme.CAUTION : Theme.FG);
         Theme.text(dc, cx + w * 3 / 100, h * 63 / 100, Graphics.FONT_MEDIUM, t != null ? t.format("%.0f") + "°" : "--°",
             tc, Graphics.TEXT_JUSTIFY_LEFT);
 
@@ -77,7 +76,7 @@ class SessionView extends WatchUi.View {
         Theme.text(dc, w / 2, h * 33 / 100, Graphics.FONT_XTINY,
             "HR " + Fmt.num(History.n(t.minHr)) + " / " + Fmt.num(History.n(t.avgHr())) + " / " + Fmt.num(History.n(t.maxHr)),
             Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
-        RoundsTable.draw(dc, m.roundRows(), 0, h * 43 / 100, 5);
+        RoundsTable.draw(dc, m.roundRows(), 0, h * 42 / 100, 4);
     }
 
     private function drawBanner(dc as Graphics.Dc) as Void {

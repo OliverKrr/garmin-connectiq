@@ -17,7 +17,7 @@ support. Status: 0.1.0, sideload only, not on the Connect IQ Store.
 **Cockpit page.** The bezel ring fills toward the phase target (orange heat, blue cool-down, red
 once over). The big number counts down to the target, then counts up as `+m:ss` overtime; without a
 target it shows elapsed time. Below it: heart rate in zone colour, the watch temperature (yellow
-within 3 °C of the limit, red at it), the phase's HR low / average / high, total time and the clock.
+from the pre-warning, red at the alert), the phase's HR low / average / high, total time and the clock.
 
 **Round table** (live page, post-session summary and history detail): heat time, average and
 maximum HR, peak watch temperature, and HRR, the heart-rate drop in the first 60 s of the
@@ -39,13 +39,14 @@ lap; rounds and heat time per session.
 | Alert at end of heat phase | on | Off removes the target: the heat phase shows elapsed time |
 | Cool-down target | 15 min | |
 | Alert at end of cool-down | off | |
-| Watch temperature alert | 44 °C | 0 = off. See below |
+| Watch temperature pre-warning | 42 °C | Two buzzes, "cover": shade the watch with your hand. Warns again after the reading drops 1 °C and climbs back. 0 = off |
+| Watch temperature alert | 44 °C | Three buzzes, "leave". 0 = off. See below |
 | Heart rate alert | 0 (off) | bpm |
 | Alert: vibrate / beep / light up the screen | on / off / on | |
 | Save as activity in Garmin Connect | on | Off keeps only the on-watch history |
 
 These map the old Sauna Timer settings: Session Time → heat target, Rest Time → cool-down target,
-Warn Temperature → watch temperature alert. There is no flashlight option because Connect IQ has
+Warn Temperature → watch temperature alert, with the new pre-warning 2 °C below it. There is no flashlight option because Connect IQ has
 no API for the LED; the screen lights up instead.
 
 ## Heat and the watch
@@ -60,7 +61,9 @@ outside.
 wrist cools it and the case's thermal mass delays it, so it reads far below the air (users report
 about 48 °C in an 85 °C sauna) and lags. It is a poor sauna thermometer but a fair measure of what
 the battery and seals experience. The 44 °C alert therefore means "leave now": the inside keeps
-warming for a while after the alert.
+warming for a while after the alert. The 42 °C pre-warning gives the headroom: cover the watch
+with your other hand, which pulls the reading back down, and leave once the 44 °C alert comes
+anyway.
 
 **Titanium.** The case material changes how hot the watch feels on skin, not how hot it gets
 inside. Titanium stores roughly 40 % less heat per volume than steel and feels about half as hot
@@ -72,7 +75,7 @@ for discharge). Gaskets age with repeated heat, and steam or a hot-to-cold plung
 in. AMOLED ages faster with heat. Forum reports include fogged lenses and one dead watch after a
 steam room. No documented battery swelling, but the evidence is anecdotal either way.
 
-**If you wear it anyway:** keep the 44 °C alert, cap rounds at 10-12 min, wear it loosely and
+**If you wear it anyway:** keep the 42 / 44 °C alerts, cap rounds at 10-12 min, wear it loosely and
 cover it with a towel or your hand, stay off the top bench and away from the löyly. Take it off for
 steam rooms and cold plunges, and let it cool to room temperature before charging. Stop wearing
 it in the sauna if the lens fogs or the back bulges.

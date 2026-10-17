@@ -45,7 +45,9 @@ class StartView extends WatchUi.View {
             Theme.zoneColor(hr), Graphics.TEXT_JUSTIFY_RIGHT);
         var temp = _c.temp();
         var limit = Config.tempLimit();
-        var tc = (temp != null && limit > 0 && temp >= limit) ? Theme.WARN : Theme.FG;
+        var warn = Config.tempWarn();
+        var tc = (temp != null && limit > 0 && temp >= limit) ? Theme.WARN
+               : ((temp != null && warn > 0 && temp >= warn) ? Theme.CAUTION : Theme.FG);
         Theme.text(dc, cx + w * 4 / 100, h * 40 / 100, Graphics.FONT_LARGE, temp != null ? temp.format("%.0f") + "°" : "--°",
             tc, Graphics.TEXT_JUSTIFY_LEFT);
         Theme.text(dc, cx - w * 4 / 100, h * 51 / 100, Graphics.FONT_XTINY, "bpm", Theme.DIM, Graphics.TEXT_JUSTIFY_RIGHT);

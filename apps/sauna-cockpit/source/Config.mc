@@ -13,9 +13,15 @@ module Config {
         return _bool("warnCoolEnd", false) ? _clamp(_num("coolMin", 15), 1, 60) * 60 : 0;
     }
 
-    // Watch-temperature warning in °C; 0 = off.
+    // Watch-temperature alert ("leave now") in °C; 0 = off.
     function tempLimit() as Number {
         var v = _num("tempLimit", 44);
+        return v <= 0 ? 0 : _clamp(v, 30, 70);
+    }
+
+    // Watch-temperature pre-warning ("cover the watch") in °C; 0 = off.
+    function tempWarn() as Number {
+        var v = _num("tempWarn", 42);
         return v <= 0 ? 0 : _clamp(v, 30, 70);
     }
 

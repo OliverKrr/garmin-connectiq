@@ -4,7 +4,8 @@
     <string id="SetWarnHeatEnd">Alert at end of heat phase</string>
     <string id="SetCoolMin">Cool-down target (minutes)</string>
     <string id="SetWarnCoolEnd">Alert at end of cool-down</string>
-    <string id="SetTempLimit">Watch temperature alert in C (0 = off; Garmin rates 45 C)</string>
+    <string id="SetTempWarn">Watch temperature pre-warning in C: cover the watch (0 = off)</string>
+    <string id="SetTempLimit">Watch temperature alert in C: leave now (0 = off; Garmin rates 45 C)</string>
     <string id="SetHrLimit">Heart rate alert in bpm (0 = off)</string>
     <string id="SetAlertVibrate">Alert: vibrate</string>
     <string id="SetAlertTone">Alert: beep</string>

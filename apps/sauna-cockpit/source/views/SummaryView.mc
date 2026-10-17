@@ -39,7 +39,7 @@ class SummaryView extends WatchUi.View {
         var kcal = _e.size() > History.S_KCAL ? _e[History.S_KCAL] as Number : History.NONE;
         Theme.text(dc, cx, h * 37 / 100, Graphics.FONT_XTINY,
             "total " + Fmt.clock(_e[History.S_TOTAL] as Number) + "   " + Fmt.num(kcal) + " kcal", Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
-        RoundsTable.draw(dc, rows, first, h * 46 / 100, SUMMARY_ROWS);
+        RoundsTable.draw(dc, rows, first, h * 44 / 100, SUMMARY_ROWS);
     }
 }
 

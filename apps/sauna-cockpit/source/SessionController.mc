@@ -65,7 +65,7 @@ class SessionController {
     }
 
     function start() as Void {
-        model = new SessionModel(Config.heatTargetSec(), Config.coolTargetSec(), Config.tempLimit(), Config.hrLimit());
+        model = new SessionModel(Config.heatTargetSec(), Config.coolTargetSec(), Config.tempWarn(), Config.tempLimit(), Config.hrLimit());
         _startEpoch = Time.now().value();
         if (Config.recordActivity()) {
             // "Other" rather than Meditation: Garmin then counts calories and keeps the
@@ -197,6 +197,9 @@ class SessionController {
         if ((ev & EV_TEMP_HIGH) != 0) {
             showBanner("Watch " + (m.lastTemp as Float).format("%.0f") + "°C - leave");
             vibe(3);
+        } else if ((ev & EV_TEMP_WARN) != 0) {
+            showBanner("Watch " + (m.lastTemp as Float).format("%.0f") + "°C - cover");
+            vibe(2);
         } else if ((ev & EV_HR_HIGH) != 0) {
             showBanner("HR " + m.lastHr + " - high");
             vibe(3);

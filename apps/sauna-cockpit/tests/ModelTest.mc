@@ -47,7 +47,7 @@ function thresholdAlarm_zeroIsOff(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_heatTargetFiresOnceAtTarget(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(10, 0, 0, 0);
+    var m = new SessionModel(10, 0, 0, 0, 0);
     var early = tickN(m, 9, 120, null);
     var at = m.tick(120, null);
     var later = tickN(m, 5, 120, null);
@@ -56,7 +56,7 @@ function session_heatTargetFiresOnceAtTarget(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_switchPhaseCountsRounds(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     tickN(m, 5, 120, null);
     m.switchPhase();               // -> cool, round 1
     var coolOk = m.phase == PHASE_COOL && m.round == 1 && m.current.seconds == 0;
@@ -68,7 +68,7 @@ function session_switchPhaseCountsRounds(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_coolTargetUsesCoolEvent(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 3, 0, 0);
+    var m = new SessionModel(0, 3, 0, 0, 0);
     tickN(m, 2, 120, null);
     m.switchPhase();
     return tickN(m, 3, 90, null) == EV_COOL_DONE;
@@ -76,14 +76,31 @@ function session_coolTargetUsesCoolEvent(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_tempAndHrAlarms(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 44, 160);
+    var m = new SessionModel(0, 0, 0, 44, 160);
     var ev = m.tick(165, 44.2);
     return (ev & EV_TEMP_HIGH) != 0 && (ev & EV_HR_HIGH) != 0 && m.tempHigh() && m.hrHigh();
 }
 
 (:test)
+function session_tempWarnBeforeLimit(logger as Test.Logger) as Boolean {
+    var m = new SessionModel(0, 0, 42, 44, 0);
+    var a = m.tick(120, 42.1);     // pre-warning
+    var b = m.tick(120, 42.5);     // latched
+    var c = m.tick(120, 40.9);     // covered: re-arms below 41
+    var d = m.tick(120, 42.0);     // warns again
+    var e = m.tick(120, 44.0);     // limit
+    return a == EV_TEMP_WARN && b == 0 && c == 0 && d == EV_TEMP_WARN && e == EV_TEMP_HIGH && m.tempWarm() && m.tempHigh();
+}
+
+(:test)
+function session_tempWarnAtOrAboveLimitIsIgnored(logger as Test.Logger) as Boolean {
+    var m = new SessionModel(0, 0, 44, 44, 0);
+    return m.tick(120, 44.5) == EV_TEMP_HIGH;
+}
+
+(:test)
 function session_roundRowsPairHeatWithCool(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     tickN(m, 10, 140, 40.0);
     m.switchPhase();
     m.tick(150, 41.0);
@@ -101,7 +118,7 @@ function session_roundRowsPairHeatWithCool(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_coolBeforeHeatIsDropped(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     m.switchPhase();               // straight to cool: the empty heat phase is dropped
     tickN(m, 5, 100, null);
     m.switchPhase();               // back to heat, still round 1
@@ -131,7 +148,7 @@ function history_totalsSince(logger as Test.Logger) as Boolean {
 
 (:test)
 function history_entryFromModel(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     tickN(m, 3, 120, 36.0);
     var e = History.entry(m, 1234, null);
     return e[History.S_START] == 1234 && e[History.S_TOTAL] == 3 && e[History.S_AVG] == 120

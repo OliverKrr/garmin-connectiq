@@ -9,6 +9,7 @@ const EV_HEAT_DONE = 1;   // heat phase reached its target time
 const EV_COOL_DONE = 2;   // cool-down phase reached its target time
 const EV_TEMP_HIGH = 4;   // watch temperature reached the warning limit
 const EV_HR_HIGH = 8;     // heart rate reached the warning limit
+const EV_TEMP_WARN = 16;  // watch temperature reached the pre-warning (cover the watch)
 
 // A sauna session: alternating heat and cool-down phases, one round per heat phase.
 // Time advances only through tick() (once per recorded second), so the whole state machine
@@ -25,12 +26,16 @@ class SessionModel {
     private var _heatTarget as Number;
     private var _coolTarget as Number;
     private var _tempAlarm as ThresholdAlarm;
+    private var _tempWarn as ThresholdAlarm;
     private var _hrAlarm as ThresholdAlarm;
 
-    // Targets in seconds (0 = no target alert); limits in °C and bpm (0 = off).
-    function initialize(heatTargetSec as Number, coolTargetSec as Number, tempLimit as Number, hrLimit as Number) {
+    // Targets in seconds (0 = no target alert); limits in °C and bpm (0 = off). The temperature
+    // pre-warning fires below the limit; one at or above the limit is ignored.
+    function initialize(heatTargetSec as Number, coolTargetSec as Number, tempWarn as Number, tempLimit as Number, hrLimit as Number) {
         _heatTarget = heatTargetSec;
         _coolTarget = coolTargetSec;
+        // 1 °C re-arm: covering the watch drops the reading, and the next rise warns again.
+        _tempWarn = new ThresholdAlarm((tempLimit > 0 && tempWarn >= tempLimit) ? 0 : tempWarn, 1);
         _tempAlarm = new ThresholdAlarm(tempLimit, 2);
         _hrAlarm = new ThresholdAlarm(hrLimit, 5);
     }
@@ -47,6 +52,7 @@ class SessionModel {
             ev |= (phase == PHASE_HEAT) ? EV_HEAT_DONE : EV_COOL_DONE;
         }
         if (_tempAlarm.check(temp)) { ev |= EV_TEMP_HIGH; }
+        if (_tempWarn.check(temp)) { ev |= EV_TEMP_WARN; }
         if (_hrAlarm.check(hr)) { ev |= EV_HR_HIGH; }
         return ev;
     }
@@ -73,6 +79,10 @@ class SessionModel {
 
     function tempHigh() as Boolean {
         return _tempAlarm.exceeded(lastTemp);
+    }
+
+    function tempWarm() as Boolean {
+        return _tempWarn.exceeded(lastTemp);
     }
 
     function hrHigh() as Boolean {
