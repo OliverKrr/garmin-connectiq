@@ -184,6 +184,13 @@ guest_screenshot() {
   tools/sim_shot.sh shot "$app"
 }
 
+# Quit the simulator and drop its persisted app settings (File > Reset All App Data).
+reset_app_data() {
+  pkill -x simulator || true
+  pkill -f monkeydo || true
+  rm -rf "$(getconf DARWIN_USER_TEMP_DIR)com.garmin.connectiq"
+}
+
 guest_shoot() {
   # The two temporary patches from docs/store-screenshots.md, applied to this copy only; the
   # next sync from the host overwrites them.
@@ -195,11 +202,8 @@ guest_shoot() {
   patch_once apps/run-cockpit/source/RunCockpitView.mc \
     'var pz = UserProfile.getPowerZones(Activity.SPORT_RUNNING);' \
     'var pz = UserProfile.getPowerZones(Activity.SPORT_RUNNING); pz = [155, 210, 250, 300, 355, 420];'
-  # A fresh simulator with no persisted app settings (File > Reset All App Data), whose save
-  # panel starts in bin/.
-  pkill -x simulator || true
-  pkill -f monkeydo || true
-  rm -rf "$(getconf DARWIN_USER_TEMP_DIR)com.garmin.connectiq"
+  # A fresh simulator with no persisted app settings, whose save panel starts in bin/.
+  reset_app_data
   rm -f bin/s[0-9]-*.png
   mkdir -p bin
   defaults write com.garmin.connectiq.simulator NSNavLastRootDirectory -string "$PWD/bin"
@@ -212,7 +216,12 @@ guest_shoot() {
   load_app run-cockpit
   tools/sim_shot.sh bg White
   tools/sim_shot.sh arm "$PWD/bin/store-run.fit"
-  tools/store_shoot.sh
+  local rc=0
+  tools/store_shoot.sh || rc=$?
+  # The patched defaults persist in the simulator and would fail the next `just test`'s
+  # default-value tests, so leave no app settings behind.
+  reset_app_data
+  return "$rc"
 }
 
 # ---- dispatch ---------------------------------------------------------------------------------
