@@ -15,6 +15,9 @@ module History {
     const MAX_SESSIONS = 50;
     const KEY = "sessions";
 
+    // Bumped on every save, so views showing the list (HistoryMenu) know to rebuild.
+    var version as Number = 0;
+
     // Session field indices.
     const S_START = 0;
     const S_TOTAL = 1;
@@ -96,6 +99,7 @@ module History {
 
     function save(list as Array<Array>) as Void {
         Application.Storage.setValue(KEY, list as Application.PropertyValueType);
+        version++;
     }
 
     function add(e as Array) as Void {

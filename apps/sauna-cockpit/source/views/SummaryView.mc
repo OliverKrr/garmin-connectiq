@@ -11,6 +11,8 @@ const SUMMARY_ROWS = 4;
 
 class SummaryView extends WatchUi.View {
     var page as Number = 0;
+    // Set when this history entry was deleted; onShow then closes the summary.
+    var deleted as Boolean = false;
     // Pages as [table kind, first row].
     var pages as Array<Array<Number>> = [] as Array<Array<Number>>;
     private var _e as Array;
@@ -25,6 +27,10 @@ class SummaryView extends WatchUi.View {
                 pages.add([kinds[k], first]);
             }
         }
+    }
+
+    function onShow() as Void {
+        if (deleted) { WatchUi.popView(WatchUi.SLIDE_IMMEDIATE); }
     }
 
     function onUpdate(dc as Graphics.Dc) as Void {
@@ -112,26 +118,27 @@ class SummaryDelegate extends WatchUi.BehaviorDelegate {
 
     function onMenu() as Boolean {
         if (_index >= 0) {
-            WatchUi.pushView(new WatchUi.Confirmation("Delete session?"), new DeleteDelegate(_index), WatchUi.SLIDE_IMMEDIATE);
+            WatchUi.pushView(new WatchUi.Confirmation("Delete session?"), new DeleteDelegate(_v, _index), WatchUi.SLIDE_IMMEDIATE);
         }
         return true;
     }
 }
 
 class DeleteDelegate extends WatchUi.ConfirmationDelegate {
+    private var _v as SummaryView;
     private var _index as Number;
 
-    function initialize(index as Number) {
+    function initialize(v as SummaryView, index as Number) {
         ConfirmationDelegate.initialize();
+        _v = v;
         _index = index;
     }
 
-    // Removes the session and closes its summary; the history list is rebuilt on next open.
+    // Removes the session; the summary closes itself in onShow and the history menu rebuilds.
     function onResponse(r as WatchUi.Confirm) as Boolean {
         if (r == WatchUi.CONFIRM_YES) {
             History.removeAt(_index);
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
-            WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
+            _v.deleted = true;
         }
         return true;
     }

@@ -23,6 +23,8 @@ class SessionController {
     var model as SessionModel or Null = null;
     // Short banner text for the view after an alert, and when it expires (System.getTimer ms).
     var banner as String or Null = null;
+    // The entry the last Save produced, until SessionView.onShow hands it to the summary screen.
+    var lastEntry as Array or Null = null;
     var bannerUntil as Number = 0;
     private var _session as ActivityRecording.Session or Null = null;
     private var _timer as Timer.Timer or Null = null;
@@ -233,6 +235,7 @@ class SessionController {
         var e = History.entry(m, _startEpoch, [info != null ? info.calories : null, _bb0, bb1, _stress0, stress1]);
         if (m.roundsDone() > 0) { History.add(e); }
         reset();
+        lastEntry = e;
         return e;
     }
 

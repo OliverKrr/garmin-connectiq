@@ -17,6 +17,20 @@ class SessionView extends WatchUi.View {
         _c = c;
     }
 
+    // Back on top after the pause menu closed: once the session has ended (Save or Discard),
+    // move on to its summary or to the start screen.
+    function onShow() as Void {
+        if (_c.state != STATE_IDLE) { return; }
+        var e = _c.lastEntry;
+        _c.lastEntry = null;
+        if (e != null) {
+            var v = new SummaryView(e);
+            WatchUi.switchToView(v, new SummaryDelegate(v, -1), WatchUi.SLIDE_IMMEDIATE);
+        } else {
+            WatchUi.switchToView(new StartView(_c), new StartDelegate(_c), WatchUi.SLIDE_IMMEDIATE);
+        }
+    }
+
     function onUpdate(dc as Graphics.Dc) as Void {
         dc.setColor(Theme.FG, Theme.BG);
         dc.clear();

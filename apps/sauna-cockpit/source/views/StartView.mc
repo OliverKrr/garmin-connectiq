@@ -19,7 +19,7 @@ class StartView extends WatchUi.View {
         var list = History.load();
         _last = list.size() > 0 ? lastLine(list[0]) : "No sessions yet";
         var t = History.totalsSince(list, Time.now().value() - 7 * 86400);
-        _week = "7 days: " + t[0] + "x, " + t[1] + " rounds, " + Fmt.minutes(t[2]);
+        _week = "7 days: " + t[0] + "x, " + t[1] + (t[1] == 1 ? " round, " : " rounds, ") + Fmt.minutes(t[2]);
     }
 
     private function lastLine(e as Array) as String {
