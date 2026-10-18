@@ -35,9 +35,9 @@ the app starts.
   values; a phase with too few clean beats shows `--`.
 
 **Summary** after Save and in the history pages with UP/DOWN through Heat (session HR low / avg
-/ high, peak temperature, total time, calories), Rest, and Recovery (Body Battery at start and
-end, stress before and, when recorded as Meditation, after the session, total time above the
-effect HR, the HRV table).
+/ high, total time above the effect HR, total time, calories), Rest, and Recovery (Body Battery
+at start and end, stress before and, when recorded as Meditation, after the session, the HRV
+table).
 
 **History.** The last 50 sessions are kept on the watch with their round tables, under 7- and
 30-day totals (sessions, rounds, heat minutes). MENU on a session deletes it.

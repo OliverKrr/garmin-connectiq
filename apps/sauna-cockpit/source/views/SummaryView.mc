@@ -2,9 +2,9 @@ import Toybox.Lang;
 import Toybox.Graphics;
 import Toybox.WatchUi;
 
-// One session's summary, paged with UP/DOWN: the heat table (with session HR, peak temperature,
-// total time and calories above it), the rest table, then recovery (Body Battery before and
-// after, stress before, time above the effect HR, HRV per round). Tables longer than
+// One session's summary, paged with UP/DOWN: the heat table (with session HR, total time above
+// the effect HR, total time and calories above it), the rest table, then recovery (Body Battery
+// before and after, stress before and, in Meditation mode, after, HRV per round). Tables longer than
 // SUMMARY_ROWS rounds take several pages. Shown right after Save (index -1) and from the history
 // (index >= 0, where MENU offers to delete it).
 const SUMMARY_ROWS = 4;
@@ -51,9 +51,12 @@ class SummaryView extends WatchUi.View {
         Theme.text(dc, cx, h * 22 / 100, Graphics.FONT_SMALL,
             rows.size() + (rows.size() == 1 ? " round" : " rounds") + ", " + Fmt.minutes(heat) + " heat", Theme.HEAT, center);
         if (kind == TABLE_HEAT) {
+            // The session's peak temperature is the top of the table's °C column, so this line
+            // carries the total time above the effect HR instead.
+            var eff = Config.effectHr();
             Theme.text(dc, cx, h * 30 / 100, f,
-                "HR " + Fmt.num(History.at(_e, History.S_MIN)) + " / " + Fmt.num(History.at(_e, History.S_AVG)) + " / " +
-                Fmt.num(History.at(_e, History.S_MAX)) + "   max " + Fmt.temp10(History.at(_e, History.S_TEMP)), Theme.FG, center);
+                "HR " + Fmt.num(History.at(_e, History.S_MIN)) + "/" + Fmt.num(History.at(_e, History.S_AVG)) + "/" +
+                Fmt.num(History.at(_e, History.S_MAX)) + (eff > 0 ? "  " + eff + "+ " + Fmt.clock(above) : ""), Theme.FG, center);
             Theme.text(dc, cx, h * 37 / 100, f,
                 "total " + Fmt.clock(_e[History.S_TOTAL] as Number) + "   " + Fmt.num(History.at(_e, History.S_KCAL)) + " kcal", Theme.DIM, center);
         } else if (kind == TABLE_REST) {
@@ -63,11 +66,9 @@ class SummaryView extends WatchUi.View {
             var bb0 = History.at(_e, History.S_BB0);
             var bb1 = History.at(_e, History.S_BB1);
             Theme.text(dc, cx, h * 30 / 100, f, "Body Battery " + Fmt.num(bb0) + " > " + Fmt.num(bb1), Theme.FG, center);
-            var eff = Config.effectHr();
             var s1 = History.at(_e, History.S_STRESS1);
             Theme.text(dc, cx, h * 37 / 100, f,
-                "stress " + Fmt.num(History.at(_e, History.S_STRESS)) + (s1 == History.NONE ? "" : " > " + Fmt.num(s1)) + "   " +
-                (eff > 0 ? eff + "+ bpm " + Fmt.clock(above) : ""), Theme.DIM, center);
+                "stress " + Fmt.num(History.at(_e, History.S_STRESS)) + (s1 == History.NONE ? "" : " > " + Fmt.num(s1)), Theme.DIM, center);
         }
         RoundsTable.draw(dc, kind, rows, pages[page][1], h * 44 / 100, SUMMARY_ROWS);
         Theme.text(dc, cx, h * 90 / 100, f, (page + 1) + "/" + pages.size(), Theme.DIM, center);
