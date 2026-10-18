@@ -36,10 +36,6 @@ class RunCockpitView extends WatchUi.DataField {
     // reloadSettings() (called from initialize) immediately replaces it.
     private var _model as RunModel = new RunModel(25, new HrZoneModel([93, 111, 130, 148, 167, 185]));
     private var _layout as GridLayout or Null = null;
-    // Pace-cell label prefixes; "G"-prefixed in GAP mode. Set in reloadSettings().
-    private var _lCur as String = "P";
-    private var _lLap as String = "L";
-    private var _lAvg as String = "A";
 
     function initialize() {
         DataField.initialize();
@@ -63,10 +59,7 @@ class RunCockpitView extends WatchUi.DataField {
         }
         _model.setPaceVsPower(AppConfig.paceVsPower());
         _model.setGradeThreshold(AppConfig.gradeThreshold());
-        var gap = _model.gapMode();
-        _lCur = gap ? "GP" : "P";
-        _lLap = gap ? "GL" : "L";
-        _lAvg = gap ? "GA" : "A";
+        _model.setClimbMetricGap(AppConfig.climbMetricGap());
         var model = AppConfig.paceZoneModel(); // 0=Off,1=80/20,2=Friel,3=CTS,4=MyProCoach,5=Custom
         var pz = null as PaceZoneModel or Null;
         if (model == 5) { // Custom
@@ -136,14 +129,19 @@ class RunCockpitView extends WatchUi.DataField {
         _cell(dc, _layout.clock(), fg, "", _model.clockStr(), _fClock);
 
         var pc = _layout.paceCells();
-        if (_model.showPowerForCurLap()) {
+        var gap = _model.climbMetricGap();
+        var climb = _model.showClimbForCurLap(); // once per draw: it advances the hysteresis
+        if (climb && gap) {
+            _cell(dc, pc[0], _model.gapCurColor(fg, onWhite), "GP" + _model.gapCurZone(), _model.gapCurStr(), _fPace);
+            _cell(dc, pc[1], _model.gapLapColor(fg, onWhite), "GL" + _model.gapLapZone(), _model.gapLapStr(), _fPace);
+        } else if (climb) {
             _cell(dc, pc[0], _model.powerColor(_model.powerCur(), fg, onWhite), "PW" + _model.powerZoneStrFor(_model.powerCur()), _model.powerStr(_model.powerCur()), _fPace);
             _cell(dc, pc[1], _model.powerColor(_model.powerLap(), fg, onWhite), "LP" + _model.powerZoneStrFor(_model.powerLap()), _model.powerStr(_model.powerLap()), _fPace);
         } else {
-            _cell(dc, pc[0], _model.paceCurColor(fg, onWhite), _lCur + _model.paceCurZone(), _model.paceCurStr(), _fPace);
-            _cell(dc, pc[1], _model.paceLapColor(fg, onWhite), _lLap + _model.paceLapZone(), _model.paceLapStr(), _fPace);
+            _cell(dc, pc[0], _model.paceCurColor(fg, onWhite), "P" + _model.paceCurZone(), _model.paceCurStr(), _fPace);
+            _cell(dc, pc[1], _model.paceLapColor(fg, onWhite), "L" + _model.paceLapZone(), _model.paceLapStr(), _fPace);
         }
-        _cell(dc, pc[2], _model.paceAvgColor(fg, onWhite), _lAvg + _model.paceAvgZone(), _model.paceAvgStr(), _fPace);
+        _cell(dc, pc[2], _model.paceAvgColor(fg, onWhite), "A" + _model.paceAvgZone(), _model.paceAvgStr(), _fPace);
 
         var hc = _layout.hrCells();
         _cell(dc, hc[0], _model.hrColor(_model.hrCur(), fg, onWhite), "HR " + _model.fractionalZoneStrFor(_model.hrCur()), _hrStr(_model.hrCur()), _fHr);
@@ -153,7 +151,11 @@ class RunCockpitView extends WatchUi.DataField {
         var bc = _layout.bottomCells();
         _cell(dc, bc[0], fg, "DIST", _model.distanceStr(), _fBottom);
         _cell(dc, bc[1], fg, "TIME", _model.durationStr(), _fBottom);
-        _cell(dc, bc[2], _model.powerColor(_model.powerAvg(), fg, onWhite), "PWR" + _model.powerZoneStrFor(_model.powerAvg()), _model.powerStr(_model.powerAvg()), _fBottom);
+        if (gap) {
+            _cell(dc, bc[2], _model.gapAvgColor(fg, onWhite), "GAP" + _model.gapAvgZone(), _model.gapAvgStr(), _fBottom);
+        } else {
+            _cell(dc, bc[2], _model.powerColor(_model.powerAvg(), fg, onWhite), "PWR" + _model.powerZoneStrFor(_model.powerAvg()), _model.powerStr(_model.powerAvg()), _fBottom);
+        }
 
         _drawZoneBars(dc, _layout.zoneBar(), onWhite);
     }

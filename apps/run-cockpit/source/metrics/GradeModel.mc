@@ -2,21 +2,32 @@ import Toybox.Lang;
 
 // Grade (%) from barometric altitude over a distance window. Altitude is EMA-smoothed; grade updates
 // only once the window spans >= MIN_M (guards altimeter noise + near-zero distance when slow/stopped);
-// output clamped to +/-40 and EMA-smoothed. Feed metres each active second.
+// output clamped to +/-40 and EMA-smoothed. An altitude step above JUMP_M in one sample (altimeter
+// calibration, a simulator's placeholder altitude before playback) re-anchors the window instead of
+// reading as grade, since GAP would integrate the spike. Feed metres each active second.
 class GradeModel {
     private const WIN_M = 30.0;
     private const MIN_M = 10.0;
     private const ALT_A = 0.3;
     private const GRADE_A = 0.4;
     private const CLAMP = 40.0;
+    private const JUMP_M = 10.0;
 
     private var _dist as Array<Float> = [];
     private var _alt as Array<Float> = [];
     private var _altEma as Float or Null = null;
     private var _grade as Float = 0.0;
+    private var _lastAlt as Float or Null = null;
 
     function update(distM as Float or Null, altM as Float or Null) as Void {
         if (distM == null || altM == null) { return; }
+        var last = _lastAlt;
+        _lastAlt = altM;
+        if (last != null && (altM - last).abs() > JUMP_M) {
+            _dist = [];
+            _alt = [];
+            _altEma = null;
+        }
         _altEma = (_altEma == null) ? altM : (_altEma + ALT_A * (altM - _altEma));
         _dist.add(distM);
         _alt.add(_altEma);
@@ -39,6 +50,7 @@ class GradeModel {
         _dist = [];
         _alt = [];
         _altEma = null;
+        _lastAlt = null;
         _grade = 0.0;
     }
 }

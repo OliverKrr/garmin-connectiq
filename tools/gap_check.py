@@ -44,8 +44,12 @@ def replay_grade(dist: np.ndarray, alt: np.ndarray) -> np.ndarray:
     als: list[float] = []
     alt_ema: float | None = None
     grade, out = 0.0, np.zeros(len(dist))
+    last: float | None = None
     for n, (d, a) in enumerate(zip(dist, alt)):
         if np.isfinite(a):
+            if last is not None and abs(a - last) > GRADE["JUMP_M"]:
+                ds, als, alt_ema = [], [], None
+            last = a
             alt_ema = a if alt_ema is None else alt_ema + GRADE["ALT_A"] * (a - alt_ema)
             ds.append(d)
             als.append(alt_ema)

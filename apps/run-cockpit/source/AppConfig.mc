@@ -13,10 +13,15 @@ module AppConfig {
         return v;
     }
 
-    // 0 = Auto (grade), 1 = Always pace, 2 = Always power, 3 = Grade-adjusted pace. Out of range -> 0.
+    // 0 = Auto (grade), 1 = Always pace, 2 = Always the climb metric. Out of range -> 0.
     function paceVsPower() as Number {
         var m = _num("paceVsPower", 0);
-        return (m < 0 || m > 3) ? 0 : m;
+        return (m < 0 || m > 2) ? 0 : m;
+    }
+
+    // Climb metric for Current/Lap on climbs and the bottom-right cell: power (0, default) or GAP (1).
+    function climbMetricGap() as Boolean {
+        return _num("climbMetric", 0) == 1;
     }
 
     // Grade % at which Current/Lap switch to power (Auto mode). Clamped 1..20, default 3.

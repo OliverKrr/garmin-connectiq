@@ -6,21 +6,21 @@
 **data field** for running. One glanceable page shows current / lap / average **pace or power** —
 coloured by training zone — **heart rate** with a fractional zone number, a live **time-in-zone**
 bar chart, plus distance, duration, average power, and the clock. On climbs it switches from pace to
-power automatically, and back on the flat.
+power - or to grade-adjusted pace (GAP) - automatically, and back on the flat.
 
 **[Get it on the Connect IQ Store](https://apps.garmin.com/apps/6eef6c69-8051-43f7-b2e2-db88d8d5d76c)** · **[Settings & full feature docs](store-assets/description.txt)** · **[Changelog](CHANGELOG.md)**
 
 ## Features
 
 - **Pace or power** as current / lap / average, coloured by training zone.
-- **Terrain-adaptive** — on climbs the current and lap cells switch from pace to power, and back to
-  pace on the flat (or force pace / power).
-- **Grade-adjusted pace (GAP)** as current / lap / average, coloured by pace zones — an alternative
-  to power on hills. The curve is calibrated to Garmin's own lap GAP; `just gap-check <fit files>`
-  re-scores it against your runs.
+- **Terrain-adaptive** — on climbs the current and lap cells switch from pace to power or GAP, and
+  back to pace on the flat (or force either).
+- **Grade-adjusted pace (GAP)** as an alternative to power: on climbs the current and lap cells
+  switch to GAP, and the bottom row shows average GAP, coloured by pace zones. The curve is
+  calibrated to Garmin's own lap GAP; `just gap-check <fit files>` re-scores it against your runs.
 - **Heart rate** as current / lap / average, coloured by HR zone with a fractional zone number.
 - **Time-in-zone bar chart** — each bar grows with the time spent in that zone, drawn in that zone's colour.
-- **Distance, duration, and average power** always on screen (useful on hilly runs, where average
+- **Distance, duration, and average power** (or average GAP) always on screen (useful on hilly runs, where average
   pace alone misleads).
 - **Pace-zone models** derived from your threshold pace: 80/20 Run, Joe Friel, CTS, MyProCoach, or
   your own custom boundaries.

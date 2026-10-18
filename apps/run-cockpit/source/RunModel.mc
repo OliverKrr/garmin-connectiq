@@ -6,8 +6,8 @@ import Toybox.Graphics;
 // Per-second state for the running data field. update(info) reads Activity.Info,
 // feeds the metric classes, and caches display-ready values that onUpdate() reads
 // without allocating. Session averages are native (Activity.Info); lap values are
-// accumulated here and reset on lap. In GAP mode (paceVsPower 3) the pace values are
-// grade-adjusted: the same rolling/lap/average pipeline runs on flat-equivalent distance.
+// accumulated here and reset on lap. With GAP as the climb metric, a second set of values (current,
+// lap, average GAP) runs the same pipeline on flat-equivalent distance; pace stays raw pace.
 class RunModel {
     private var _zones as HrZoneModel;
     private var _rollingPace as RollingPace;
@@ -34,10 +34,14 @@ class RunModel {
     private var _grade as GradeModel = new GradeModel();
     private var _paceVsPower as Number = 0;
     private var _gradeThreshold as Number = 3;
-    private var _powerActive as Boolean = false;
-    private var _gap as Boolean = false;
+    private var _climbActive as Boolean = false;
+    private var _gap as Boolean = false; // climb metric: GAP (true) or power (false)
     private var _flat as GapDistance = new GapDistance();
+    private var _rollingGap as RollingPace or Null = null;
     private var _lapStartFlat as Float = 0.0;
+    private var _gapCur as Float or Null = null;
+    private var _gapLap as Float or Null = null;
+    private var _gapAvg as Float or Null = null;
 
     function initialize(windowSec as Number, zones as HrZoneModel) {
         _zones = zones;
@@ -66,24 +70,28 @@ class RunModel {
             _grade.update(_distM, info.altitude);
         }
 
-        // GAP mode swaps distance for flat-equivalent distance and speed for speed * factor.
-        var f = _gap ? GapModel.factor(_grade.grade()) : 1.0;
         if (running && timer != null && dist != null) {
-            var d = dist;
-            var lapD = dist - _lapStartDist;
-            if (_gap) {
+            if (_windowSec > 0) { _rollingPace.add(timer, dist); _paceCur = _rollingPace.paceSecPerKm(); }
+            _paceLap = Pace.secPerKmFromDelta(dist - _lapStartDist, timer - _lapStartMs);
+        }
+        if (_windowSec == 0) { _paceCur = Pace.secPerKmFromSpeed(spd); }
+        _paceAvg = Pace.secPerKmFromSpeed(avgSpeed);
+
+        if (_gap) {
+            // GAP: the pace pipeline on flat-equivalent distance, and speed * factor for the native case.
+            var f = GapModel.factor(_grade.grade());
+            var rg = _rollingGap;
+            if (running && timer != null && dist != null) {
                 _flat.add(dist, f);
-                d = _flat.flatM();
-                lapD = d - _lapStartFlat;
+                if (rg != null) { rg.add(timer, _flat.flatM()); _gapCur = rg.paceSecPerKm(); }
+                _gapLap = Pace.secPerKmFromDelta(_flat.flatM() - _lapStartFlat, timer - _lapStartMs);
             }
-            if (_windowSec > 0) { _rollingPace.add(timer, d); _paceCur = _rollingPace.paceSecPerKm(); }
-            _paceLap = Pace.secPerKmFromDelta(lapD, timer - _lapStartMs);
+            if (rg == null) {
+                if (spd != null) { spd = spd * f; }
+                _gapCur = Pace.secPerKmFromSpeed(spd);
+            }
+            _gapAvg = Pace.secPerKmFromDelta(_flat.flatM(), _timerMs);
         }
-        if (_windowSec == 0) {
-            if (spd != null) { spd = spd * f; }
-            _paceCur = Pace.secPerKmFromSpeed(spd);
-        }
-        _paceAvg = _gap ? Pace.secPerKmFromDelta(_flat.flatM(), _timerMs) : Pace.secPerKmFromSpeed(avgSpeed);
 
         if (hr != null) {
             _hrCur = hr;
@@ -122,6 +130,8 @@ class RunModel {
         _lapStartDist = 0.0;
         _lapStartFlat = 0.0;
         _flat.reset();
+        var rg = _rollingGap;
+        if (rg != null) { rg.reset(); }
         _rollingPace.reset();
         _lapHr.reset();
         _lapPower.reset();
@@ -132,6 +142,9 @@ class RunModel {
     function paceCurSec() as Float or Null { return _paceCur; }
     function paceLapSec() as Float or Null { return _paceLap; }
     function paceAvgSec() as Float or Null { return _paceAvg; }
+    function gapCurSec() as Float or Null { return _gapCur; }
+    function gapLapSec() as Float or Null { return _gapLap; }
+    function gapAvgSec() as Float or Null { return _gapAvg; }
 
     function paceCurStr() as String { return PaceFormat.paceSecPerKm(_paceCur); }
     function paceLapStr() as String { return PaceFormat.paceSecPerKm(_paceLap); }
@@ -163,20 +176,24 @@ class RunModel {
     function setPowerZones(z as HrZoneModel or Null) as Void { _powerZones = z; }
     function setPaceZones(z as PaceZoneModel or Null) as Void { _paceZones = z; }
 
-    function setPaceVsPower(m as Number) as Void { _paceVsPower = m; _gap = (m == 3); }
+    function setPaceVsPower(m as Number) as Void { _paceVsPower = m; }
     function setGradeThreshold(t as Number) as Void { _gradeThreshold = t; }
 
-    // True when the pace values are grade-adjusted (GAP mode).
-    function gapMode() as Boolean { return _gap; }
+    // Climb metric: GAP (true) or power (false). GAP with a rolling window needs its own buffer.
+    function setClimbMetricGap(gap as Boolean) as Void {
+        _gap = gap;
+        _rollingGap = (gap && _windowSec > 0) ? new RollingPace(_windowSec) : null;
+    }
+    function climbMetricGap() as Boolean { return _gap; }
 
-    // True when Current/Lap should show power: Always-power, or Auto + grade over threshold
-    // (hysteresis) and power is live. Always-pace / GAP / no power -> false.
-    function showPowerForCurLap() as Boolean {
-        if (_paceVsPower == 2) { return _powerCur != null; }
-        if (_paceVsPower == 1 || _gap) { return false; }
-        if (_powerCur == null) { return false; }
-        _powerActive = PowerSwitch.active(_grade.grade(), _gradeThreshold.toFloat(), _powerActive);
-        return _powerActive;
+    // True when Current/Lap show the climb metric instead of pace: Always, or Auto with the grade
+    // over the threshold (hysteresis). Power also needs a live reading; GAP needs none.
+    function showClimbForCurLap() as Boolean {
+        if (_paceVsPower == 1) { return false; }
+        if (!_gap && _powerCur == null) { return false; }
+        if (_paceVsPower == 2) { return true; }
+        _climbActive = PowerSwitch.active(_grade.grade(), _gradeThreshold.toFloat(), _climbActive);
+        return _climbActive;
     }
 
     // Fractional pace zone as " x.x" for a label, or "" when pace zones aren't set.
@@ -187,6 +204,9 @@ class RunModel {
     function paceCurZone() as String { return paceZoneStrFor(_paceCur); }
     function paceLapZone() as String { return paceZoneStrFor(_paceLap); }
     function paceAvgZone() as String { return paceZoneStrFor(_paceAvg); }
+    function gapCurZone() as String { return paceZoneStrFor(_gapCur); }
+    function gapLapZone() as String { return paceZoneStrFor(_gapLap); }
+    function gapAvgZone() as String { return paceZoneStrFor(_gapAvg); }
 
     // Fractional power zone as " x.x" for a label, or "" when power zones aren't available.
     function powerZoneStrFor(w as Number or Null) as String {
@@ -202,6 +222,13 @@ class RunModel {
     function paceCurColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_paceCur, fb, onWhite); }
     function paceLapColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_paceLap, fb, onWhite); }
     function paceAvgColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_paceAvg, fb, onWhite); }
+    function gapCurColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_gapCur, fb, onWhite); }
+    function gapLapColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_gapLap, fb, onWhite); }
+    function gapAvgColor(fb as Graphics.ColorType, onWhite as Boolean) as Graphics.ColorType { return paceColor(_gapAvg, fb, onWhite); }
+
+    function gapCurStr() as String { return PaceFormat.paceSecPerKm(_gapCur); }
+    function gapLapStr() as String { return PaceFormat.paceSecPerKm(_gapLap); }
+    function gapAvgStr() as String { return PaceFormat.paceSecPerKm(_gapAvg); }
 
     function powerCur() as Number or Null { return _powerCur; }
     function powerLap() as Number or Null { return _lapPower.average(); }

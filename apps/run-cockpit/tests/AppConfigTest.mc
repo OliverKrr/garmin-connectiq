@@ -90,6 +90,11 @@ function appConfig_paceVsPowerDefault(logger as Logger) as Boolean {
 }
 
 (:test)
+function appConfig_climbMetricDefaultsToPower(logger as Logger) as Boolean {
+    return AppConfig.climbMetricGap() == false;
+}
+
+(:test)
 function appConfig_gradeThresholdDefault(logger as Logger) as Boolean {
     return AppConfig.gradeThreshold() == 3;
 }

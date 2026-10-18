@@ -37,33 +37,91 @@ function gapDistance_ignoresShrinkAndResets(l as Logger) as Boolean {
     return shrinkOk && resumeOk && g.flatM() == 0.0;
 }
 
-// Steady 3 m/s (5:33/km) up a 5 % grade for 300 s, then a lap and 300 s on the flat.
-(:test)
-function runModel_gapModeClimbThenFlatLap(l as Logger) as Boolean {
+// Feeds one sample per second from t0 to t1 at 3 m/s (5:33/km); altitude climbs at `grade` %
+// from `alt0`. Returns the altitude reached.
+function _runSegment(m as RunModel, info as Activity.Info, t0 as Number, t1 as Number, grade as Float, alt0 as Float) as Float {
+    var alt = alt0;
+    for (var t = t0; t <= t1; t++) {
+        alt = alt0 + (t - t0) * 3.0 * grade / 100.0;
+        info.timerTime = t * 1000;
+        info.elapsedDistance = t * 3.0;
+        info.altitude = alt;
+        m.update(info);
+    }
+    return alt;
+}
+
+function _gapModel(paceVsPower as Number) as Array {
     var m = new RunModel(0, new HrZoneModel([93, 111, 130, 148, 167, 185]));
-    m.setPaceVsPower(3);
+    m.setPaceVsPower(paceVsPower);
+    m.setClimbMetricGap(true);
     var info = new Activity.Info();
     info.timerState = Activity.TIMER_STATE_ON;
     info.currentSpeed = 3.0;
-    for (var t = 0; t <= 300; t++) {
-        info.timerTime = t * 1000;
-        info.elapsedDistance = t * 3.0;
-        info.altitude = 100.0 + t * 3.0 * 0.05;
-        m.update(info);
-    }
+    return [m, info];
+}
+
+// Always GAP: 300 s up 5 %, a lap, 300 s flat. Pace stays raw pace; GAP runs alongside it.
+(:test)
+function runModel_gapAlwaysClimbThenFlatLap(l as Logger) as Boolean {
+    var mi = _gapModel(2);
+    var m = mi[0] as RunModel;
+    var info = mi[1] as Activity.Info;
+    var top = _runSegment(m, info, 0, 300, 5.0, 100.0);
     // 333.3 s/km / 1.16 = 287.4 s/km once the grade has settled; the lap includes the ramp-up.
-    var climbOk = _near(m.paceCurSec(), 287.4, 2.0) && _near(m.paceLapSec(), 289.0, 4.0);
-    l.debug("climb cur=" + m.paceCurSec() + " lap=" + m.paceLapSec());
+    var climbOk = _near(m.gapCurSec(), 287.4, 2.0) && _near(m.gapLapSec(), 289.0, 4.0)
+        && _near(m.paceLapSec(), 333.3, 1.0) && m.showClimbForCurLap();
+    l.debug("climb gapCur=" + m.gapCurSec() + " gapLap=" + m.gapLapSec() + " paceLap=" + m.paceLapSec());
     m.onLap();
-    for (var t = 301; t <= 600; t++) {
-        info.timerTime = t * 1000;
-        info.elapsedDistance = t * 3.0;
-        info.altitude = 145.0;
-        m.update(info);
-    }
-    var flatOk = _near(m.paceLapSec(), 333.3, 5.0) && _near(m.paceCurSec(), 333.3, 1.0);
+    _runSegment(m, info, 301, 600, 0.0, top);
+    var flatOk = _near(m.gapLapSec(), 333.3, 5.0) && _near(m.gapCurSec(), 333.3, 1.0);
     // Average spans both halves: 1800 m over 600 s, half of it worth 1.16x.
-    var avgOk = _near(m.paceAvgSec(), 1000.0 / ((900.0 * 1.16 + 900.0) / 600.0), 6.0);
-    l.debug("flat lap=" + m.paceLapSec() + " avg=" + m.paceAvgSec());
-    return climbOk && flatOk && avgOk && !m.showPowerForCurLap();
+    var avgOk = _near(m.gapAvgSec(), 1000.0 / ((900.0 * 1.16 + 900.0) / 600.0), 6.0);
+    l.debug("flat gapLap=" + m.gapLapSec() + " gapAvg=" + m.gapAvgSec());
+    return climbOk && flatOk && avgOk;
+}
+
+// Auto with GAP: pace on the flat, GAP from the 3 % threshold up, pace again once the grade
+// falls below the hysteresis band. No power reading is needed.
+(:test)
+function runModel_gapAutoSwitchesOnClimb(l as Logger) as Boolean {
+    var mi = _gapModel(0);
+    var m = mi[0] as RunModel;
+    var info = mi[1] as Activity.Info;
+    m.setGradeThreshold(3);
+    var alt = _runSegment(m, info, 0, 100, 0.0, 100.0);
+    var flat1 = m.showClimbForCurLap();
+    alt = _runSegment(m, info, 101, 200, 5.0, alt);
+    var climb = m.showClimbForCurLap();
+    _runSegment(m, info, 201, 300, 0.0, alt);
+    var flat2 = m.showClimbForCurLap();
+    return !flat1 && climb && !flat2;
+}
+
+// Power as climb metric keeps the old rule: no live power, no switch; and no GAP is computed.
+(:test)
+function runModel_powerMetricNeedsLivePower(l as Logger) as Boolean {
+    var m = new RunModel(0, new HrZoneModel([93, 111, 130, 148, 167, 185]));
+    m.setPaceVsPower(2);
+    m.setClimbMetricGap(false);
+    var info = new Activity.Info();
+    info.timerState = Activity.TIMER_STATE_ON;
+    info.currentSpeed = 3.0;
+    _runSegment(m, info, 0, 60, 5.0, 100.0);
+    return !m.showClimbForCurLap() && m.gapCurSec() == null && m.gapAvgSec() == null;
+}
+
+// Same placeholder altitude through RunModel: average GAP on the flat must equal average pace.
+(:test)
+function runModel_gapIgnoresStartAltitudeJump(l as Logger) as Boolean {
+    var mi = _gapModel(0);
+    var m = mi[0] as RunModel;
+    var info = mi[1] as Activity.Info;
+    info.timerTime = 0;
+    info.elapsedDistance = 0.0;
+    info.altitude = 0.0;
+    m.update(info);
+    _runSegment(m, info, 1, 300, 0.0, 640.0);
+    l.debug("gapAvg after a start jump=" + m.gapAvgSec());
+    return _near(m.gapAvgSec(), 333.3, 1.0);
 }

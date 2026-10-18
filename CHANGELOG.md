@@ -16,6 +16,7 @@ compact old entries before adding new ones. `just validate-store-text` fails the
 paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+- GAP is now a climb metric instead of its own mode: the new Climb metric setting picks Power or GAP. With GAP, Auto switches current and lap from pace to GAP on climbs (labels GP, GL, with pace-zone numbers), and the bottom row shows average GAP instead of average power.
 
 ## [1.3.0] - 2026-10-18
 - Grade-adjusted pace (GAP): new Pace / power option that shows current, lap and average GAP (labels GP, GL, GA), coloured by pace zones. Calibrated to Garmin's own lap GAP: within about 4 s/km on hilly laps.

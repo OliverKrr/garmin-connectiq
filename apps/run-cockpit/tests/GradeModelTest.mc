@@ -28,3 +28,17 @@ function gradeModel_holdsWhenNoDistance(l as Logger) as Boolean {
     g.update(0.0, 100.0); g.update(2.0, 101.0);
     return g.grade() == 0.0;
 }
+
+// A placeholder altitude of 0 before the real 640 m (as the simulator reports before playback)
+// must not read as a 40 % climb.
+(:test)
+function gradeModel_altitudeJumpReanchors(l as Logger) as Boolean {
+    var g = new GradeModel();
+    g.update(0.0, 0.0);
+    var peak = 0.0;
+    for (var d = 3; d <= 300; d += 3) {
+        g.update(d.toFloat(), 640.0);
+        if (g.grade().abs() > peak) { peak = g.grade().abs(); }
+    }
+    return peak < 0.5;
+}

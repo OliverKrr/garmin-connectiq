@@ -1,7 +1,8 @@
 import Toybox.Lang;
 
-// Decide pace(false) vs power(true) with hysteresis: switch to power above `threshold`, back to
-// pace below `threshold - hyst` (hyst = half the threshold, min 1). Holds `wasActive` in the band.
+// Decide pace(false) vs the climb metric (power or GAP, true) with hysteresis: switch above
+// `threshold`, back to pace below `threshold - hyst` (hyst = half the threshold, min 1). Holds
+// `wasActive` in the band.
 module PowerSwitch {
     function active(grade as Float, threshold as Float, wasActive as Boolean) as Boolean {
         var hyst = threshold / 2.0;

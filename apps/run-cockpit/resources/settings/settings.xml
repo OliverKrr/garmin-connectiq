@@ -7,7 +7,12 @@
             <listEntry value="0">@Strings.PaceVsPowerAuto</listEntry>
             <listEntry value="1">@Strings.PaceVsPowerPace</listEntry>
             <listEntry value="2">@Strings.PaceVsPowerPower</listEntry>
-            <listEntry value="3">@Strings.PaceVsPowerGap</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.climbMetric" title="@Strings.SetClimbMetric">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ClimbMetricPower</listEntry>
+            <listEntry value="1">@Strings.ClimbMetricGap</listEntry>
         </settingConfig>
     </setting>
     <setting propertyKey="@Properties.gradeThreshold" title="@Strings.SetGradeThreshold">
