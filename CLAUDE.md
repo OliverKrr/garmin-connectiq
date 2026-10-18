@@ -2,8 +2,8 @@
 
 An open-source monorepo of Garmin Connect IQ apps in Monkey C: the Run Cockpit data field in
 `apps/run-cockpit/` (on the Store) and the Sauna Cockpit watch app in `apps/sauna-cockpit/`
-(sideload only). `just build|run|dev|test|sideload <app>` take the app's directory name and default
-to `run-cockpit`. The Store recipes (`package`, `bump`, `tag`, `release`, `github-release`,
+(sideload only). `just build|test|dev|screenshot|sideload <app>` take the app's directory name and
+default to `run-cockpit`. The Store recipes (`package`, `bump`, `tag`, `release`, `github-release`,
 `publish-assist`) and everything in `store-assets/`, `CHANGELOG.md` and `RELEASE.md` are Run
 Cockpit's alone. The repo is self-contained, so link other repos by public URL only, never by
 local path.
@@ -20,16 +20,19 @@ local path.
   override it with `CIQ_DEVICE=<id>`.
 - `CIQ_KEY` points builds at another key, e.g. the throwaway key inside the simulator VM, so the
   release key stays on the main machine.
-- The simulator GUI automation (`tools/sim_shot.sh`, `tools/store_shoot.sh`, any AppleScript that
-  clicks or types into the simulator) sends real keystrokes to the logged-in desktop. Where the
-  macOS VM is set up (`docs/simulator-vm.md`), use `just vm-test` and `just vm-shoot` instead:
-  every window and keystroke stays inside the VM. On the host, run GUI automation only when
-  nobody is working at the machine, and ask first; `just build` and `just test` need no input,
-  but `just test` opens a simulator window, so prefer `just vm-test` while someone works.
+- The simulator runs in a local macOS VM (`docs/simulator-vm.md`): `just test`, `just dev`,
+  `just screenshot` and `just shoot` sync the working tree into it and boot it on demand, so no
+  simulator window or scripted keystroke reaches the desktop, and they need no OK. Look at a UI
+  change with `just screenshot <app>` (the device screen lands in `bin/vm/<app>.png`).
+- The `*-local` recipes (`test-local`, `dev-local`, `run-local`, `sim-local`) and the GUI
+  automation in `tools/sim_shot.sh` and `tools/store_shoot.sh` drive this machine's own simulator
+  and type into the logged-in desktop. Use them only on a machine without the VM, when nobody is
+  working at it, and ask first.
+- SDK 9.2 cannot capture the simulator's screen without driving its GUI (the dead ends are in
+  `docs/store-screenshots.md`, gotchas), which is why screenshots run in the VM.
 - Only local builds compile. CI checks XML well-formedness and nothing else, because Garmin's MFA
   blocks the headless SDK-manager login that fetches device definitions. Verify a change with
-  `just build` and `just test` (the simulator must be running) or `just vm-test` before calling
-  it done.
+  `just build` and `just test` before calling it done.
 
 ## Code conventions
 

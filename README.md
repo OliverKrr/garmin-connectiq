@@ -62,6 +62,8 @@ shared barrels.
     (Set as current) and the devices you target (at least one, e.g. **fēnix 9 Pro 51 mm**, the default) + simulator; or
   - CLI: [`connect-iq-sdk-manager`](https://github.com/lindell/connect-iq-sdk-manager-cli)
     (`login`, `sdk set <ver>`, `device download --manifest=apps/run-cockpit/manifest.xml`).
+- For `test`, `dev` and the screenshot recipes: an Apple Silicon Mac with
+  [Tart](https://tart.run) and the simulator VM ([docs/simulator-vm.md](docs/simulator-vm.md)).
 - A signing key, `developer_key.der` (gitignored; never commit it). Updates to an existing Store
   listing must be signed with the key it was first uploaded with, so restore that one; `just key`
   creates a key for a new app or your own fork.
@@ -71,14 +73,19 @@ shared barrels.
 ```sh
 just doctor     # confirm SDK / device / key
 just build      # compile -> bin/run-cockpit.prg   (override device: CIQ_DEVICE=<id> just build)
-just build sauna-cockpit   # build/run/dev/test/sideload take the app dir name; default run-cockpit
-just sim        # launch the simulator (GUI)
-just run        # build + run in the simulator
+just build sauna-cockpit   # build/test/dev/screenshot/sideload take the app dir name; default run-cockpit
+just test       # unit tests in the simulator VM
+just screenshot # the app's screen in the simulator VM -> bin/vm/run-cockpit.png
+just dev        # load the app into the VM's simulator; `just vm screen` to watch and click
 just sideload   # copy the .prg to a USB-mounted watch
 ```
 
-The simulator opens blank — `just run` pushes the app into it. To advance the activity timer,
-use **Simulation → Activity Data** in the simulator menu.
+The simulator runs in a local macOS VM, so its window and any scripted clicks never take over
+your desktop; set it up once with [docs/simulator-vm.md](docs/simulator-vm.md). Without the VM,
+the `*-local` recipes use the SDK's simulator on your own desktop: `just sim-local`, then
+`just run-local` (or `dev-local`) and `just test-local`. The simulator opens blank until an app is
+pushed into it. To advance the activity timer, use **Simulation → Activity Data** in the simulator
+menu.
 
 ### Sideloading on macOS
 Newer Garmin watches (incl. the Enduro 3) use **MTP**, which macOS does not mount as a disk

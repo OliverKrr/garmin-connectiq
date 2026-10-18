@@ -9,11 +9,12 @@ so the **calling terminal needs Accessibility access** (System Settings → Priv
 Security → Accessibility). The recipes default to the fēnix 9 Pro 51 mm; prefix them with
 `CIQ_DEVICE=enduro3` to match the existing 280×280 Store set.
 
-**Run it in the VM when anyone is using the machine.** `just vm-shoot` runs the whole procedure
-below (patches, build, FIT, arming, choreography) inside a local macOS VM
-([simulator-vm.md](simulator-vm.md)), so its keystrokes and save panels never reach the desktop
-and the patches never touch the working tree. The PNGs land in `bin/vm/`. Run the procedure by
-hand on the host only on a desktop nobody is using.
+**`just shoot` runs the whole procedure below** (patches, build, FIT, arming, choreography)
+inside the local macOS VM ([simulator-vm.md](simulator-vm.md)), so its keystrokes and save panels
+never reach the desktop and the patches never touch the working tree. The PNGs land in
+`bin/vm/`. For a single look at an app's screen, `just screenshot <app>` is enough. The manual
+procedure below, with the `*-local` recipes, is the fallback on a machine without the VM, and
+only on a desktop nobody is using.
 
 ## Ingredients
 
@@ -46,11 +47,11 @@ Revert both when done: `git checkout apps/run-cockpit/`.
 ```sh
 # 1. apply the two patches above, then:
 just build
-just dev                                   # sim up + field loaded
+just dev-local                             # sim up + field loaded
 uv run --with fit-tool python3 tools/gen_store_fit.py
 
 # 2. if the app ran before with different settings: File → Reset All App Data
-#    in the simulator, then re-run `just dev` (the sim persists old app settings,
+#    in the simulator, then re-run `just dev-local` (the sim persists old app settings,
 #    which override patched defaults!)
 
 # 3. arm playback: Simulation → Activity Data → Data Source "FIT/GPX Playable File"
@@ -85,9 +86,15 @@ just build                                 # rebuild clean
   position's advance over a minute of wall time while it plays (cross-check: two captures,
   ΔDIST/ΔTIME against the design speed).
 - **In the VM, FIT records play at wall speed:** K = 1.00 (2026-10-17: position and DIST
-  both advanced 1.00× wall time over 10 min). `just vm-shoot` sets `CIQ_FIT_K=1.0`, so its
+  both advanced 1.00× wall time over 10 min). `just shoot` sets `CIQ_FIT_K=1.0`, so its
   captures show the design values, lap pace 4:10/km on the flat. Should another VM measure
-  differently, pass its rate: `CIQ_FIT_K=<k> just vm-shoot`.
+  differently, pass its rate: `CIQ_FIT_K=<k> just shoot`.
+- **There is no capture without the simulator's GUI** (SDK 9.2, checked 2026-10-18). The SDK's
+  `shell` tool talks to the simulator on port 1234 but offers only file and app commands
+  (`push`, `pull`, `NFM_*`, `ciq`). Its `fit_parse <file>` starts FIT playback without the
+  Activity Data dialog, but the data field receives no values from it, even with the timer
+  started and timer/lap events in the FIT. `monkeydo` only loads apps and runs tests. So
+  loading the FIT, Start, Lap and Save Screen Capture all go through the GUI, inside the VM.
 - **The simulator quits silently at launch** when its single-instance lock `~/Sim-<user>`
   holds the PID of a simulator killed before a reboot, a PID another process owns by now.
   Delete the file; `tools/ciq-vm.sh` does so in the VM before each launch.

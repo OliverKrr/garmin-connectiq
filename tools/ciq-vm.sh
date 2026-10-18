@@ -6,15 +6,19 @@
 #   tools/ciq-vm.sh create            clone the base image into the VM (once)
 #   tools/ciq-vm.sh provision         boot it, SSH key, SDK + devices from the host, just/uv/Java
 #   tools/ciq-vm.sh check | screen    can SSH script System Events? / Screen Sharing to the VM
-#   tools/ciq-vm.sh test [app]        sync the tree, start the VM's simulator, `just test <app>`
-#   tools/ciq-vm.sh shoot             sync, then the Store screenshot choreography in the VM
-#   tools/ciq-vm.sh just <args>       sync, run any recipe in the VM
-#   tools/ciq-vm.sh peek              save the VM's screen to bin/vm/screen.png
+#   tools/ciq-vm.sh test [app]        unit tests in the VM's simulator (`just test`)
+#   tools/ciq-vm.sh dev [app]         build and load the app into the VM's simulator (`just dev`)
+#   tools/ciq-vm.sh screenshot [app]  dev, then save the device screen to bin/vm/<app>.png
+#   tools/ciq-vm.sh shoot             the Store screenshot choreography (`just shoot`)
+#   tools/ciq-vm.sh just <args>       run any recipe in the VM
+#   tools/ciq-vm.sh peek              save the VM's whole screen to bin/vm/screen.png
 #   tools/ciq-vm.sh ssh [cmd]         shell (or one command) in the VM's copy of the repo
 #   tools/ciq-vm.sh start | stop      boot headless / shut down
 #
-# Everything the VM wrote to its bin/ comes back to bin/vm/, never bin/: the VM signs with a
-# throwaway key. CIQ_DEVICE and CIQ_FIT_K are passed through.
+# test, dev, screenshot, shoot and just first sync the working tree into the VM; inside the VM
+# (CIQ_IN_VM is set there) the same commands run on its own simulator. Everything the VM wrote to
+# its bin/ comes back to bin/vm/, never bin/: the VM signs with a throwaway key. CIQ_DEVICE and
+# CIQ_FIT_K are passed through.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -27,7 +31,7 @@ KEY=$STATE/id_ed25519
 CIQ_HOME="Library/Application Support/Garmin/ConnectIQ" # under $HOME, on host and guest alike
 REPO=garmin-connectiq                                    # the guest's copy, under its $HOME
 GUEST_ENV="export PATH=/opt/homebrew/opt/openjdk/bin:/opt/homebrew/bin:\$HOME/.local/bin:\$PATH"
-GUEST_ENV+=" CIQ_KEY=\$HOME/.ciq-vm-key.der${CIQ_DEVICE:+ CIQ_DEVICE=$CIQ_DEVICE}"
+GUEST_ENV+=" CIQ_IN_VM=1 CIQ_KEY=\$HOME/.ciq-vm-key.der${CIQ_DEVICE:+ CIQ_DEVICE=$CIQ_DEVICE}"
 GUEST_ENV+="${CIQ_FIT_K:+ CIQ_FIT_K=$CIQ_FIT_K};"
 
 die() { echo "ciq-vm: $*" >&2; exit 1; }
@@ -130,10 +134,16 @@ sim_up() {
   # The simulator's single-instance lock holds its PID. One killed by a VM shutdown leaves the
   # lock behind, that PID belongs to another process after the reboot, and every launch quits.
   rm -f "$HOME/Sim-$(id -un)"
-  open -a "$(sdk_bin)/ConnectIQ.app"
+  # Right after a boot SSH answers before the auto-login desktop exists, and `open` then fails
+  # (launchd error 125); wait for the Dock, then retry the launch.
+  for _ in $(seq 60); do
+    pgrep -xq Dock && break
+    sleep 1
+  done
   for _ in $(seq 30); do
     pgrep -xq simulator && { sleep 6; return 0; }
-    sleep 1
+    open -a "$(sdk_bin)/ConnectIQ.app" 2>/dev/null || true
+    sleep 2
   done
   die "simulator did not start"
 }
@@ -142,6 +152,36 @@ sim_up() {
 patch_once() {
   OLD=$2 NEW=$3 perl -0pi -e '$n = () = /\Q$ENV{OLD}\E/g;
     die "patch: expected 1 match in $ARGV, got $n\n" unless $n == 1; s/\Q$ENV{OLD}\E/$ENV{NEW}/' "$1"
+}
+
+# Load bin/$1.prg into the running simulator, replacing whatever app it shows.
+load_app() {
+  pkill -f monkeydo || true
+  # monkeydo stays attached to the app; detach it so the SSH session can end
+  nohup "$(sdk_bin)/monkeydo" "bin/$1.prg" "${CIQ_DEVICE:-fenix9pro51mm}" >bin/monkeydo.log 2>&1 &
+  sleep 8
+}
+
+guest_test() {
+  sim_up
+  just test-local "${1:-run-cockpit}"
+}
+
+guest_dev() {
+  local app=${1:-run-cockpit}
+  just build "$app"
+  sim_up
+  load_app "$app"
+  echo "$app is running in the VM's simulator; watch it with 'just vm screen'"
+}
+
+guest_screenshot() {
+  local app=${1:-run-cockpit}
+  guest_dev "$app"
+  # The save panel starts in bin/, and a name that exists opens a Replace sheet that cancels it.
+  defaults write com.garmin.connectiq.simulator NSNavLastRootDirectory -string "$PWD/bin"
+  rm -f "bin/$app.png"
+  tools/sim_shot.sh shot "$app"
 }
 
 guest_shoot() {
@@ -169,9 +209,7 @@ guest_shoot() {
   export CIQ_FIT_K=${CIQ_FIT_K:-1.0}
   uv run --with fit-tool python3 tools/gen_store_fit.py
   sim_up
-  # monkeydo stays attached to the app; detach it so the SSH session can end
-  nohup "$(sdk_bin)/monkeydo" bin/run-cockpit.prg "${CIQ_DEVICE:-fenix9pro51mm}" >bin/monkeydo.log 2>&1 &
-  sleep 8
+  load_app run-cockpit
   tools/sim_shot.sh bg White
   tools/sim_shot.sh arm "$PWD/bin/store-run.fit"
   tools/store_shoot.sh
@@ -195,11 +233,14 @@ case "$cmd" in
     ;;
   ssh) start && if [ $# -gt 0 ]; then remote "$@"; else vssh -t "$GUEST_ENV cd ~/$REPO 2>/dev/null; exec zsh -l"; fi ;;
   just) start && sync_tree && guest just "$@" ;;
-  test) start && sync_tree && guest tools/ciq-vm.sh guest-sim-up '&&' just test "${1:-run-cockpit}" ;;
-  shoot) start && sync_tree && guest tools/ciq-vm.sh guest-shoot ;;
+  test | dev | screenshot | shoot)
+    if [ -n "${CIQ_IN_VM:-}" ]; then
+      "guest_$cmd" "$@"
+    else
+      start && sync_tree && guest tools/ciq-vm.sh "$cmd" "$@"
+    fi
+    ;;
   peek) start && vssh 'screencapture -x /tmp/ciq-vm-screen.png' && mkdir -p bin/vm &&
     vrsync "$VM_USER@$(ip):/tmp/ciq-vm-screen.png" bin/vm/screen.png && echo "bin/vm/screen.png" ;;
-  guest-sim-up) sim_up ;;
-  guest-shoot) guest_shoot ;;
-  *) sed -n '6,17p' "$0" | sed 's/^# \{0,1\}//'; [ -z "$cmd" ] || exit 1 ;;
+  *) sed -n '6,21p' "$0" | sed 's/^# \{0,1\}//'; [ -z "$cmd" ] || exit 1 ;;
 esac

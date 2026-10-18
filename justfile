@@ -42,24 +42,55 @@ build app="run-cockpit":
     mkdir -p bin
     "{{sdk_bin}}/monkeyc" -d {{device}} -f apps/{{app}}/monkey.jungle -o bin/{{app}}.prg -y {{key}} -w
 
-# Launch the Connect IQ simulator (GUI)
-sim:
+# The simulator recipes (test, dev, screenshot, shoot) run in a local macOS VM, so no simulator
+# window or scripted keystroke reaches this desktop (docs/simulator-vm.md). The *-local recipes
+# use this Mac's own simulator instead: opt in only on a desktop nobody is working at.
+
+# Build an app with unit tests and run them in the VM's simulator
+test app="run-cockpit":
+    tools/ciq-vm.sh test {{app}}
+
+# Build an app and load it into the VM's simulator (re-run to reload); watch it with `just vm screen`
+dev app="run-cockpit":
+    tools/ciq-vm.sh dev {{app}}
+
+# Load an app into the VM's simulator and save its screen to bin/vm/<app>.png
+screenshot app="run-cockpit":
+    tools/ciq-vm.sh screenshot {{app}}
+
+# Store screenshot choreography in the VM, fake patches included; PNGs land in bin/vm/
+shoot:
+    tools/ciq-vm.sh shoot
+
+# The VM itself, e.g. `just vm start|stop|screen|peek|ssh|check` (tools/ciq-vm.sh)
+vm *args:
+    tools/ciq-vm.sh {{args}}
+
+# Launch this Mac's simulator (a GUI window on this desktop)
+sim-local:
     "{{sdk_bin}}/connectiq" &
 
-# Build an app, then push it to the running simulator
-run app="run-cockpit": (build app)
+# Build an app, then push it to this Mac's running simulator
+run-local app="run-cockpit": (build app)
     "{{sdk_bin}}/monkeydo" bin/{{app}}.prg {{device}}
 
-# Self-serve start: build an app, launch the sim if needed, load it (CIQ_DEVICE, default fenix9pro51mm); re-run to reload
-dev app="run-cockpit": (build app)
+# Build an app, launch this Mac's simulator if needed and load it; re-run to reload
+dev-local app="run-cockpit": (build app)
     ps -Ao comm | grep -qiE '(^|/)simulator$' || { "{{sdk_bin}}/connectiq" & sleep 9; }
     "{{sdk_bin}}/monkeydo" bin/{{app}}.prg {{device}}
 
-# Clear crashed/stale simulator + monkeydo instances (they make run/dev/test hang); then `just dev`
-kill:
+# Clear crashed/stale simulator + monkeydo instances on this Mac (they make the *-local recipes hang)
+kill-local:
     pkill -f monkeydo || true
     pkill -f "ConnectIQ.app/Contents" || true
     @echo "cleared stale simulator + monkeydo instances"
+
+# monkeydo -t always exits 1; the recipe greps the output for PASSED to set the real exit code.
+# Build an app with unit tests and run them in this Mac's simulator (start it with `just sim-local`)
+test-local app="run-cockpit":
+    mkdir -p bin
+    "{{sdk_bin}}/monkeyc" -d {{device}} -f apps/{{app}}/monkey.jungle -o bin/{{app}}-test.prg -y {{key}} --unit-test -w
+    "{{sdk_bin}}/monkeydo" bin/{{app}}-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
 
 # Generate bin/run-sim.fit test data (pace sweeps zones, HR+cadence ramp); load via Simulation -> Activity Data. Needs: pip install fit-tool
 sim-fit:
@@ -69,21 +100,6 @@ sim-fit:
 # Score GapModel against Garmin's lap GAP in real FIT files (Export Original); --fit re-tunes A/B
 gap-check +args:
     uv run --script tools/gap_check.py {{args}}
-
-# monkeydo -t always exits 1; the recipe greps the output for PASSED to set the real exit code.
-# Build an app with unit tests and run them in the simulator (launch it first with `just sim`)
-test app="run-cockpit":
-    mkdir -p bin
-    "{{sdk_bin}}/monkeyc" -d {{device}} -f apps/{{app}}/monkey.jungle -o bin/{{app}}-test.prg -y {{key}} --unit-test -w
-    "{{sdk_bin}}/monkeydo" bin/{{app}}-test.prg {{device}} -t | tee /dev/stderr | grep -q "^PASSED"
-
-# `just test` inside the macOS VM, so no simulator window opens on this desktop (docs/simulator-vm.md)
-vm-test app="run-cockpit":
-    tools/ciq-vm.sh test {{app}}
-
-# Store screenshot choreography inside the macOS VM, fake patches included; PNGs land in bin/vm/
-vm-shoot:
-    tools/ciq-vm.sh shoot
 
 # Copy an app's built .prg to a USB-mounted watch, e.g. `just sideload sauna-timer`
 sideload app="run-cockpit" watch="/Volumes/GARMIN": (build app)
