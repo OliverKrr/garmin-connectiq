@@ -16,6 +16,8 @@ compact old entries before adding new ones. `just validate-store-text` fails the
 paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+
+## [1.3.1] - 2026-10-18
 - GAP is now a climb metric instead of its own mode: the new Climb metric setting picks Power or GAP. With GAP, Auto switches current and lap from pace to GAP on climbs (labels GP, GL, with pace-zone numbers), and the bottom row shows average GAP instead of average power.
 
 ## [1.3.0] - 2026-10-18
