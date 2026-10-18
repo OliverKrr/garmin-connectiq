@@ -1,3 +1,6 @@
+Version 1.3.0 - 2026-10-18
+- Grade-adjusted pace (GAP): new Pace / power option that shows current, lap and average GAP (labels GP, GL, GA), coloured by pace zones. Calibrated to Garmin's own lap GAP: within about 4 s/km on hilly laps.
+
 Version 1.2.0 - 2026-10-15
 - 12 more supported watches (95 in total): fenix 9 43 / 47 mm, fenix 9 Pro 43 / 47 / 51 mm
   (incl. inReach), fenix 9 Pro Solar 47 / 51 mm, D2 Delta / Delta PX / Delta S, Descent Mk1,

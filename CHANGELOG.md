@@ -16,6 +16,8 @@ compact old entries before adding new ones. `just validate-store-text` fails the
 paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+
+## [1.3.0] - 2026-10-18
 - Grade-adjusted pace (GAP): new Pace / power option that shows current, lap and average GAP (labels GP, GL, GA), coloured by pace zones. Calibrated to Garmin's own lap GAP: within about 4 s/km on hilly laps.
 
 ## [1.2.0] - 2026-10-15

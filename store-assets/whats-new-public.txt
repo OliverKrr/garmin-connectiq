@@ -1,3 +1,6 @@
+Version 1.3.0 - 2026-10-18
+- Grade-adjusted pace (GAP): a new Pace / power option shows current, lap and average GAP, coloured by your pace zones - the flat pace your effort on a hill is worth, an alternative to power on hilly runs. Calibrated to Garmin's own GAP.
+
 Version 1.2.0 - 2026-10-15
 - 12 more supported watches (95 in total): the whole fenix 9 family (fenix 9, fenix 9 Pro incl. inReach, fenix 9 Pro Solar), D2 Delta, Descent Mk1 and Forerunner 645 Music.
 
