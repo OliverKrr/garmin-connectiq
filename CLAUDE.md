@@ -67,4 +67,6 @@ or editing anything in `store-assets/`.
 **Guardrail.** Packaging (`just release`, `just package`, `just tag`) is local and safe to run.
 Everything outward-facing belongs to the user: the Store upload (a manual dashboard step, there
 is no API), `git push` of a tag, and `just github-release`. Hand over the built `.iq` and never
-report the app as published.
+report the app as published. With `push.followTags` set (as on the maintainer's machine), a
+plain `git push` also publishes every annotated tag on the pushed history. So create a release
+tag only once the user has agreed to push it, or push commits with `git push --no-follow-tags`.
