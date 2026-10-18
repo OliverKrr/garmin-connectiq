@@ -11,6 +11,7 @@ developer_key.der
 
 # Generated beta manifest (produced by `just package`)
 apps/run-cockpit/manifest-beta.xml
+apps/sauna-cockpit/manifest-beta.xml
 
 # Editor / OS
 .DS_Store

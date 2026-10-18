@@ -1,0 +1,43 @@
+Sauna Cockpit times your sauna rounds and shows what each round does to your heart: a countdown per heat and cool-down phase, live heart rate in your own zones, and watch-temperature alerts that tell you when to cover the watch and when to leave. Open source: https://github.com/OliverKrr/garmin-connectiq
+
+BETA. This is a private test build.
+
+IMPORTANT: Garmin rates its watches for -20 to 45 C. A sauna is far hotter, so wearing the watch there is at your own risk and may void the warranty. Garmin's own advice is to leave the watch outside. The watch temperature is measured inside the case and reads far below the air temperature; the alerts are a guard for the watch, not a sauna thermometer.
+
+HOW IT WORKS
+- START starts a session in the heat phase, round 1.
+- BACK switches phase: heat, cool-down, heat (next round). Each phase is a lap.
+- UP / DOWN switch pages: cockpit, heat table, rest table.
+- START again pauses: Resume, Save or Discard.
+- The touchscreen is ignored, so wet fingers and towels cannot switch phases.
+
+COCKPIT
+- A ring around the screen fills toward the phase target; the big number counts down, then counts up as overtime.
+- Heart rate in your Garmin heart-rate zone colours, with the phase's low / average / high.
+- Watch temperature: yellow at the pre-warning, red at the alert.
+
+ALERTS (vibrate, beep and screen light are each optional)
+- End of the heat phase and of the cool-down.
+- Watch temperature pre-warning, default 42 C: cover the watch with your hand. It warns again if the reading drops 1 C and climbs back.
+- Watch temperature alert, default 44 C: leave the sauna.
+- Optional heart-rate alert.
+
+PER ROUND
+- Heat: time, average and maximum heart rate, peak watch temperature, time at or above the sauna effect heart rate (default 120 bpm).
+- Rest: time, average and lowest heart rate, heart-rate recovery (the drop in the first minute) and how far the watch temperature fell.
+- HRV (RMSSD) for each heat and rest phase, from the beat-to-beat intervals of the optical sensor. Wrist HRV is noisy: compare your sessions with each other.
+
+AFTER THE SESSION
+- Summary pages Heat, Rest and Recovery. Recovery shows Body Battery at start and end and your stress level.
+- History of the last 50 sessions on the watch, with 7- and 30-day totals. MENU on a session deletes it.
+- The activity is saved to Garmin Connect with extra fields per lap and session. GPS stays off.
+
+SETTINGS (Garmin Connect app)
+- Heat phase target (default 12 min) and whether it alerts.
+- Cool-down target (default 15 min) and whether it alerts.
+- Watch temperature pre-warning (42 C) and alert (44 C); 0 turns either off.
+- Heart-rate alert (off by default).
+- Sauna effect heart rate (120 bpm).
+- Alert by vibration, beep and screen light.
+- Save as activity in Garmin Connect.
+- Record as: Other (default; calories counted, the session stays out of stress statistics) or Meditation (Garmin keeps measuring stress during the session, no calories).

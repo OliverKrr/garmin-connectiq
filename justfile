@@ -9,7 +9,8 @@ device  := env_var_or_default("CIQ_DEVICE", "fenix9pro51mm")
 # Signing key: the release key the Store listings were first signed with (restore it, never
 # regenerate it). CIQ_KEY points at another key, e.g. a throwaway key inside the simulator VM.
 key     := env_var_or_default("CIQ_KEY", "developer_key.der")
-# Store packaging/release recipes below (package, bump, tag, ...) are Run Cockpit's only;
+# Store packaging/release recipes below (package, publish-assist, release, ...) are Run Cockpit's;
+# package-beta, bump and tag take an app name (bump/tag default to run-cockpit; see RELEASE.md);
 # build/run/dev/test/sideload take the app dir name under apps/ (default run-cockpit).
 jungle  := "apps/run-cockpit/monkey.jungle"
 
@@ -135,10 +136,22 @@ package: validate-store-text
     @echo "Public .iq -> bin/run-cockpit.iq       (app id {{public_app_id}} — public listing)"
     @echo "Beta   .iq -> bin/run-cockpit-beta.iq  (app id {{beta_app_id}} — beta listing)"
 
-# Set the app version (semver), e.g. `just bump 0.2.0`
-bump VERSION:
-    python3 -c "import re; p='apps/run-cockpit/manifest.xml'; s=open(p).read(); s=re.sub(r'(<iq:application[^>]* version=\")[0-9.]+(\")', r'\g<1>{{VERSION}}\g<2>', s); open(p,'w').write(s)"
-    @grep -oE '<iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml
+# Validates the Store text, writes apps/<app>/manifest-beta.xml from manifest.xml with the beta
+# listing's app id (apps/<app>/store/beta-app-id) and the "(Beta)" name, and compiles for every
+# product in the manifest. Local only; the upload is a manual dashboard step.
+# Build the signed beta .iq of an app with Store files in apps/<app>/store/, e.g. `just package-beta sauna-cockpit`
+package-beta app:
+    python3 tools/validate_store_text.py {{app}}
+    mkdir -p bin
+    python3 -c "import re; d='apps/{{app}}'; s=open(d+'/manifest.xml').read(); bid=open(d+'/store/beta-app-id').read().strip(); s=re.sub(r'(<iq:application[^>]* id=\")[0-9a-f]+(\")', r'\g<1>'+bid+r'\g<2>', s, count=1); s=s.replace('name=\"@Strings.AppName\"','name=\"@Strings.AppNameBeta\"'); open(d+'/manifest-beta.xml','w').write(s)"
+    "{{sdk_bin}}/monkeyc" -e -r -o bin/{{app}}-beta.iq -f apps/{{app}}/monkey-beta.jungle -y {{key}}
+    @echo "Beta .iq -> bin/{{app}}-beta.iq (app id $(cat apps/{{app}}/store/beta-app-id), version $(grep -oE '<iq:application[^>]*' apps/{{app}}/manifest.xml | grep -oE '[[:space:]]version="[0-9.]+"' | grep -oE '[0-9.]+'))"
+    @echo "Paste: apps/{{app}}/store/description.txt + apps/{{app}}/store/whats-new.txt. Upload: https://apps-developer.garmin.com"
+
+# Set an app's version (semver), e.g. `just bump 0.2.0` or `just bump 0.2.0 sauna-cockpit`
+bump VERSION app="run-cockpit":
+    python3 -c "import re; p='apps/{{app}}/manifest.xml'; s=open(p).read(); s=re.sub(r'(<iq:application[^>]* version=\")[0-9.]+(\")', r'\g<1>{{VERSION}}\g<2>', s); open(p,'w').write(s)"
+    @grep -oE '<iq:application[^>]* version="[0-9.]+"' apps/{{app}}/manifest.xml
 
 # Prepare the manual Store upload: print version, CHANGELOG notes, checklist, dashboard URL.
 # Does NOT upload or open a browser — publishing is a manual, outward-facing step.
@@ -161,16 +174,17 @@ publish-assist: validate-store-text
 # yourself after the Store upload is accepted). The tag is the only durable link from a Store version
 # to its exact source: CI cannot rebuild (Garmin MFA blocks headless SDK logins), so nothing else pins
 # the shipped binary. Tag EVERY shipped version (beta and public).
-tag:
+# Create a local app-scoped git tag at the manifest version, e.g. `just tag` or `just tag sauna-cockpit`
+tag app="run-cockpit":
     #!/usr/bin/env bash
     set -euo pipefail
-    version=$(grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/run-cockpit/manifest.xml | grep -oE 'version="[0-9.]+"' | grep -oE '[0-9.]+')
-    tag="run-cockpit-v${version}"
+    version=$(grep -oE 'iq:application[^>]* version="[0-9.]+"' apps/{{app}}/manifest.xml | grep -oE 'version="[0-9.]+"' | grep -oE '[0-9.]+')
+    tag="{{app}}-v${version}"
     if git rev-parse -q --verify "refs/tags/${tag}" >/dev/null; then
         echo "tag ${tag} already exists — nothing to do"
         exit 0
     fi
-    git tag -a "${tag}" -m "Run Cockpit ${version}"
+    git tag -a "${tag}" -m "{{app}} ${version}"
     echo "created local tag ${tag}"
     echo "after the Store upload is accepted, push it:  git push origin ${tag}"
 

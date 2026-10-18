@@ -1,5 +1,6 @@
 <strings>
     <string id="AppName">Sauna Cockpit</string>
+    <string id="AppNameBeta">Sauna Cockpit (Beta)</string>
     <string id="SetHeatMin">Heat phase target (minutes)</string>
     <string id="SetWarnHeatEnd">Alert at end of heat phase</string>
     <string id="SetCoolMin">Cool-down target (minutes)</string>

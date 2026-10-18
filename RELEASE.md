@@ -83,3 +83,34 @@ The public listing is a first-time submit, not just an upload, so it needs more 
 > Claude prepares the `.iq`, notes, and local tag; it does **not** upload, push, or publish a release.
 > Those outward-facing steps (`git push`, `just github-release`, the dashboard submit) are yours.
 > Never report an app as "published" — hand the artifact to the human for the final submit.
+
+# Releasing Sauna Cockpit
+
+Sauna Cockpit has a **private beta listing** so far; a public one comes later. Its Store files live
+with the app, not in the root `store-assets/`, which stays Run Cockpit's:
+
+| File | What it is |
+|---|---|
+| `apps/sauna-cockpit/store/beta-app-id` | The beta listing's app id. `just package-beta` writes it into the generated `manifest-beta.xml` |
+| `apps/sauna-cockpit/manifest.xml` `id` | Reserved for the later public listing; nothing has been uploaded with it |
+| `apps/sauna-cockpit/store/description.txt` | Description paste file, authored |
+| `apps/sauna-cockpit/store/whats-new.txt` | What's New paste file, regenerated from `apps/sauna-cockpit/CHANGELOG.md` |
+| `apps/sauna-cockpit/store/cover.png`, `screenshots/` | Listing images; `cover.svg` is the source. The screenshots are VM simulator captures with test data, to be replaced by on-watch captures before a public launch |
+
+The ids follow the Run Cockpit rule above: the first accepted upload registers the id it carries,
+and every later upload to that listing must carry the same one. Signing uses the same release key.
+
+**Beta steps**
+
+1. `just bump X.Y.Z sauna-cockpit` and add the `## [X.Y.Z] - date` section to
+   `apps/sauna-cockpit/CHANGELOG.md`.
+2. `just package-beta sauna-cockpit` validates the Store text, regenerates `store/whats-new.txt` and
+   builds `bin/sauna-cockpit-beta.iq` for every product in the manifest.
+3. In the dashboard (https://apps-developer.garmin.com): the first time, create a new app listing
+   named "Sauna Cockpit (Beta)" with visibility private/unlisted and category Health and Fitness.
+   Then upload `bin/sauna-cockpit-beta.iq`, paste `store/description.txt` and `store/whats-new.txt`,
+   add `store/cover.png` and the screenshots, and submit.
+4. After the upload is accepted: `just tag sauna-cockpit`, then `git push origin sauna-cockpit-vX.Y.Z`.
+
+The same guardrail applies: Claude prepares the `.iq`, the text and the local tag; the upload, the
+submit and pushing tags are yours.

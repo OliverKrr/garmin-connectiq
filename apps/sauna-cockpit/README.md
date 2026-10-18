@@ -3,7 +3,8 @@
 A Connect IQ **watch app** for sauna sessions: alternating heat and cool-down phases, a countdown
 per phase, live heart rate and watch temperature with alerts, per-round statistics, and an on-watch
 history of past sessions. Built for the fēnix 9 Pro, which the popular "Sauna Timer" app does not
-support. Status: 0.1.0, sideload only, not on the Connect IQ Store.
+support. Status: 0.1.0 in a private beta listing on the Connect IQ Store (see `RELEASE.md`);
+a public listing comes later.
 
 ## Using it
 

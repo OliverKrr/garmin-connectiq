@@ -47,7 +47,7 @@ shared barrels.
 | App | Type | Status |
 |---|---|---|
 | [`apps/run-cockpit`](apps/run-cockpit) | Data field | Full-screen running stats page |
-| [`apps/sauna-cockpit`](apps/sauna-cockpit) | Watch app | Sauna rounds: phase countdown, HR and watch-temperature alerts, round stats, session history (sideload only) |
+| [`apps/sauna-cockpit`](apps/sauna-cockpit) | Watch app | Sauna rounds: phase countdown, HR and watch-temperature alerts, round stats, session history (private beta) |
 
 - `apps/` — Connect IQ applications (one dir per app)
 - `barrels/` — Shared Monkey C code (Connect IQ "barrels")

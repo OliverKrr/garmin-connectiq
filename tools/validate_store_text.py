@@ -22,6 +22,11 @@ A warning is printed above 3600 characters so the next release still has room.
 
 Run directly or via `just validate-store-text`; `just package` / `just publish-assist`
 run it automatically.
+
+With an app directory name as argument (`validate_store_text.py sauna-cockpit`), it checks that
+app's own Store files instead: apps/<app>/store/description.txt as-is, and
+apps/<app>/store/whats-new.txt regenerated from apps/<app>/CHANGELOG.md. Such an app has a beta
+listing only, so there is no public What's New. `just package-beta <app>` runs it this way.
 """
 import re
 import sys
@@ -53,26 +58,35 @@ def check(name: str, text: str) -> None:
                 )
 
 
-# 1. Description: the paste file itself (used by both listings).
-check("description (store-assets/description.txt)", open("store-assets/description.txt", encoding="utf-8").read())
-
-# 2. What's New (Public): authored paste file, checked as-is (not regenerated).
-check("what's new / public (store-assets/whats-new-public.txt)", open("store-assets/whats-new-public.txt", encoding="utf-8").read())
-
-# 3. What's New (Beta): regenerate the paste file from the changelog's released history.
-changelog = open("CHANGELOG.md", encoding="utf-8").read()
-m = re.search(r"^## \[\d", changelog, flags=re.M)
-if not m:
-    failures.append("CHANGELOG.md: no released section found")
-else:
+def regenerate_whats_new(changelog_path: str, out_path: str) -> None:
+    """Write the changelog's released history to the What's New paste file and check it."""
+    changelog = open(changelog_path, encoding="utf-8").read()
+    m = re.search(r"^## \[\d", changelog, flags=re.M)
+    if not m:
+        failures.append(f"{changelog_path}: no released section found")
+        return
     history = changelog[m.start():]
     # Store-ready: "## [0.6.0] - 2026-07-06" markdown headings would render literally,
     # so turn them into the "Version 0.6.0 - 2026-07-06" convention of top listings.
     history = re.sub(r"^## \[([^\]]+)\] - ", r"Version \1 - ", history, flags=re.M)
-    with open("store-assets/whats-new.txt", "w", encoding="utf-8") as f:
+    with open(out_path, "w", encoding="utf-8") as f:
         f.write(history)
-    print("store-assets/whats-new.txt regenerated from CHANGELOG.md")
-    check("what's new / beta (store-assets/whats-new.txt)", history)
+    print(f"{out_path} regenerated from {changelog_path}")
+    check(f"what's new / beta ({out_path})", history)
+
+
+if len(sys.argv) > 1:
+    app = sys.argv[1]
+    store = f"apps/{app}/store"
+    check(f"description ({store}/description.txt)", open(f"{store}/description.txt", encoding="utf-8").read())
+    regenerate_whats_new(f"apps/{app}/CHANGELOG.md", f"{store}/whats-new.txt")
+else:
+    # 1. Description: the paste file itself (used by both listings).
+    check("description (store-assets/description.txt)", open("store-assets/description.txt", encoding="utf-8").read())
+    # 2. What's New (Public): authored paste file, checked as-is (not regenerated).
+    check("what's new / public (store-assets/whats-new-public.txt)", open("store-assets/whats-new-public.txt", encoding="utf-8").read())
+    # 3. What's New (Beta): regenerate the paste file from the changelog's released history.
+    regenerate_whats_new("CHANGELOG.md", "store-assets/whats-new.txt")
 
 if failures:
     print("\nSTORE TEXT VALIDATION FAILED:")
