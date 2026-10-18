@@ -1,7 +1,12 @@
 import Toybox.Lang;
 import Toybox.Application;
 
-// App settings (Application.Properties, edited in Garmin Connect) with clamped defaults.
+const SCREEN_NORMAL = 0;
+const SCREEN_DIM = 1;
+const SCREEN_DARK = 2;
+
+// App settings (Application.Properties, edited in Garmin Connect or on the watch through
+// SettingsMenu) with clamped defaults.
 module Config {
     // Heat-phase target in seconds; 0 when its alert is off.
     function heatTargetSec() as Number {
@@ -31,11 +36,11 @@ module Config {
         return v <= 0 ? 0 : _clamp(v, 80, 230);
     }
 
-    // "Sauna effect" heart rate in bpm: time at or above it is counted per heat phase; 0 = off.
-    function effectHr() as Number {
-        var v = _num("effectHr", 120);
-        return v <= 0 ? 0 : _clamp(v, 80, 200);
-    }
+    // Session screen between button presses, per phase: SCREEN_NORMAL, SCREEN_DIM (every colour
+    // at about 40 %) or SCREEN_DARK (black but for the progress ring). A button press or an alert
+    // shows it at full brightness for a few seconds.
+    function heatScreen() as Number { return _clamp(_num("heatScreen", SCREEN_DIM), 0, 2); }
+    function restScreen() as Number { return _clamp(_num("restScreen", SCREEN_DARK), 0, 2); }
 
     function alertVibrate() as Boolean { return _bool("alertVibrate", true); }
     function alertTone() as Boolean { return _bool("alertTone", false); }
@@ -45,6 +50,22 @@ module Config {
     // Activity type: false = Other (calories counted), true = Meditation (Garmin keeps measuring
     // stress during the session, but counts no calories and books the sauna's stress into the day).
     function recordAsMeditation() as Boolean { return _num("recordAs", 0) == 1; }
+
+    // Phase targets as the on-watch menu shows them: whole minutes, 0 = no target alert.
+    function heatTargetMin() as Number { return heatTargetSec() / 60; }
+    function coolTargetMin() as Number { return coolTargetSec() / 60; }
+
+    function setHeatTargetMin(v as Number) as Void { _setTarget("heatMin", "warnHeatEnd", v); }
+    function setCoolTargetMin(v as Number) as Void { _setTarget("coolMin", "warnCoolEnd", v); }
+
+    function set(key as String, v as Number or Boolean) as Void {
+        try { Application.Properties.setValue(key, v); } catch (e) { }
+    }
+
+    function _setTarget(minKey as String, onKey as String, v as Number) as Void {
+        set(onKey, v > 0);
+        if (v > 0) { set(minKey, v); }
+    }
 
     function _clamp(v as Number, lo as Number, hi as Number) as Number {
         return v < lo ? lo : (v > hi ? hi : v);

@@ -6,8 +6,9 @@ import Toybox.Application;
 //   session = [startEpochSec, totalSec, minHr, avgHr, maxHr, maxTemp10, rounds, kcal,
 //              bodyBatteryStart, bodyBatteryEnd, stressStart, stressEnd]
 //   round   = [heatSec, minHr, avgHr, maxHr, maxTemp10, coolSec, hrr60, heatSecAboveEffHr,
-//              heatRmssd, coolAvgHr, coolMinHr, coolRmssd, coolTempDrop10]
-// Temperatures (…10) are °C x 10. Entries saved by 0.1.0 are shorter; read fields through at(),
+//              heatRmssd, coolAvgHr, coolMinHr, coolRmssd, coolTempDrop10, heatHrRise]
+// Temperatures (…10) are °C x 10. heatSecAboveEffHr is only in entries saved by 0.1.x (later ones
+// store NONE there and the HR rise at the end). Older entries are shorter; read fields through at(),
 // which returns NONE past the end. NONE marks a missing value; it is not -1 because hrr60 and temperatures
 // can be negative. Everything but the Storage functions (load, save, add, removeAt) is pure.
 module History {
@@ -46,6 +47,7 @@ module History {
     const R_CMIN = 10;
     const R_CHRV = 11;
     const R_CDROP = 12;
+    const R_RISE = 13;
 
     // Field i of a session or round, NONE when an older, shorter entry lacks it.
     function at(a as Array, i as Number) as Number {

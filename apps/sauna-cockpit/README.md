@@ -10,10 +10,28 @@ a public listing comes later.
 
 | Button | Start screen | During a session |
 |---|---|---|
-| START | Start a session (heat phase, round 1) | Pause, then Resume / Save / Discard |
-| BACK | Exit | Switch phase: heat → cool-down → heat (next round). Each switch is a FIT lap |
-| UP / DOWN | Open the history | Cycle the pages: cockpit, heat table, rest table |
-| Touch | ignored | ignored, so wet fingers and towels cannot switch phases |
+| START | Start a session (heat phase, round 1) | Pause, then Resume / Settings / Save / Discard |
+| BACK | Exit | Switch phase: heat → cool-down → heat (next round). Again within 10 s: undo the switch |
+| UP / DOWN | DOWN opens the history | Cycle the pages: cockpit, heat table, rest table. On a dimmed or dark screen the first press only brightens it |
+| MENU (hold UP) | Settings | Settings, while the session keeps running |
+| Touch | ignored | only brightens the screen, so wet fingers and towels cannot switch phases |
+
+**Undo.** A phase switch stays undoable for 10 s ("BACK again: undo"): the closed phase reopens
+with the seconds since added to it, as if BACK had never been pressed. The FIT lap is written
+only when the window closes, so an undone switch leaves no lap behind; the cost is that FIT lap
+boundaries sit up to 10 s after the real switch. The on-watch tables use the exact time.
+
+**Screen.** Connect IQ gives watch apps no control over the always-on display (only watch faces
+get the low-power hooks), so the app manages its own brightness. Between button presses the
+session screen dims during heat (every colour at 40 %) and goes dark during rest (black but for
+the progress ring; fully black when the rest has no target). Any button, a touch, or an alert
+shows it at full brightness for 10 s. The "Heat screen" and "Rest screen" settings choose
+Normal, Dim or Dark per phase. On AMOLED, black pixels are off, so Dark draws no power and no
+light.
+
+**Vibration.** A short tap acknowledges a button; three quick taps mean a phase timer ran out;
+two long buzzes are the temperature pre-warning; long-short-long is an alarm (watch temperature
+"leave", or the HR alert).
 
 **Cockpit page.** The bezel ring fills toward the phase target (orange heat, blue cool-down, red
 once over). The big number counts down to the target, then counts up as `+m:ss` overtime; without a
@@ -25,8 +43,10 @@ the app starts.
 
 **Round tables** (live pages, post-session summary and history detail):
 
-- **Heat:** heat time, average and maximum HR, peak watch temperature, and the time at or above
-  the "sauna effect" heart rate (default 120 bpm, the range sauna studies describe).
+- **Heat:** heat time, average and maximum HR, peak watch temperature, and the HR rise: peak HR
+  minus the HR when the round started. It replaced 0.1's time above a fixed 120 bpm, which a
+  calm sauna-goer with a low resting HR barely reaches; the rise compares rounds and sessions
+  whatever the absolute level. Live tables with more than four rounds page through them every 4 s.
 - **Rest** (the cool-down after each heat round): rest time, average and lowest HR, HRR (the HR
   drop in the first 60 s; a larger drop means faster recovery) and how far the watch temperature
   fell. The live rest page also shows the current phase's HRV.
@@ -36,7 +56,7 @@ the app starts.
   values; a phase with too few clean beats shows `--`.
 
 **Summary** after Save and in the history pages with UP/DOWN through Heat (session HR low / avg
-/ high, total time above the effect HR, total time, calories), Rest, and Recovery (Body Battery
+/ high, average HR rise per round, total time, calories), Rest, and Recovery (Body Battery
 at start and end, stress before and, when recorded as Meditation, after the session, the HRV
 table).
 
@@ -49,12 +69,30 @@ stress during it, so the Recovery page shows only the stress value from before. 
 setting switches to "Meditation" (what Sauna Timer uses): Garmin keeps measuring stress, the
 Recovery page shows stress before and after, but no calories are counted and the sauna's stress
 goes into the day's stress and Body Battery. GPS is never switched on.
-Developer fields, visible in Garmin Connect and exported in the FIT file: phase and watch
-temperature per second; round, phase, peak temperature, time above the effect HR and HRV per lap;
-rounds, heat time, Body Battery and stress at start and end per session. Beat-to-beat intervals are read
+Developer fields, visible in Garmin Connect and exported in the FIT file:
+
+| Message | Field (id) | Meaning |
+|---|---|---|
+| record (per second) | `phase` (0), `watch_temp` (1) | 0 heat, 1 cool-down; watch temperature in °C |
+| lap | `round` (2), `lap_phase` (3) | round number and the lap's phase |
+| lap | `lap_max_temp` (4), `lap_rmssd` (8) | peak watch temperature; HRV (RMSSD, ms) |
+| lap (heat) | `lap_hr_rise` (13) | peak HR minus the HR at the lap's start, bpm |
+| lap (cool-down) | `lap_hrr60` (14) | HR drop over the first 60 s, bpm |
+| session | `rounds` (5), `heat_time` (6) | heat rounds; seconds in heat |
+| session | `body_battery_start/end` (9, 10), `stress_start/end` (11, 12) | see Recording |
+
+Field 7 (`lap_effect_time`, 0.1.x) is retired and its id not reused. Body Battery and stress
+come from the watch's history: the start values from the newest sample of the 30 minutes
+before, the end values only from samples taken during the session (none → empty field), and
+stress at the end only in a Meditation recording. Intervals.icu drops developer fields from its
+streams; read them from the original FIT (`GET /api/v1/activity/{id}/file`). Beat-to-beat intervals are read
 only while a session runs, since they keep the optical sensor in its high-rate mode.
 
-## Settings (Garmin Connect app)
+## Settings (watch or Garmin Connect app)
+
+All settings but the two recording ones can also be changed on the watch (MENU, or Settings in
+the pause menu), and a running session takes new targets and limits at once. The on-watch menu
+offers 1-30 min targets, 36-55 °C temperatures and 120-200 bpm in steps of 5.
 
 | Setting | Default | |
 |---|---|---|
@@ -65,7 +103,7 @@ only while a session runs, since they keep the optical sensor in its high-rate m
 | Watch temperature pre-warning | 42 °C | Two buzzes, "cover": shade the watch with your hand. Warns again after the reading drops 1 °C and climbs back. 0 = off |
 | Watch temperature alert | 44 °C | Three buzzes, "leave". 0 = off. See below |
 | Heart rate alert | 0 (off) | bpm |
-| Sauna effect heart rate | 120 bpm | Time at or above it is counted per heat round. 0 = off |
+| Heat screen / Rest screen | Dim / Dark | Between button presses: Normal, Dim (40 %) or Dark (black but for the ring) |
 | Alert: vibrate / beep / light up the screen | on / off / on | |
 | Save as activity in Garmin Connect | on | Off keeps only the on-watch history |
 | Record as | Other | Other: calories, no stress during the session. Meditation: stress measured, no calories |

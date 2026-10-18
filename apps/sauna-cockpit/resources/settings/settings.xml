@@ -20,8 +20,19 @@
     <setting propertyKey="@Properties.hrLimit" title="@Strings.SetHrLimit">
         <settingConfig type="numeric" min="0" max="230" />
     </setting>
-    <setting propertyKey="@Properties.effectHr" title="@Strings.SetEffectHr">
-        <settingConfig type="numeric" min="0" max="200" />
+    <setting propertyKey="@Properties.heatScreen" title="@Strings.SetHeatScreen">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ScreenNormal</listEntry>
+            <listEntry value="1">@Strings.ScreenDim</listEntry>
+            <listEntry value="2">@Strings.ScreenDark</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.restScreen" title="@Strings.SetRestScreen">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.ScreenNormal</listEntry>
+            <listEntry value="1">@Strings.ScreenDim</listEntry>
+            <listEntry value="2">@Strings.ScreenDark</listEntry>
+        </settingConfig>
     </setting>
     <setting propertyKey="@Properties.alertVibrate" title="@Strings.SetAlertVibrate">
         <settingConfig type="boolean" />

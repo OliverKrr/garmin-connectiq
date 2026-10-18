@@ -6,7 +6,8 @@
     <fitField id="4" displayInActivityLaps="true" sortOrder="4" precision="1" dataLabel="@Strings.FitLapMaxTemp" unitLabel="@Strings.UnitC" />
     <fitField id="5" displayInActivitySummary="true" sortOrder="5" precision="0" dataLabel="@Strings.FitRounds" unitLabel="@Strings.UnitCount" />
     <fitField id="6" displayInActivitySummary="true" sortOrder="6" precision="0" dataLabel="@Strings.FitHeatTime" unitLabel="@Strings.UnitS" />
-    <fitField id="7" displayInActivityLaps="true" sortOrder="7" precision="0" dataLabel="@Strings.FitLapEffect" unitLabel="@Strings.UnitS" />
+    <fitField id="13" displayInActivityLaps="true" sortOrder="7" precision="0" dataLabel="@Strings.FitLapRise" unitLabel="@Strings.UnitBpm" />
+    <fitField id="14" displayInActivityLaps="true" sortOrder="13" precision="0" dataLabel="@Strings.FitLapHrr" unitLabel="@Strings.UnitBpm" />
     <fitField id="8" displayInActivityLaps="true" sortOrder="8" precision="0" dataLabel="@Strings.FitLapHrv" unitLabel="@Strings.UnitMs" />
     <fitField id="9" displayInActivitySummary="true" sortOrder="9" precision="0" dataLabel="@Strings.FitBb0" unitLabel="@Strings.UnitCount" />
     <fitField id="10" displayInActivitySummary="true" sortOrder="10" precision="0" dataLabel="@Strings.FitBb1" unitLabel="@Strings.UnitCount" />

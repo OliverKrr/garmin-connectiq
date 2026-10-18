@@ -4,13 +4,20 @@ import Toybox.WatchUi;
 import Toybox.System;
 
 const LIVE_ROWS = 4;
+// A live table with more rounds than fit pages through them, this long per block.
+const LIVE_PAGE_MS = 4000;
+// Brightness of a dimmed screen, in percent.
+const DIM_LEVEL = 40;
 
 // The in-session screen. Page 0 is the cockpit: a bezel ring filling toward the phase target,
 // the phase countdown (or elapsed time without a target), HR in zone colour, the watch
 // temperature, and the phase's HR min/avg/max. Pages 1 and 2 are the heat and rest tables.
+// Between button presses the screen dims or goes dark per phase (Config.heatScreen/restScreen).
 class SessionView extends WatchUi.View {
     var page as Number = 0;
     private var _c as SessionController;
+    // When the current page was opened (System.getTimer ms), for paging long tables.
+    private var _pageSince as Number = 0;
 
     function initialize(c as SessionController) {
         View.initialize();
@@ -31,17 +38,36 @@ class SessionView extends WatchUi.View {
         }
     }
 
+    function setPage(p as Number) as Void {
+        page = p;
+        _pageSince = System.getTimer();
+    }
+
+    // SCREEN_NORMAL while awake (after a button or an alert) or paused, else the phase's setting.
+    function mode() as Number {
+        var m = _c.model;
+        if (m == null || _c.awake() || _c.state == STATE_PAUSED) { return SCREEN_NORMAL; }
+        return m.phase == PHASE_HEAT ? Config.heatScreen() : Config.restScreen();
+    }
+
     function onUpdate(dc as Graphics.Dc) as Void {
         dc.setColor(Theme.FG, Theme.BG);
         dc.clear();
         var m = _c.model;
         if (m == null) { return; }
-        if (page == 0) {
+        var mode = mode();
+        Theme.level = mode == SCREEN_NORMAL ? 100 : DIM_LEVEL;
+        if (mode == SCREEN_DARK) {
+            // Black but for the progress, so the screen still shows the session runs.
+            var target = m.targetSec();
+            if (target > 0) { Theme.ring(dc, m.current.seconds.toFloat() / target, Theme.phaseColor(m.phase)); }
+        } else if (page == 0) {
             drawCockpit(dc, m);
         } else {
             drawRounds(dc, m, page == 1 ? TABLE_HEAT : TABLE_REST);
         }
         drawBanner(dc);
+        Theme.level = 100;
     }
 
     private function drawCockpit(dc as Graphics.Dc, m as SessionModel) as Void {
@@ -82,7 +108,8 @@ class SessionView extends WatchUi.View {
         Theme.text(dc, cx, h * 91 / 100, Graphics.FONT_XTINY, now.hour.format("%d") + ":" + now.min.format("%02d"), Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
     }
 
-    // Live round table (heat or rest), showing the newest LIVE_ROWS rounds.
+    // Live round table (heat or rest), LIVE_ROWS rounds at a time: the block with the newest round
+    // first, then every LIVE_PAGE_MS the next block, round-robin.
     private function drawRounds(dc as Graphics.Dc, m as SessionModel, kind as Number) as Void {
         var w = dc.getWidth();
         var h = dc.getHeight();
@@ -101,7 +128,12 @@ class SessionView extends WatchUi.View {
             Theme.text(dc, w / 2, h * 33 / 100, f, "HRV now " + Fmt.num(History.n(m.current.rmssd())) + " ms", Theme.DIM, center);
         }
         var rows = m.roundRows();
-        var first = rows.size() > LIVE_ROWS ? rows.size() - LIVE_ROWS : 0;
+        var blocks = (rows.size() + LIVE_ROWS - 1) / LIVE_ROWS;
+        var first = 0;
+        if (blocks > 1) {
+            var step = (System.getTimer() - _pageSince) / LIVE_PAGE_MS;
+            first = ((blocks - 1 + step) % blocks) * LIVE_ROWS;
+        }
         RoundsTable.draw(dc, kind, rows, first, h * 42 / 100, LIVE_ROWS);
     }
 
@@ -110,15 +142,27 @@ class SessionView extends WatchUi.View {
         if (b == null || System.getTimer() > _c.bannerUntil) { return; }
         var w = dc.getWidth();
         var h = dc.getHeight();
-        var bh = dc.getFontHeight(Graphics.FONT_SMALL) + 8;
-        dc.setColor(Theme.FG, Theme.FG);
-        dc.fillRectangle(0, h / 2 - bh / 2, w, bh);
-        Theme.text(dc, w / 2, h / 2, Graphics.FONT_SMALL, b, Theme.BG, Graphics.TEXT_JUSTIFY_CENTER);
+        var sub = _c.bannerSub;
+        var fh = dc.getFontHeight(Graphics.FONT_SMALL);
+        var sh = sub != null ? dc.getFontHeight(Graphics.FONT_XTINY) : 0;
+        var bh = fh + sh + 8;
+        var top = h / 2 - bh / 2;
+        dc.setColor(Theme.c(Theme.FG), Theme.c(Theme.FG));
+        dc.fillRectangle(0, top, w, bh);
+        Theme.text(dc, w / 2, top + 4 + fh / 2, Graphics.FONT_SMALL, b, Theme.BG, Graphics.TEXT_JUSTIFY_CENTER);
+        if (sub != null) {
+            // The undo hint disappears with the undo window, even if the banner were longer.
+            if (_c.canUndo() || !sub.equals("BACK again: undo")) {
+                Theme.text(dc, w / 2, top + 4 + fh + sh / 2, Graphics.FONT_XTINY, sub, Theme.BG, Graphics.TEXT_JUSTIFY_CENTER);
+            }
+        }
     }
 }
 
-// START pauses (opening Resume / Save / Discard), BACK switches phase, UP/DOWN cycle the pages.
-// Touch is ignored: wet fingers and towels in the sauna would otherwise switch phases.
+// START pauses (opening Resume / Settings / Save / Discard), BACK switches phase (again within
+// UNDO_MS undoes it), UP/DOWN cycle the pages, MENU (hold UP) opens the settings without pausing.
+// Every button wakes a dimmed or dark screen; on a dimmed or dark screen UP/DOWN only wake it.
+// A tap only wakes the screen: wet fingers and towels in the sauna must not switch phases.
 class SessionDelegate extends WatchUi.BehaviorDelegate {
     private var _c as SessionController;
     private var _v as SessionView;
@@ -132,6 +176,12 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
     function onSelect() as Boolean {
         _c.pause();
         PauseMenu.push(_c);
+        return true;
+    }
+
+    function onMenu() as Boolean {
+        _c.wake();
+        SettingsMenu.push(_c);
         return true;
     }
 
@@ -149,11 +199,18 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
     function onPreviousPage() as Boolean { return flip(-1); }
 
     private function flip(d as Number) as Boolean {
-        _v.page = (_v.page + d + 3) % 3;
+        if (_v.mode() == SCREEN_NORMAL) { _v.setPage((_v.page + d + 3) % 3); }
+        _c.wake();
         WatchUi.requestUpdate();
         return true;
     }
 
-    function onTap(evt as WatchUi.ClickEvent) as Boolean { return true; }
-    function onSwipe(evt as WatchUi.SwipeEvent) as Boolean { return true; }
+    function onTap(evt as WatchUi.ClickEvent) as Boolean { return wakeOnly(); }
+    function onSwipe(evt as WatchUi.SwipeEvent) as Boolean { return wakeOnly(); }
+
+    private function wakeOnly() as Boolean {
+        _c.wake();
+        WatchUi.requestUpdate();
+        return true;
+    }
 }

@@ -4,7 +4,7 @@ import Toybox.WatchUi;
 import Toybox.Time;
 
 // Idle screen: live HR and watch temperature, the last session and the 7-day totals.
-// START begins a session, DOWN/MENU opens the history, BACK exits.
+// START begins a session, DOWN opens the history, MENU (hold UP) the settings, BACK exits.
 class StartView extends WatchUi.View {
     private var _c as SessionController;
     private var _last as String = "";
@@ -55,7 +55,7 @@ class StartView extends WatchUi.View {
 
         Theme.text(dc, cx, h * 63 / 100, Graphics.FONT_XTINY, _last, Theme.FG, Graphics.TEXT_JUSTIFY_CENTER);
         Theme.text(dc, cx, h * 71 / 100, Graphics.FONT_XTINY, _week, Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
-        Theme.text(dc, cx, h * 84 / 100, Graphics.FONT_XTINY, "History  v", Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
+        Theme.text(dc, cx, h * 84 / 100, Graphics.FONT_XTINY, "History v  Settings: hold UP", Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
     }
 }
 
@@ -80,7 +80,8 @@ class StartDelegate extends WatchUi.BehaviorDelegate {
     }
 
     function onMenu() as Boolean {
-        return onNextPage();
+        SettingsMenu.push(_c);
+        return true;
     }
 
     // Wet fingers in the sauna: the screen ignores touches.

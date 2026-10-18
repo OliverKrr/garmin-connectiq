@@ -7,13 +7,13 @@ const TABLE_HRV = 2;
 
 // Per-round tables over History round rows, shared by the live session pages, the post-session
 // summary and the history detail:
-//   heat: round, heat time, avg / max HR, peak watch temperature, time at or above the effect HR
+//   heat: round, heat time, avg / max HR, peak watch temperature, HR rise (peak minus start)
 //   rest: round, rest time, avg / min HR, HRR (HR drop in the first minute), watch-temperature drop
 //   hrv:  round, HRV (RMSSD, ms) in the heat phase and in the following rest
 module RoundsTable {
     // Widest expected cell per column, measured against its header to size the column.
     const SAMPLES = [
-        ["9", "88:88", "888", "888", "88°", "88:88"],
+        ["9", "88:88", "888", "888", "88°", "+88"],
         ["9", "88:88", "888", "888", "-88", "-88°"],
         ["9", "888", "888"],
     ];
@@ -25,8 +25,7 @@ module RoundsTable {
 
     function heads(kind as Number) as Array<String> {
         if (kind == TABLE_HEAT) {
-            var e = Config.effectHr();
-            return ["#", "heat", "avg", "max", "°C", e > 0 ? e + "+" : "--"];
+            return ["#", "heat", "avg", "max", "°C", "rise"];
         }
         return kind == TABLE_REST ? ["#", "rest", "avg", "min", "HRR", "drop"] : ["", "HRV heat", "HRV rest"];
     }
@@ -82,8 +81,8 @@ module RoundsTable {
                 hr(dc, x[2], y, f, History.at(r, History.R_AVG));
                 hr(dc, x[3], y, f, History.at(r, History.R_MAX));
                 Theme.text(dc, x[4], y, f, Fmt.temp10(History.at(r, History.R_TEMP)), Theme.FG, right);
-                var eff = History.at(r, History.R_EFF);
-                Theme.text(dc, x[5], y, f, eff == History.NONE ? "--" : Fmt.clock(eff), Theme.HEAT, right);
+                var rise = History.at(r, History.R_RISE);
+                Theme.text(dc, x[5], y, f, rise == History.NONE ? "--" : "+" + rise.format("%d"), Theme.HEAT, right);
             } else if (kind == TABLE_REST) {
                 var cool = History.at(r, History.R_COOL);
                 Theme.text(dc, x[1], y, f, cool <= 0 ? "--" : Fmt.clock(cool), Theme.FG, right);

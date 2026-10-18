@@ -8,7 +8,11 @@
     <string id="SetTempWarn">Watch temperature pre-warning in C: cover the watch (0 = off)</string>
     <string id="SetTempLimit">Watch temperature alert in C: leave now (0 = off; Garmin rates 45 C)</string>
     <string id="SetHrLimit">Heart rate alert in bpm (0 = off)</string>
-    <string id="SetEffectHr">Sauna effect heart rate: time above it is counted (0 = off)</string>
+    <string id="SetHeatScreen">Screen during heat, between button presses</string>
+    <string id="SetRestScreen">Screen during rest, between button presses</string>
+    <string id="ScreenNormal">Normal</string>
+    <string id="ScreenDim">Dim: every colour at 40 %, a button brightens it</string>
+    <string id="ScreenDark">Dark: black but for the progress ring, a button shows it</string>
     <string id="SetAlertVibrate">Alert: vibrate</string>
     <string id="SetAlertTone">Alert: beep</string>
     <string id="SetAlertLight">Alert: light up the screen</string>
@@ -25,7 +29,9 @@
     <string id="FitLapMaxTemp">Max watch temp</string>
     <string id="FitRounds">Rounds</string>
     <string id="FitHeatTime">Heat time</string>
-    <string id="FitLapEffect">Time above effect HR</string>
+    <string id="FitLapRise">HR rise</string>
+    <string id="FitLapHrr">HR recovery 60 s</string>
+    <string id="UnitBpm">bpm</string>
     <string id="FitLapHrv">HRV (RMSSD)</string>
     <string id="FitBb0">Body Battery start</string>
     <string id="FitBb1">Body Battery end</string>

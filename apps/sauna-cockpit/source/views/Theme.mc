@@ -22,6 +22,18 @@ module Theme {
 
     var _zones as Array<Number> or Null = null;
 
+    // Percent brightness every colour is drawn at; below 100 dims the whole screen. Set by the
+    // session view per frame (Config.heatScreen / restScreen), 100 everywhere else.
+    var level as Number = 100;
+
+    function c(color as Number) as Number {
+        if (level >= 100) { return color; }
+        var r = ((color >> 16) & 0xFF) * level / 100;
+        var g = ((color >> 8) & 0xFF) * level / 100;
+        var b = (color & 0xFF) * level / 100;
+        return (r << 16) | (g << 8) | b;
+    }
+
     function zoneColor(hr as Number or Null) as Number {
         if (hr == null) { return DIM; }
         if (_zones == null) {
@@ -45,9 +57,9 @@ module Theme {
         var pen = w * 4 / 100;
         var r = w / 2 - pen / 2 - 1;
         dc.setPenWidth(pen);
-        dc.setColor(TRACK, BG);
+        dc.setColor(c(TRACK), BG);
         dc.drawCircle(w / 2, dc.getHeight() / 2, r);
-        dc.setColor(color, BG);
+        dc.setColor(c(color), BG);
         if (frac >= 1.0) {
             dc.drawCircle(w / 2, dc.getHeight() / 2, r);
         } else if (frac > 0.003) {
@@ -58,7 +70,7 @@ module Theme {
     }
 
     function text(dc as Graphics.Dc, x as Number, y as Number, font as Graphics.FontType, s as String, color as Number, just as Number) as Void {
-        dc.setColor(color, Graphics.COLOR_TRANSPARENT);
+        dc.setColor(c(color), Graphics.COLOR_TRANSPARENT);
         dc.drawText(x, y, font, s, just | Graphics.TEXT_JUSTIFY_VCENTER);
     }
 

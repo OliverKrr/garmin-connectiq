@@ -28,16 +28,29 @@ class SessionModel {
     private var _tempAlarm as ThresholdAlarm;
     private var _tempWarn as ThresholdAlarm;
     private var _hrAlarm as ThresholdAlarm;
-    private var _effHr as Number;
+    // The phase the last switchPhase() closed, [phaseCode, PhaseStats or null when it was dropped
+    // empty], until undoSwitch() reopens it or the next switch replaces it.
+    private var _undo as Array or Null = null;
 
     // Targets in seconds (0 = no target alert); limits in °C and bpm (0 = off). The temperature
-    // pre-warning fires below the limit; one at or above the limit is ignored. effHr is the
-    // "sauna effect" heart rate whose time-above each phase counts (0 = off).
+    // pre-warning fires below the limit; one at or above the limit is ignored.
     function initialize(heatTargetSec as Number, coolTargetSec as Number, tempWarn as Number, tempLimit as Number,
-                        hrLimit as Number, effHr as Number) {
-        _effHr = effHr;
-        total = new PhaseStats(effHr);
-        current = new PhaseStats(effHr);
+                        hrLimit as Number) {
+        total = new PhaseStats();
+        current = new PhaseStats();
+        _heatTarget = 0;
+        _coolTarget = 0;
+        _tempWarn = new ThresholdAlarm(0, 1);
+        _tempAlarm = new ThresholdAlarm(0, 2);
+        _hrAlarm = new ThresholdAlarm(0, 5);
+        setLimits(heatTargetSec, coolTargetSec, tempWarn, tempLimit, hrLimit);
+    }
+
+    // New targets and limits mid-session (settings changed on the watch). The alarms re-arm, so a
+    // reading already over a new limit alerts on the next tick. A target already passed gives no
+    // event; the phase simply shows overtime.
+    function setLimits(heatTargetSec as Number, coolTargetSec as Number, tempWarn as Number, tempLimit as Number,
+                       hrLimit as Number) as Void {
         _heatTarget = heatTargetSec;
         _coolTarget = coolTargetSec;
         // 1 °C re-arm: covering the watch drops the reading, and the next rise warns again.
@@ -72,17 +85,37 @@ class SessionModel {
     // Lap button: close the current phase and start the other one. A phase left before its first
     // second is dropped, and the round number counts only heat phases that actually ran.
     function switchPhase() as Void {
+        _undo = [phase, current.seconds > 0 ? current : null];
         if (current.seconds > 0) { done.add([phase, current]); }
-        current = new PhaseStats(_effHr);
-        if (phase == PHASE_HEAT) {
-            phase = PHASE_COOL;
-        } else {
-            phase = PHASE_HEAT;
-            round = 1;
-            for (var i = 0; i < done.size(); i++) {
-                if (done[i][0] == PHASE_HEAT) { round++; }
-            }
+        current = new PhaseStats();
+        phase = phase == PHASE_HEAT ? PHASE_COOL : PHASE_HEAT;
+        countRound();
+    }
+
+    // Reverts the last switchPhase(): the closed phase reopens with the seconds since appended to
+    // it, as if the switch never happened. Returns false when there is nothing to undo.
+    function undoSwitch() as Boolean {
+        if (_undo == null) { return false; }
+        var u = _undo as Array;
+        _undo = null;
+        phase = u[0] as Number;
+        if (u[1] != null) {
+            var prev = u[1] as PhaseStats;
+            done.remove(done[done.size() - 1]);
+            prev.merge(current);
+            current = prev;
         }
+        countRound();
+        return true;
+    }
+
+    // The round is the number of heat phases that ran before, plus one while in heat.
+    private function countRound() as Void {
+        var n = 0;
+        for (var i = 0; i < done.size(); i++) {
+            if (done[i][0] == PHASE_HEAT) { n++; }
+        }
+        round = phase == PHASE_HEAT ? n + 1 : (n > 0 ? n : 1);
     }
 
     function targetSec() as Number {
@@ -133,8 +166,8 @@ class SessionModel {
             if (phases[i][0] == PHASE_HEAT) {
                 if (row != null) { rows.add(row); }
                 row = [s.seconds, History.n(s.minHr), History.n(s.avgHr()), History.n(s.maxHr),
-                       History.t10(s.maxTemp), 0, History.NONE, s.aboveSec, History.n(s.rmssd()),
-                       History.NONE, History.NONE, History.NONE, History.NONE] as Array<Number>;
+                       History.t10(s.maxTemp), 0, History.NONE, History.NONE, History.n(s.rmssd()),
+                       History.NONE, History.NONE, History.NONE, History.NONE, History.n(s.rise())] as Array<Number>;
             } else if (row != null) {
                 var r = row as Array<Number>;
                 if (r[History.R_COOL] == 0) {

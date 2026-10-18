@@ -10,21 +10,21 @@ function tickN(m as SessionModel, n as Number, hr as Number or Null, temp as Flo
 
 (:test)
 function phaseStats_minAvgMax(logger as Test.Logger) as Boolean {
-    var s = new PhaseStats(0);
+    var s = new PhaseStats();
     s.add(100, 30.0); s.add(null, null); s.add(140, 41.5); s.add(120, 39.0);
     return s.seconds == 4 && s.minHr == 100 && s.maxHr == 140 && s.avgHr() == 120 && s.maxTemp == 41.5;
 }
 
 (:test)
 function phaseStats_emptyIsNull(logger as Test.Logger) as Boolean {
-    var s = new PhaseStats(0);
+    var s = new PhaseStats();
     s.add(null, null);
     return s.avgHr() == null && s.minHr == null && s.maxTemp == null && s.hrr60 == null;
 }
 
 (:test)
 function phaseStats_hrr60IsDropAfterOneMinute(logger as Test.Logger) as Boolean {
-    var s = new PhaseStats(0);
+    var s = new PhaseStats();
     s.add(150, null);
     for (var i = 0; i < 59; i++) { s.add(140, null); }
     var before = s.hrr60;
@@ -47,7 +47,7 @@ function thresholdAlarm_zeroIsOff(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_heatTargetFiresOnceAtTarget(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(10, 0, 0, 0, 0, 0);
+    var m = new SessionModel(10, 0, 0, 0, 0);
     var early = tickN(m, 9, 120, null);
     var at = m.tick(120, null);
     var later = tickN(m, 5, 120, null);
@@ -56,7 +56,7 @@ function session_heatTargetFiresOnceAtTarget(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_switchPhaseCountsRounds(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     tickN(m, 5, 120, null);
     m.switchPhase();               // -> cool, round 1
     var coolOk = m.phase == PHASE_COOL && m.round == 1 && m.current.seconds == 0;
@@ -68,7 +68,7 @@ function session_switchPhaseCountsRounds(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_coolTargetUsesCoolEvent(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 3, 0, 0, 0, 0);
+    var m = new SessionModel(0, 3, 0, 0, 0);
     tickN(m, 2, 120, null);
     m.switchPhase();
     return tickN(m, 3, 90, null) == EV_COOL_DONE;
@@ -76,14 +76,14 @@ function session_coolTargetUsesCoolEvent(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_tempAndHrAlarms(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 44, 160, 0);
+    var m = new SessionModel(0, 0, 0, 44, 160);
     var ev = m.tick(165, 44.2);
     return (ev & EV_TEMP_HIGH) != 0 && (ev & EV_HR_HIGH) != 0 && m.tempHigh() && m.hrHigh();
 }
 
 (:test)
 function session_tempWarnBeforeLimit(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 42, 44, 0, 0);
+    var m = new SessionModel(0, 0, 42, 44, 0);
     var a = m.tick(120, 42.1);     // pre-warning
     var b = m.tick(120, 42.5);     // latched
     var c = m.tick(120, 40.9);     // covered: re-arms below 41
@@ -94,13 +94,13 @@ function session_tempWarnBeforeLimit(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_tempWarnAtOrAboveLimitIsIgnored(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 44, 44, 0, 0);
+    var m = new SessionModel(0, 0, 44, 44, 0);
     return m.tick(120, 44.5) == EV_TEMP_HIGH;
 }
 
 (:test)
 function session_roundRowsPairHeatWithCool(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     tickN(m, 10, 140, 40.0);
     m.switchPhase();
     m.tick(150, 41.0);
@@ -118,7 +118,7 @@ function session_roundRowsPairHeatWithCool(logger as Test.Logger) as Boolean {
 
 (:test)
 function session_coolBeforeHeatIsDropped(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     m.switchPhase();               // straight to cool: the empty heat phase is dropped
     tickN(m, 5, 100, null);
     m.switchPhase();               // back to heat, still round 1
@@ -148,7 +148,7 @@ function history_totalsSince(logger as Test.Logger) as Boolean {
 
 (:test)
 function history_entryFromModel(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0, 0, 0);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     tickN(m, 3, 120, 36.0);
     var e = History.entry(m, 1234, [null, 62, 55, 28, null]);
     return e[History.S_START] == 1234 && e[History.S_TOTAL] == 3 && e[History.S_AVG] == 120
@@ -166,7 +166,7 @@ function fmt_clockAndValues(logger as Test.Logger) as Boolean {
 // Beats alternating 1000/1040 ms: every successive difference is 40 ms, so RMSSD is 40.
 (:test)
 function phaseStats_rmssdOfAlternatingBeats(logger as Test.Logger) as Boolean {
-    var s = new PhaseStats(0);
+    var s = new PhaseStats();
     var ivs = [] as Array<Number>;
     for (var i = 0; i < 30; i++) { ivs.add(i % 2 == 0 ? 1000 : 1040); }
     s.addBeats(ivs);
@@ -175,22 +175,78 @@ function phaseStats_rmssdOfAlternatingBeats(logger as Test.Logger) as Boolean {
 
 (:test)
 function phaseStats_rmssdNeedsEnoughCleanBeats(logger as Test.Logger) as Boolean {
-    var s = new PhaseStats(0);
+    var s = new PhaseStats();
     // 10 beats, a 50 % jump (artifact, skipped), an out-of-range interval (breaks the chain).
     s.addBeats([800, 810, 800, 810, 800, 1200, 800, 3000, 800, 810] as Array<Number>);
     return s.rmssd() == null;
 }
 
 (:test)
-function phaseStats_secondsAboveEffectHr(logger as Test.Logger) as Boolean {
-    var s = new PhaseStats(120);
-    s.add(119, null); s.add(120, null); s.add(135, null); s.add(null, null);
-    return s.aboveSec == 2;
+function phaseStats_riseIsPeakMinusStart(logger as Test.Logger) as Boolean {
+    var s = new PhaseStats();
+    var none = s.rise();
+    s.add(null, null); s.add(95, null); s.add(90, null); s.add(131, null); s.add(120, null);
+    return none == null && s.rise() == 36;
+}
+
+(:test)
+function phaseStats_mergeContinuesThePhase(logger as Test.Logger) as Boolean {
+    var a = new PhaseStats();
+    a.add(100, 40.0); a.add(110, 41.0);
+    var b = new PhaseStats();
+    b.add(90, 39.0); b.add(130, 38.5);
+    a.merge(b);
+    return a.seconds == 4 && a.startHr == 100 && a.minHr == 90 && a.maxHr == 130 && a.avgHr() == 107
+        && a.firstTemp == 40.0 && a.lastTemp == 38.5 && a.maxTemp == 41.0 && a.rise() == 30;
+}
+
+(:test)
+function session_undoSwitchReopensThePhase(logger as Test.Logger) as Boolean {
+    var m = new SessionModel(0, 0, 0, 0, 0);
+    tickN(m, 10, 120, null);
+    m.switchPhase();               // mistaken press: heat -> cool
+    tickN(m, 3, 125, null);
+    var undone = m.undoSwitch();
+    tickN(m, 2, 130, null);
+    var again = m.undoSwitch();    // nothing left to undo
+    return undone && !again && m.phase == PHASE_HEAT && m.round == 1 && m.done.size() == 0
+        && m.current.seconds == 15 && m.current.maxHr == 130 && m.roundsDone() == 1 && m.heatSeconds() == 15;
+}
+
+(:test)
+function session_undoAfterCoolKeepsRoundCount(logger as Test.Logger) as Boolean {
+    var m = new SessionModel(0, 0, 0, 0, 0);
+    tickN(m, 5, 120, null);
+    m.switchPhase();               // cool R1
+    tickN(m, 5, 90, null);
+    m.switchPhase();               // heat R2, by mistake
+    var r2 = m.round;
+    m.undoSwitch();                // back to cool R1
+    tickN(m, 5, 90, null);
+    var rows = m.roundRows();
+    return r2 == 2 && m.phase == PHASE_COOL && m.round == 1 && rows.size() == 1 && rows[0][History.R_COOL] == 10;
+}
+
+(:test)
+function session_undoOfEmptyPhaseOnlyRevertsPhase(logger as Test.Logger) as Boolean {
+    var m = new SessionModel(0, 0, 0, 0, 0);
+    m.switchPhase();               // heat with no seconds: dropped
+    tickN(m, 4, 100, null);
+    m.undoSwitch();
+    return m.phase == PHASE_HEAT && m.round == 1 && m.done.size() == 0 && m.current.seconds == 4;
+}
+
+(:test)
+function session_setLimitsTakesNewTarget(logger as Test.Logger) as Boolean {
+    var m = new SessionModel(0, 0, 0, 0, 0);
+    tickN(m, 5, 120, null);
+    m.setLimits(8, 0, 0, 0, 0);
+    return tickN(m, 2, 120, null) == 0 && m.tick(120, null) == EV_HEAT_DONE && m.targetSec() == 8;
 }
 
 (:test)
 function session_restColumns(logger as Test.Logger) as Boolean {
-    var m = new SessionModel(0, 0, 0, 0, 0, 120);
+    var m = new SessionModel(0, 0, 0, 0, 0);
     tickN(m, 30, 130, 44.0);
     m.switchPhase();
     m.tick(140, 43.0);
@@ -199,7 +255,7 @@ function session_restColumns(logger as Test.Logger) as Boolean {
     m.switchPhase();               // second cool-down phase only adds time
     m.switchPhase();
     var r = m.roundRows()[0];
-    return r[History.R_EFF] == 30 && r[History.R_COOL] == 61 && r[History.R_HRR] == 50
+    return r[History.R_RISE] == 0 && r[History.R_EFF] == History.NONE && r[History.R_COOL] == 61 && r[History.R_HRR] == 50
         && r[History.R_CAVG] == 100 && r[History.R_CMIN] == 90 && r[History.R_CDROP] == 35
         && r[History.R_CHRV] == History.NONE;
 }

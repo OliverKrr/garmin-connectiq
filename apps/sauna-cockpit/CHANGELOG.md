@@ -4,6 +4,20 @@ Sauna Cockpit, versioned by [SemVer](https://semver.org/). Released through a pr
 listing so far. `just package-beta sauna-cockpit` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.2.0] - 2026-10-18
+- Settings on the watch: MENU (hold UP), or Settings in the pause menu. A running session takes
+  new targets and limits at once.
+- Undo a phase switch: press BACK again within 10 s. The FIT lap is written once that window
+  closes, so a mistaken press leaves no extra round.
+- Screen per phase between button presses: dimmed during heat, dark during rest by default
+  (settings: Normal, Dim, Dark). A button, touch or alert brightens it for 10 s.
+- Distinct vibrations: three short taps for a phase timer, two long buzzes for the temperature
+  pre-warning, long-short-long for the temperature and HR alarms.
+- Round tables with more than four rounds page through them by themselves.
+- HR rise (peak minus start HR) per heat round replaces the time above 120 bpm. New lap fields
+  lap_hr_rise and lap_hrr60.
+- Fix: Body Battery and stress fields stayed empty when the newest sample had no value.
+
 ## [0.1.1] - 2026-10-18
 - Fix: Discard left a black screen, and BACK then reopened the pause menu, so the app could not
   be left. Save, Discard, Delete and Clear history now return to the right screen.

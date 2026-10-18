@@ -7,7 +7,7 @@ import Toybox.Time;
 // in onShow when it comes back to the top (a session that ended, a history that changed)
 // and moves on from there.
 
-// Pause menu: Resume / Save / Discard. Back resumes. Once the session has ended (Save, or
+// Pause menu: Resume / Settings / Save / Discard. Back resumes. Once the session has ended (Save, or
 // Discard confirmed) it closes itself, and SessionView.onShow moves on.
 class PauseMenu extends WatchUi.Menu2 {
     private var _c as SessionController;
@@ -16,6 +16,7 @@ class PauseMenu extends WatchUi.Menu2 {
         Menu2.initialize({:title => "Paused"});
         _c = c;
         addItem(new WatchUi.MenuItem("Resume", null, :resume, null));
+        addItem(new WatchUi.MenuItem("Settings", null, :settings, null));
         addItem(new WatchUi.MenuItem("Save", null, :save, null));
         addItem(new WatchUi.MenuItem("Discard", null, :discard, null));
     }
@@ -44,6 +45,8 @@ class PauseMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (id == :resume) {
             _c.resume();
             WatchUi.popView(WatchUi.SLIDE_DOWN);
+        } else if (id == :settings) {
+            SettingsMenu.push(_c);
         } else if (id == :save) {
             _c.save();
             WatchUi.popView(WatchUi.SLIDE_IMMEDIATE);
@@ -145,5 +148,139 @@ class ClearDelegate extends WatchUi.ConfirmationDelegate {
             History.save([] as Array<Array>);
         }
         return true;
+    }
+}
+
+// Settings on the watch, before or during a session (MENU, or Settings in the pause menu). They
+// write the same properties as the Garmin Connect settings, and a running session takes new
+// targets and limits at once. Recording options only show while no session runs, since they
+// apply when one starts. Number settings open a ChoiceMenu of values.
+class SettingsMenu extends WatchUi.Menu2 {
+    // [id, title] of the value settings; ids are property keys, except "heat"/"cool" (target
+    // minutes, 0 = off, stored as two properties).
+    static const CHOICES = [
+        ["heat", "Heat target"], ["cool", "Rest target"],
+        ["heatScreen", "Heat screen"], ["restScreen", "Rest screen"],
+        ["tempWarn", "Temp pre-warning"], ["tempLimit", "Temp alert"], ["hrLimit", "HR alert"],
+    ];
+    static const TOGGLES = [["alertVibrate", "Vibrate"], ["alertTone", "Beep"], ["alertLight", "Light up"]];
+
+    function initialize(c as SessionController) {
+        Menu2.initialize({:title => "Settings"});
+        for (var i = 0; i < CHOICES.size(); i++) {
+            addItem(new WatchUi.MenuItem(CHOICES[i][1], label(CHOICES[i][0]), CHOICES[i][0], null));
+        }
+        for (var i = 0; i < TOGGLES.size(); i++) {
+            addItem(new WatchUi.ToggleMenuItem(TOGGLES[i][1], null, TOGGLES[i][0], Config._bool(TOGGLES[i][0], i != 1), null));
+        }
+        if (c.state == STATE_IDLE) {
+            addItem(new WatchUi.MenuItem("Record as", label("recordAs"), "recordAs", null));
+            addItem(new WatchUi.ToggleMenuItem("Save activity", null, "recordActivity", Config.recordActivity(), null));
+        }
+    }
+
+    // Back from a ChoiceMenu: show the value just chosen.
+    function onShow() as Void {
+        for (var i = 0; i < CHOICES.size(); i++) {
+            var item = getItem(i);
+            if (item != null) { item.setSubLabel(label(CHOICES[i][0])); }
+        }
+        var idx = findItemById("recordAs");
+        if (idx >= 0) { (getItem(idx) as WatchUi.MenuItem).setSubLabel(label("recordAs")); }
+    }
+
+    static function push(c as SessionController) as Void {
+        WatchUi.pushView(new SettingsMenu(c), new SettingsMenuDelegate(c), WatchUi.SLIDE_UP);
+    }
+
+    // [label, value] choices of a value setting.
+    static function options(id as String) as Array<Array> {
+        var o = [] as Array<Array>;
+        if (id.equals("heatScreen") || id.equals("restScreen")) {
+            return [["Normal", SCREEN_NORMAL], ["Dim", SCREEN_DIM], ["Dark", SCREEN_DARK]];
+        }
+        if (id.equals("recordAs")) { return [["Other", 0], ["Meditation", 1]]; }
+        o.add(["Off", 0]);
+        if (id.equals("heat") || id.equals("cool")) {
+            for (var v = 1; v <= 30; v++) { o.add([v + " min", v]); }
+        } else if (id.equals("hrLimit")) {
+            for (var v = 120; v <= 200; v += 5) { o.add([v + " bpm", v]); }
+        } else {
+            for (var v = id.equals("tempWarn") ? 36 : 38; v <= 55; v++) { o.add([v + "°C", v]); }
+        }
+        return o;
+    }
+
+    static function current(id as String) as Number {
+        if (id.equals("heat")) { return Config.heatTargetMin(); }
+        if (id.equals("cool")) { return Config.coolTargetMin(); }
+        if (id.equals("heatScreen")) { return Config.heatScreen(); }
+        if (id.equals("restScreen")) { return Config.restScreen(); }
+        if (id.equals("tempWarn")) { return Config.tempWarn(); }
+        if (id.equals("tempLimit")) { return Config.tempLimit(); }
+        if (id.equals("hrLimit")) { return Config.hrLimit(); }
+        return Config.recordAsMeditation() ? 1 : 0;
+    }
+
+    static function label(id as String) as String {
+        var o = options(id);
+        var v = current(id);
+        for (var i = 0; i < o.size(); i++) {
+            if (o[i][1] == v) { return o[i][0] as String; }
+        }
+        return v.toString();
+    }
+}
+
+class SettingsMenuDelegate extends WatchUi.Menu2InputDelegate {
+    private var _c as SessionController;
+
+    function initialize(c as SessionController) {
+        Menu2InputDelegate.initialize();
+        _c = c;
+    }
+
+    function onSelect(item as WatchUi.MenuItem) as Void {
+        var id = item.getId() as String;
+        if (item instanceof WatchUi.ToggleMenuItem) {
+            Config.set(id, (item as WatchUi.ToggleMenuItem).isEnabled());
+            return;
+        }
+        var o = SettingsMenu.options(id);
+        var v = SettingsMenu.current(id);
+        var focus = 0;
+        for (var i = 0; i < o.size(); i++) {
+            if (o[i][1] == v) { focus = i; }
+        }
+        var m = new WatchUi.Menu2({:title => item.getLabel(), :focus => focus});
+        for (var i = 0; i < o.size(); i++) {
+            m.addItem(new WatchUi.MenuItem(o[i][0] as String, null, o[i][1], null));
+        }
+        WatchUi.pushView(m, new ChoiceDelegate(_c, id), WatchUi.SLIDE_LEFT);
+    }
+}
+
+// One value setting's choices; selecting one stores it and goes back.
+class ChoiceDelegate extends WatchUi.Menu2InputDelegate {
+    private var _c as SessionController;
+    private var _id as String;
+
+    function initialize(c as SessionController, id as String) {
+        Menu2InputDelegate.initialize();
+        _c = c;
+        _id = id;
+    }
+
+    function onSelect(item as WatchUi.MenuItem) as Void {
+        var v = item.getId() as Number;
+        if (_id.equals("heat")) {
+            Config.setHeatTargetMin(v);
+        } else if (_id.equals("cool")) {
+            Config.setCoolTargetMin(v);
+        } else {
+            Config.set(_id, v);
+        }
+        _c.applySettings();
+        WatchUi.popView(WatchUi.SLIDE_RIGHT);
     }
 }

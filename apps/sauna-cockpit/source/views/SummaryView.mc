@@ -2,8 +2,8 @@ import Toybox.Lang;
 import Toybox.Graphics;
 import Toybox.WatchUi;
 
-// One session's summary, paged with UP/DOWN: the heat table (with session HR, total time above
-// the effect HR, total time and calories above it), the rest table, then recovery (Body Battery
+// One session's summary, paged with UP/DOWN: the heat table (with session HR, the average HR
+// rise per round, total time and calories above it), the rest table, then recovery (Body Battery
 // before and after, stress before and, in Meditation mode, after, HRV per round). Tables longer than
 // SUMMARY_ROWS rounds take several pages. Shown right after Save (index -1) and from the history
 // (index >= 0, where MENU offers to delete it).
@@ -44,12 +44,13 @@ class SummaryView extends WatchUi.View {
         var rows = _e[History.S_ROUNDS] as Array<Array<Number>>;
         var heat = 0;
         var rest = 0;
-        var above = 0;
+        var riseSum = 0;
+        var riseN = 0;
         for (var i = 0; i < rows.size(); i++) {
             heat += rows[i][History.R_HEAT];
             rest += History.at(rows[i], History.R_COOL);
-            var a = History.at(rows[i], History.R_EFF);
-            if (a > 0) { above += a; }
+            var r = History.at(rows[i], History.R_RISE);
+            if (r != History.NONE) { riseSum += r; riseN++; }
         }
         var kind = pages[page][0];
 
@@ -58,11 +59,10 @@ class SummaryView extends WatchUi.View {
             rows.size() + (rows.size() == 1 ? " round" : " rounds") + ", " + Fmt.minutes(heat) + " heat", Theme.HEAT, center);
         if (kind == TABLE_HEAT) {
             // The session's peak temperature is the top of the table's °C column, so this line
-            // carries the total time above the effect HR instead.
-            var eff = Config.effectHr();
+            // carries the average HR rise per round instead.
             Theme.text(dc, cx, h * 30 / 100, f,
                 "HR " + Fmt.num(History.at(_e, History.S_MIN)) + "/" + Fmt.num(History.at(_e, History.S_AVG)) + "/" +
-                Fmt.num(History.at(_e, History.S_MAX)) + (eff > 0 ? "  " + eff + "+ " + Fmt.clock(above) : ""), Theme.FG, center);
+                Fmt.num(History.at(_e, History.S_MAX)) + (riseN > 0 ? "  rise +" + (riseSum / riseN) : ""), Theme.FG, center);
             Theme.text(dc, cx, h * 37 / 100, f,
                 "total " + Fmt.clock(_e[History.S_TOTAL] as Number) + "   " + Fmt.num(History.at(_e, History.S_KCAL)) + " kcal", Theme.DIM, center);
         } else if (kind == TABLE_REST) {
