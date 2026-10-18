@@ -1,4 +1,4 @@
-Version 1.3.1 - 2026-10-18
+Version 1.3.2 - 2026-10-18
 - Grade-adjusted pace (GAP) as the climb metric, with power as the alternative: on climbs the current and lap cells switch from pace to GAP, and the bottom row shows average GAP - the flat pace your effort on a hill is worth, coloured by your pace zones and calibrated to Garmin's own GAP.
 - Current pace is a 10-second rolling pace; the Current-pace window setting is gone.
 
