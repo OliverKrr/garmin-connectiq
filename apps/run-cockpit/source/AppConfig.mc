@@ -5,23 +5,15 @@ import Toybox.Application;
 // is a pure function and is unit-tested; the property readers need runtime.
 module AppConfig {
 
-    function rollingWindowSec() as Number {
-        var v = _num("rollingWindowSec", 0);
-        if (v <= 0) { return 0; }          // 0 => Garmin native current pace
-        if (v < 5) { v = 5; }
-        if (v > 120) { v = 120; }
-        return v;
-    }
-
     // 0 = Auto (grade), 1 = Always pace, 2 = Always the climb metric. Out of range -> 0.
     function paceVsPower() as Number {
         var m = _num("paceVsPower", 0);
         return (m < 0 || m > 2) ? 0 : m;
     }
 
-    // Climb metric for Current/Lap on climbs and the bottom-right cell: power (0, default) or GAP (1).
+    // Climb metric for Current/Lap on climbs and the bottom-right cell: GAP (1, default) or power (0).
     function climbMetricGap() as Boolean {
-        return _num("climbMetric", 0) == 1;
+        return _num("climbMetric", 1) == 1;
     }
 
     // Grade % at which Current/Lap switch to power (Auto mode). Clamped 1..20, default 3.

@@ -1,18 +1,15 @@
 <settings>
-    <setting propertyKey="@Properties.rollingWindowSec" title="@Strings.SetRollingWindow">
-        <settingConfig type="numeric" min="0" max="120" />
+    <setting propertyKey="@Properties.climbMetric" title="@Strings.SetClimbMetric">
+        <settingConfig type="list">
+            <listEntry value="1">@Strings.ClimbMetricGap</listEntry>
+            <listEntry value="0">@Strings.ClimbMetricPower</listEntry>
+        </settingConfig>
     </setting>
     <setting propertyKey="@Properties.paceVsPower" title="@Strings.SetPaceVsPower">
         <settingConfig type="list">
             <listEntry value="0">@Strings.PaceVsPowerAuto</listEntry>
             <listEntry value="1">@Strings.PaceVsPowerPace</listEntry>
             <listEntry value="2">@Strings.PaceVsPowerPower</listEntry>
-        </settingConfig>
-    </setting>
-    <setting propertyKey="@Properties.climbMetric" title="@Strings.SetClimbMetric">
-        <settingConfig type="list">
-            <listEntry value="0">@Strings.ClimbMetricPower</listEntry>
-            <listEntry value="1">@Strings.ClimbMetricGap</listEntry>
         </settingConfig>
     </setting>
     <setting propertyKey="@Properties.gradeThreshold" title="@Strings.SetGradeThreshold">

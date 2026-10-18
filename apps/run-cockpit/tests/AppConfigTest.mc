@@ -90,8 +90,8 @@ function appConfig_paceVsPowerDefault(logger as Logger) as Boolean {
 }
 
 (:test)
-function appConfig_climbMetricDefaultsToPower(logger as Logger) as Boolean {
-    return AppConfig.climbMetricGap() == false;
+function appConfig_climbMetricDefaultsToGap(logger as Logger) as Boolean {
+    return AppConfig.climbMetricGap() == true;
 }
 
 (:test)

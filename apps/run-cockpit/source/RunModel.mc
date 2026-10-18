@@ -9,6 +9,9 @@ import Toybox.Graphics;
 // accumulated here and reset on lap. With GAP as the climb metric, a second set of values (current,
 // lap, average GAP) runs the same pipeline on flat-equivalent distance; pace stays raw pace.
 class RunModel {
+    // Current pace and current GAP are rolling averages over this many seconds of timer time.
+    private const ROLLING_SEC = 10;
+
     private var _zones as HrZoneModel;
     private var _rollingPace as RollingPace;
     private var _lapHr as RunningAverage;
@@ -30,7 +33,6 @@ class RunModel {
     private var _distM as Float = 0.0;
     private var _timerMs as Number = 0;
     private var _zoneCur as Number = 0;
-    private var _windowSec as Number = 0;
     private var _grade as GradeModel = new GradeModel();
     private var _paceVsPower as Number = 0;
     private var _gradeThreshold as Number = 3;
@@ -43,12 +45,11 @@ class RunModel {
     private var _gapLap as Float or Null = null;
     private var _gapAvg as Float or Null = null;
 
-    function initialize(windowSec as Number, zones as HrZoneModel) {
+    function initialize(zones as HrZoneModel) {
         _zones = zones;
-        _rollingPace = new RollingPace(windowSec);
+        _rollingPace = new RollingPace(ROLLING_SEC);
         _lapHr = new RunningAverage();
         _tiz = new TimeInZone();
-        _windowSec = windowSec;
     }
 
     function update(info as Activity.Info) as Void {
@@ -70,26 +71,29 @@ class RunModel {
             _grade.update(_distM, info.altitude);
         }
 
+        // Rolling while the timer runs; before the start, while paused and for the first sample,
+        // Garmin's own current speed stands in.
+        var cur = null as Float or Null;
         if (running && timer != null && dist != null) {
-            if (_windowSec > 0) { _rollingPace.add(timer, dist); _paceCur = _rollingPace.paceSecPerKm(); }
+            _rollingPace.add(timer, dist);
+            cur = _rollingPace.paceSecPerKm();
             _paceLap = Pace.secPerKmFromDelta(dist - _lapStartDist, timer - _lapStartMs);
         }
-        if (_windowSec == 0) { _paceCur = Pace.secPerKmFromSpeed(spd); }
+        _paceCur = (cur != null) ? cur : Pace.secPerKmFromSpeed(spd);
         _paceAvg = Pace.secPerKmFromSpeed(avgSpeed);
 
         if (_gap) {
-            // GAP: the pace pipeline on flat-equivalent distance, and speed * factor for the native case.
+            // GAP: the pace pipeline on flat-equivalent distance; speed * factor stands in like above.
             var f = GapModel.factor(_grade.grade());
             var rg = _rollingGap;
+            var gcur = null as Float or Null;
             if (running && timer != null && dist != null) {
                 _flat.add(dist, f);
-                if (rg != null) { rg.add(timer, _flat.flatM()); _gapCur = rg.paceSecPerKm(); }
+                if (rg != null) { rg.add(timer, _flat.flatM()); gcur = rg.paceSecPerKm(); }
                 _gapLap = Pace.secPerKmFromDelta(_flat.flatM() - _lapStartFlat, timer - _lapStartMs);
             }
-            if (rg == null) {
-                if (spd != null) { spd = spd * f; }
-                _gapCur = Pace.secPerKmFromSpeed(spd);
-            }
+            if (gcur == null && spd != null) { gcur = Pace.secPerKmFromSpeed(spd * f); }
+            _gapCur = gcur;
             _gapAvg = Pace.secPerKmFromDelta(_flat.flatM(), _timerMs);
         }
 
@@ -179,10 +183,10 @@ class RunModel {
     function setPaceVsPower(m as Number) as Void { _paceVsPower = m; }
     function setGradeThreshold(t as Number) as Void { _gradeThreshold = t; }
 
-    // Climb metric: GAP (true) or power (false). GAP with a rolling window needs its own buffer.
+    // Climb metric: GAP (true) or power (false). Rolling GAP needs its own buffer.
     function setClimbMetricGap(gap as Boolean) as Void {
         _gap = gap;
-        _rollingGap = (gap && _windowSec > 0) ? new RollingPace(_windowSec) : null;
+        _rollingGap = gap ? new RollingPace(ROLLING_SEC) : null;
     }
     function climbMetricGap() as Boolean { return _gap; }
 

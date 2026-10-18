@@ -16,6 +16,9 @@ compact old entries before adding new ones. `just validate-store-text` fails the
 paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+- GAP is the default climb metric (power stays one setting away), and Climb metric is the first setting.
+- Current pace (and current GAP) is a 10-second rolling pace; the Current-pace window setting is gone. Before the start and while paused it shows Garmin's own reading.
+- Settings renamed: Pace / power is now Show climb metric (Auto, Never, Always).
 
 ## [1.3.1] - 2026-10-18
 - GAP is now a climb metric instead of its own mode: the new Climb metric setting picks Power or GAP. With GAP, Auto switches current and lap from pace to GAP on climbs (labels GP, GL, with pace-zone numbers), and the bottom row shows average GAP instead of average power.

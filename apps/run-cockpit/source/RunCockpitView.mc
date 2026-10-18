@@ -34,7 +34,7 @@ class RunCockpitView extends WatchUi.DataField {
     private var _fClock as Graphics.FontType = Graphics.FONT_MEDIUM;
     // Initialised with a throwaway default so the type checker sees it non-null;
     // reloadSettings() (called from initialize) immediately replaces it.
-    private var _model as RunModel = new RunModel(25, new HrZoneModel([93, 111, 130, 148, 167, 185]));
+    private var _model as RunModel = new RunModel(new HrZoneModel([93, 111, 130, 148, 167, 185]));
     private var _layout as GridLayout or Null = null;
 
     function initialize() {
@@ -50,7 +50,7 @@ class RunCockpitView extends WatchUi.DataField {
         if (z == null || z.size() < 6) {
             z = [93, 111, 130, 148, 167, 185]; // sane default if unconfigured
         }
-        _model = new RunModel(AppConfig.rollingWindowSec(), new HrZoneModel(z));
+        _model = new RunModel(new HrZoneModel(z));
         if (UserProfile has :getPowerZones) {
             var pz = UserProfile.getPowerZones(Activity.SPORT_RUNNING);
             if (pz != null && pz.size() >= 6) {

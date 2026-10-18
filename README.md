@@ -12,7 +12,8 @@ power - or to grade-adjusted pace (GAP) - automatically, and back on the flat.
 
 ## Features
 
-- **Pace or power** as current / lap / average, coloured by training zone.
+- **Pace or power** as current / lap / average, coloured by training zone; current pace is a 10-second
+  rolling pace.
 - **Terrain-adaptive** — on climbs the current and lap cells switch from pace to power or GAP, and
   back to pace on the flat (or force either).
 - **Grade-adjusted pace (GAP)** as an alternative to power: on climbs the current and lap cells

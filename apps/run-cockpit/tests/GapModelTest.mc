@@ -52,7 +52,7 @@ function _runSegment(m as RunModel, info as Activity.Info, t0 as Number, t1 as N
 }
 
 function _gapModel(paceVsPower as Number) as Array {
-    var m = new RunModel(0, new HrZoneModel([93, 111, 130, 148, 167, 185]));
+    var m = new RunModel(new HrZoneModel([93, 111, 130, 148, 167, 185]));
     m.setPaceVsPower(paceVsPower);
     m.setClimbMetricGap(true);
     var info = new Activity.Info();
@@ -101,7 +101,7 @@ function runModel_gapAutoSwitchesOnClimb(l as Logger) as Boolean {
 // Power as climb metric keeps the old rule: no live power, no switch; and no GAP is computed.
 (:test)
 function runModel_powerMetricNeedsLivePower(l as Logger) as Boolean {
-    var m = new RunModel(0, new HrZoneModel([93, 111, 130, 148, 167, 185]));
+    var m = new RunModel(new HrZoneModel([93, 111, 130, 148, 167, 185]));
     m.setPaceVsPower(2);
     m.setClimbMetricGap(false);
     var info = new Activity.Info();
@@ -124,4 +124,29 @@ function runModel_gapIgnoresStartAltitudeJump(l as Logger) as Boolean {
     _runSegment(m, info, 1, 300, 0.0, 640.0);
     l.debug("gapAvg after a start jump=" + m.gapAvgSec());
     return _near(m.gapAvgSec(), 333.3, 1.0);
+}
+
+// Current pace is a 10 s rolling pace while the timer runs: 20 s at 3 m/s, then 5 s at 4 m/s
+// average to 3.5 m/s over the window (285.7 s/km), not the 4 m/s Garmin reports right now.
+// Before the start it shows Garmin's own current speed.
+(:test)
+function runModel_currentPaceRolls10s(l as Logger) as Boolean {
+    var m = new RunModel(new HrZoneModel([93, 111, 130, 148, 167, 185]));
+    var info = new Activity.Info();
+    info.timerState = Activity.TIMER_STATE_OFF;
+    info.currentSpeed = 2.5;
+    m.update(info);
+    var preStartOk = _near(m.paceCurSec(), 400.0, 0.5);
+    info.timerState = Activity.TIMER_STATE_ON;
+    var d = 0.0;
+    for (var t = 0; t <= 25; t++) {
+        var v = (t <= 20) ? 3.0 : 4.0;
+        if (t > 0) { d += v; }
+        info.currentSpeed = v;
+        info.timerTime = t * 1000;
+        info.elapsedDistance = d;
+        m.update(info);
+    }
+    l.debug("rolling cur=" + m.paceCurSec());
+    return preStartOk && _near(m.paceCurSec(), 285.7, 3.0);
 }

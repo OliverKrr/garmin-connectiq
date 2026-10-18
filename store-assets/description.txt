@@ -3,7 +3,7 @@ Every running metric that matters, on one screen: current, lap, and average pace
 Source, documentation and support: https://github.com/OliverKrr/garmin-connectiq
 
 FEATURES:
-- Pace or power as current / lap / average, coloured by training zone.
+- Pace or power as current / lap / average, coloured by training zone; current pace is a 10-second rolling pace.
 - Terrain-adaptive: on climbs the current and lap cells switch from pace to power or GAP, and back to pace on the flat (or force either).
 - Grade-adjusted pace (GAP) as an alternative to power: the flat pace your effort on a hill is worth, with pace-zone colours and zone numbers. Calibrated to Garmin's own GAP.
 - Heart rate as current / lap / average, coloured by HR zone with a fractional zone number.
@@ -18,10 +18,9 @@ SETUP:
 3. HR zones come from your watch user profile (running zones).
 
 SETTINGS (the watch does not show setting descriptions, so they are documented here):
-- Current-pace window (s): 0 (default) uses Garmin's native current pace; a value above 0 averages the current pace over that many seconds (smoother, but laggier).
-- Pace / power or GAP: how the current and lap cells choose pace vs the climb metric. Auto (by grade) shows pace on the flat and downhill and switches to the climb metric on climbs; or force Always pace / Always power / GAP. Average pace is always shown.
-- Climb metric: Power (default) or Grade-adjusted pace (GAP). GAP takes the place of power in the current and lap cells (labels GP, GL) and of average power in the bottom row (label GAP), with pace-zone colours and numbers. It needs no power sensor, only altitude, best from a barometric altimeter.
-- Grade to show power / GAP (%): in Auto, the grade at which the current and lap cells switch to the climb metric (default 3). Power needs running power (native wrist power or a power sensor).
+- Climb metric: Grade-adjusted pace (GAP, default) or Power. It takes the place of pace in the current and lap cells on climbs (labels GP, GL or PW, LP) and fills the bottom-right cell (average GAP or average power). GAP uses pace-zone colours and numbers and needs only altitude, best from a barometric altimeter; power needs running power (native wrist power or a power sensor).
+- Show climb metric: Auto (by grade, default) shows pace on the flat and downhill and switches to the climb metric on climbs; or Never (always pace) / Always. Average pace is always shown.
+- Grade to show the climb metric (%): in Auto, the grade at which the current and lap cells switch (default 3).
 - Pace zone model: how pace zones are defined. Off disables pace colouring. The presets (80/20 Run, Joe Friel Run, CTS Run, MyProCoach Run) derive zones from your threshold pace. Custom uses your own boundaries. The 80/20 Run model labels its seven zones 1, 2, X, 3, Y, 4, 5 - X and Y are the easy "avoid" zones and are shown in grey.
 - Threshold pace (m:ss per km): your threshold running pace, e.g. 3:41. The chosen preset scales its zones from this. Example: threshold pace 4:00 with 80/20 Run puts your threshold at the zone 4/5 edge, zone 1 slower than 5:16/km, and zone 7 faster than 3:29/km.
 - Custom pace boundaries (s/km): only used when the model is Custom. Enter 4 paces (for 5 zones) or 6 paces (for 7 zones) in seconds per km, slow to fast. Example: 360,320,280,250 gives five zones with edges at 6:00, 5:20, 4:40, and 4:10 per km.
