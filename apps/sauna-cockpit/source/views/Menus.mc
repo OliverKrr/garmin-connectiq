@@ -197,7 +197,7 @@ class SettingsMenu extends WatchUi.Menu2 {
     static function options(id as String) as Array<Array> {
         var o = [] as Array<Array>;
         if (id.equals("heatScreen") || id.equals("restScreen")) {
-            return [["Normal", SCREEN_NORMAL], ["Dim", SCREEN_DIM], ["Dark", SCREEN_DARK]];
+            return [["Normal", SCREEN_NORMAL], ["Dim", SCREEN_DIM]];
         }
         if (id.equals("recordAs")) { return [["Other", 0], ["Meditation", 1]]; }
         o.add(["Off", 0]);

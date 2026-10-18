@@ -1,3 +1,7 @@
+Version 0.2.1 - 2026-10-18
+- Rest no longer goes dark by default: both phases dim, and a fourth all-black page (UP/DOWN) turns the screen off on demand. The Dark screen setting is gone (a stored Dark reads as Dim).
+- Undo window for a phase switch shortened to 3 s, so FIT laps land at most 3 s late.
+
 Version 0.2.0 - 2026-10-18
 - Settings on the watch: MENU (hold UP), or Settings in the pause menu. A running session takes new targets and limits at once.
 - Undo a phase switch: press BACK again within 10 s. The FIT lap is written once that window closes, so a mistaken press leaves no extra round.

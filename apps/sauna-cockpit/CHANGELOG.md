@@ -4,6 +4,11 @@ Sauna Cockpit, versioned by [SemVer](https://semver.org/). Released through a pr
 listing so far. `just package-beta sauna-cockpit` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.2.1] - 2026-10-18
+- Rest no longer goes dark by default: both phases dim, and a fourth all-black page (UP/DOWN)
+  turns the screen off on demand. The Dark screen setting is gone (a stored Dark reads as Dim).
+- Undo window for a phase switch shortened to 3 s, so FIT laps land at most 3 s late.
+
 ## [0.2.0] - 2026-10-18
 - Settings on the watch: MENU (hold UP), or Settings in the pause menu. A running session takes
   new targets and limits at once.

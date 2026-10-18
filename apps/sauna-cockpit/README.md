@@ -11,23 +11,23 @@ a public listing comes later.
 | Button | Start screen | During a session |
 |---|---|---|
 | START | Start a session (heat phase, round 1) | Pause, then Resume / Settings / Save / Discard |
-| BACK | Exit | Switch phase: heat → cool-down → heat (next round). Again within 10 s: undo the switch |
-| UP / DOWN | DOWN opens the history | Cycle the pages: cockpit, heat table, rest table. On a dimmed or dark screen the first press only brightens it |
+| BACK | Exit | Switch phase: heat → cool-down → heat (next round). Again within 3 s: undo the switch |
+| UP / DOWN | DOWN opens the history | Cycle the pages: cockpit, heat table, rest table, black. On a dimmed screen the first press only brightens it |
 | MENU (hold UP) | Settings | Settings, while the session keeps running |
 | Touch | ignored | only brightens the screen, so wet fingers and towels cannot switch phases |
 
-**Undo.** A phase switch stays undoable for 10 s ("BACK again: undo"): the closed phase reopens
+**Undo.** A phase switch stays undoable for 3 s ("BACK again: undo"): the closed phase reopens
 with the seconds since added to it, as if BACK had never been pressed. The FIT lap is written
 only when the window closes, so an undone switch leaves no lap behind; the cost is that FIT lap
-boundaries sit up to 10 s after the real switch. The on-watch tables use the exact time.
+boundaries sit up to 3 s after the real switch. The on-watch tables use the exact time.
 
 **Screen.** Connect IQ gives watch apps no control over the always-on display (only watch faces
 get the low-power hooks), so the app manages its own brightness. Between button presses the
-session screen dims during heat (every colour at 40 %) and goes dark during rest (black but for
-the progress ring; fully black when the rest has no target). Any button, a touch, or an alert
-shows it at full brightness for 10 s. The "Heat screen" and "Rest screen" settings choose
-Normal, Dim or Dark per phase. On AMOLED, black pixels are off, so Dark draws no power and no
-light.
+session screen dims (every colour at 40 %). Any button, a touch, or an alert shows it at full
+brightness for 10 s. The "Heat screen" and "Rest screen" settings choose Normal or Dim per
+phase. For a screen that is off, page with UP/DOWN to the fourth page, which is all black: on
+AMOLED, black pixels draw no power and no light. Alerts still show their banner there, and the
+next UP/DOWN leaves it.
 
 **Vibration.** A short tap acknowledges a button; three quick taps mean a phase timer ran out;
 two long buzzes are the temperature pre-warning; long-short-long is an alarm (watch temperature
@@ -103,7 +103,7 @@ offers 1-30 min targets, 36-55 °C temperatures and 120-200 bpm in steps of 5.
 | Watch temperature pre-warning | 42 °C | Two buzzes, "cover": shade the watch with your hand. Warns again after the reading drops 1 °C and climbs back. 0 = off |
 | Watch temperature alert | 44 °C | Three buzzes, "leave". 0 = off. See below |
 | Heart rate alert | 0 (off) | bpm |
-| Heat screen / Rest screen | Dim / Dark | Between button presses: Normal, Dim (40 %) or Dark (black but for the ring) |
+| Heat screen / Rest screen | Dim / Dim | Between button presses: Normal or Dim (40 %) |
 | Alert: vibrate / beep / light up the screen | on / off / on | |
 | Save as activity in Garmin Connect | on | Off keeps only the on-watch history |
 | Record as | Other | Other: calories, no stress during the session. Meditation: stress measured, no calories |

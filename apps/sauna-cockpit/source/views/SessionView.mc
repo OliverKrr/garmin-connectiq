@@ -11,8 +11,11 @@ const DIM_LEVEL = 40;
 
 // The in-session screen. Page 0 is the cockpit: a bezel ring filling toward the phase target,
 // the phase countdown (or elapsed time without a target), HR in zone colour, the watch
-// temperature, and the phase's HR min/avg/max. Pages 1 and 2 are the heat and rest tables.
-// Between button presses the screen dims or goes dark per phase (Config.heatScreen/restScreen).
+// temperature, and the phase's HR min/avg/max. Pages 1 and 2 are the heat and rest tables, page 3
+// is black (the screen off on AMOLED, chosen on demand; alerts still show their banner on it).
+// Between button presses the screen dims per phase (Config.heatScreen/restScreen).
+const PAGES = 4;
+const PAGE_BLACK = 3;
 class SessionView extends WatchUi.View {
     var page as Number = 0;
     private var _c as SessionController;
@@ -57,10 +60,8 @@ class SessionView extends WatchUi.View {
         if (m == null) { return; }
         var mode = mode();
         Theme.level = mode == SCREEN_NORMAL ? 100 : DIM_LEVEL;
-        if (mode == SCREEN_DARK) {
-            // Black but for the progress, so the screen still shows the session runs.
-            var target = m.targetSec();
-            if (target > 0) { Theme.ring(dc, m.current.seconds.toFloat() / target, Theme.phaseColor(m.phase)); }
+        if (page == PAGE_BLACK) {
+            // Nothing lit.
         } else if (page == 0) {
             drawCockpit(dc, m);
         } else {
@@ -160,8 +161,9 @@ class SessionView extends WatchUi.View {
 }
 
 // START pauses (opening Resume / Settings / Save / Discard), BACK switches phase (again within
-// UNDO_MS undoes it), UP/DOWN cycle the pages, MENU (hold UP) opens the settings without pausing.
-// Every button wakes a dimmed or dark screen; on a dimmed or dark screen UP/DOWN only wake it.
+// UNDO_MS undoes it), UP/DOWN cycle the pages (cockpit, heat, rest, black), MENU (hold UP) opens
+// the settings without pausing. Every button wakes a dimmed screen; on a dimmed screen UP/DOWN
+// only wake it.
 // A tap only wakes the screen: wet fingers and towels in the sauna must not switch phases.
 class SessionDelegate extends WatchUi.BehaviorDelegate {
     private var _c as SessionController;
@@ -199,7 +201,7 @@ class SessionDelegate extends WatchUi.BehaviorDelegate {
     function onPreviousPage() as Boolean { return flip(-1); }
 
     private function flip(d as Number) as Boolean {
-        if (_v.mode() == SCREEN_NORMAL) { _v.setPage((_v.page + d + 3) % 3); }
+        if (_v.mode() == SCREEN_NORMAL || _v.page == PAGE_BLACK) { _v.setPage((_v.page + d + PAGES) % PAGES); }
         _c.wake();
         WatchUi.requestUpdate();
         return true;

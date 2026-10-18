@@ -3,7 +3,6 @@ import Toybox.Application;
 
 const SCREEN_NORMAL = 0;
 const SCREEN_DIM = 1;
-const SCREEN_DARK = 2;
 
 // App settings (Application.Properties, edited in Garmin Connect or on the watch through
 // SettingsMenu) with clamped defaults.
@@ -36,11 +35,12 @@ module Config {
         return v <= 0 ? 0 : _clamp(v, 80, 230);
     }
 
-    // Session screen between button presses, per phase: SCREEN_NORMAL, SCREEN_DIM (every colour
-    // at about 40 %) or SCREEN_DARK (black but for the progress ring). A button press or an alert
-    // shows it at full brightness for a few seconds.
-    function heatScreen() as Number { return _clamp(_num("heatScreen", SCREEN_DIM), 0, 2); }
-    function restScreen() as Number { return _clamp(_num("restScreen", SCREEN_DARK), 0, 2); }
+    // Session screen between button presses, per phase: SCREEN_NORMAL or SCREEN_DIM (every colour
+    // at about 40 %). A button press or an alert shows it at full brightness for a few seconds.
+    // A black screen is a page of its own (SessionView), chosen on demand. 0.2.0's Dark (2) reads
+    // as Dim.
+    function heatScreen() as Number { return _clamp(_num("heatScreen", SCREEN_DIM), 0, 1); }
+    function restScreen() as Number { return _clamp(_num("restScreen", SCREEN_DIM), 0, 1); }
 
     function alertVibrate() as Boolean { return _bool("alertVibrate", true); }
     function alertTone() as Boolean { return _bool("alertTone", false); }

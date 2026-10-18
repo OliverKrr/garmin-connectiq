@@ -6,14 +6,15 @@ IMPORTANT: Garmin rates its watches for -20 to 45 C. A sauna is far hotter, so w
 
 HOW IT WORKS
 - START starts a session in the heat phase, round 1.
-- BACK switches phase: heat, cool-down, heat (next round). Each phase is a lap. Pressed by mistake? Press BACK again within 10 s to undo it.
-- UP / DOWN switch pages: cockpit, heat table, rest table. Tables with more than four rounds page through them by themselves.
+- BACK switches phase: heat, cool-down, heat (next round). Each phase is a lap. Pressed by mistake? Press BACK again within 3 s to undo it.
+- UP / DOWN switch pages: cockpit, heat table, rest table and an all-black page. Tables with more than four rounds page through them by themselves.
 - START again pauses: Resume, Settings, Save or Discard.
 - MENU (hold UP) opens the settings on the watch, before or during a session.
 - A touch only brightens the screen, so wet fingers and towels cannot switch phases.
 
 SCREEN
-- Between button presses the screen dims during heat and goes dark during rest (only the progress ring stays lit). A button press or an alert shows it at full brightness for 10 s. Both are settings: Normal, Dim or Dark.
+- Between button presses the screen dims. A button press or an alert shows it at full brightness for 10 s. Heat and rest each have a setting: Normal or Dim.
+- For a screen that is off, page to the all-black page; alerts still show there.
 
 COCKPIT
 - A ring around the screen fills toward the phase target; the big number counts down, then counts up as overtime.
@@ -41,7 +42,7 @@ SETTINGS (on the watch or in the Garmin Connect app)
 - Cool-down target (default 15 min) and whether it alerts.
 - Watch temperature pre-warning (42 C) and alert (44 C); 0 turns either off.
 - Heart-rate alert (off by default).
-- Screen during heat (Dim) and during rest (Dark).
+- Screen during heat and during rest: Normal or Dim (default Dim).
 - Alert by vibration, beep and screen light.
 - Save as activity in Garmin Connect.
 - Record as: Other (default; calories counted, the session stays out of stress statistics) or Meditation (Garmin keeps measuring stress during the session, no calories).

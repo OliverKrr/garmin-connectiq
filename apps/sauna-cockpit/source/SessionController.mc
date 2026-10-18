@@ -16,7 +16,7 @@ const STATE_RUNNING = 1;
 const STATE_PAUSED = 2;
 
 // A phase switch stays undoable this long; its FIT lap is written only once the window closes.
-const UNDO_MS = 10000;
+const UNDO_MS = 3000;
 // A button press or an alert shows a dimmed or dark screen at full brightness this long.
 const WAKE_MS = 10000;
 

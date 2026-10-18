@@ -7,7 +7,7 @@
     <property id="tempLimit" type="number">44</property>
     <property id="hrLimit" type="number">0</property>
     <property id="heatScreen" type="number">1</property>
-    <property id="restScreen" type="number">2</property>
+    <property id="restScreen" type="number">1</property>
     <property id="alertVibrate" type="boolean">true</property>
     <property id="alertTone" type="boolean">false</property>
     <property id="alertLight" type="boolean">true</property>
