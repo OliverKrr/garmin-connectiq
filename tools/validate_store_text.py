@@ -69,6 +69,9 @@ def regenerate_whats_new(changelog_path: str, out_path: str) -> None:
     # Store-ready: "## [0.6.0] - 2026-07-06" markdown headings would render literally,
     # so turn them into the "Version 0.6.0 - 2026-07-06" convention of top listings.
     history = re.sub(r"^## \[([^\]]+)\] - ", r"Version \1 - ", history, flags=re.M)
+    # The changelog wraps long entries onto indented continuation lines. The Store shows every
+    # newline as a line break, so join each continuation onto its entry.
+    history = re.sub(r"\n[ \t]+(?=\S)", " ", history)
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(history)
     print(f"{out_path} regenerated from {changelog_path}")
