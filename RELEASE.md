@@ -90,9 +90,9 @@ Sauna Cockpit has a **private beta listing** so far; a public one comes later. T
 created on 2026-10-18 with Garmin's "Beta App" option (only the developer account can install it;
 Garmin requires another app id for a public release):
 [apps-developer.garmin.com/apps/c322d003-bb45-41c0-9382-8f2aa579e777](https://apps-developer.garmin.com/apps/c322d003-bb45-41c0-9382-8f2aa579e777)
-(a Store page id, not the app id). Garmin reported "Signature check failed" on that upload while
-still verifying and accepting it; whether the restored release key matches the Run Cockpit
-listings' key is unconfirmed. Its Store files live
+(a Store page id, not the app id). The first upload of a new app shows "Signature check failed"
+because Garmin has no earlier key to compare with; from the second upload on it checks against
+the first one's key ("Signature: Verified" on 0.1.1). Its Store files live
 with the app, not in the root `store-assets/`, which stays Run Cockpit's:
 
 | File | What it is |
