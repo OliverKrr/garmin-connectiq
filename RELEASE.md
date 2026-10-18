@@ -95,7 +95,7 @@ with the app, not in the root `store-assets/`, which stays Run Cockpit's:
 | `apps/sauna-cockpit/manifest.xml` `id` | Reserved for the later public listing; nothing has been uploaded with it |
 | `apps/sauna-cockpit/store/description.txt` | Description paste file, authored |
 | `apps/sauna-cockpit/store/whats-new.txt` | What's New paste file, regenerated from `apps/sauna-cockpit/CHANGELOG.md` |
-| `apps/sauna-cockpit/store/cover.png`, `screenshots/` | Listing images; `cover.svg` is the source. The screenshots are VM simulator captures with test data, to be replaced by on-watch captures before a public launch |
+| `apps/sauna-cockpit/store/cover.png`, `hero.png`, `screenshots/` | Listing images: cover 500x500, hero 1440x720 (the dashboard rejects other sizes); `cover.svg` and `hero.svg` are the sources. The screenshots are VM simulator captures with test data, to be replaced by on-watch captures before a public launch |
 
 The ids follow the Run Cockpit rule above: the first accepted upload registers the id it carries,
 and every later upload to that listing must carry the same one. Signing uses the same release key.
