@@ -86,7 +86,13 @@ The public listing is a first-time submit, not just an upload, so it needs more 
 
 # Releasing Sauna Cockpit
 
-Sauna Cockpit has a **private beta listing** so far; a public one comes later. Its Store files live
+Sauna Cockpit has a **private beta listing** so far; a public one comes later. The beta was
+created on 2026-10-18 with Garmin's "Beta App" option (only the developer account can install it;
+Garmin requires another app id for a public release):
+[apps-developer.garmin.com/apps/c322d003-bb45-41c0-9382-8f2aa579e777](https://apps-developer.garmin.com/apps/c322d003-bb45-41c0-9382-8f2aa579e777)
+(a Store page id, not the app id). Garmin reported "Signature check failed" on that upload while
+still verifying and accepting it; whether the restored release key matches the Run Cockpit
+listings' key is unconfirmed. Its Store files live
 with the app, not in the root `store-assets/`, which stays Run Cockpit's:
 
 | File | What it is |
@@ -106,10 +112,10 @@ and every later upload to that listing must carry the same one. Signing uses the
    `apps/sauna-cockpit/CHANGELOG.md`.
 2. `just package-beta sauna-cockpit` validates the Store text, regenerates `store/whats-new.txt` and
    builds `bin/sauna-cockpit-beta.iq` for every product in the manifest.
-3. In the dashboard (https://apps-developer.garmin.com): the first time, create a new app listing
-   named "Sauna Cockpit (Beta)" with visibility private/unlisted and category Health and Fitness.
-   Then upload `bin/sauna-cockpit-beta.iq`, paste `store/description.txt` and `store/whats-new.txt`,
-   add `store/cover.png` and the screenshots, and submit.
+3. In the dashboard: on the beta listing, Upload New Version with `bin/sauna-cockpit-beta.iq` and
+   paste `store/whats-new.txt` (and `store/description.txt` when it changed). The first upload went
+   through Upload an App with "This app is for testing purposes only" ticked, category Health &
+   Fitness / Other, hero, cover and screenshots from `store/`.
 4. After the upload is accepted: `just tag sauna-cockpit`, then `git push origin sauna-cockpit-vX.Y.Z`.
 
 The same guardrail applies: Claude prepares the `.iq`, the text and the local tag; the upload, the
