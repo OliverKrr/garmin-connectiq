@@ -9,6 +9,7 @@ FEATURES:
 - Heart rate as current / lap / average, coloured by HR zone with a fractional zone number.
 - Heart-rate time-in-zone bar chart; each bar grows with the time spent in that zone, drawn in that zone's colour.
 - Distance, duration, and average power (or average GAP) always on screen (useful on hilly runs, where average pace alone misleads).
+- Records its GAP in your activity: current GAP, grade and the climb metric shown every second, plus lap and average GAP (in m/s), as Connect IQ fields in Garmin Connect and the exported FIT file. This is what the FIT Contributor permission is for.
 - Pace zones derived from your threshold pace using a training model you choose: 80/20 Run, Joe Friel Run, CTS Run, MyProCoach Run, or your own custom boundaries.
 - Large, bold numbers and high-contrast zone colours tuned for the sunlight (MIP) display, with a brighter palette on dark/AMOLED backgrounds.
 

@@ -23,3 +23,9 @@ function pace_fromDeltaInvalid(logger as Test.Logger) as Boolean {
     return Pace.secPerKmFromDelta(0.0, 60000) == null
         && Pace.secPerKmFromDelta(200.0, 0) == null;
 }
+
+(:test)
+function pace_speedFromSecPerKm(logger as Test.Logger) as Boolean {
+    return (Pace.speedFromSecPerKm(400.0) - 2.5).abs() < 0.001
+        && Pace.speedFromSecPerKm(null) == 0.0 && Pace.speedFromSecPerKm(0.0) == 0.0;
+}

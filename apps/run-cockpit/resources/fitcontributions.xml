@@ -1,0 +1,7 @@
+<fitContributions>
+    <fitField id="0" displayInChart="true" sortOrder="0" precision="2" chartTitle="@Strings.FitGap" dataLabel="@Strings.FitGap" unitLabel="@Strings.UnitMps" fillColor="#2E9E4F" />
+    <fitField id="1" displayInChart="true" sortOrder="1" precision="1" chartTitle="@Strings.FitGrade" dataLabel="@Strings.FitGrade" unitLabel="@Strings.UnitPct" fillColor="#8C6A4F" />
+    <fitField id="2" displayInChart="false" sortOrder="2" precision="0" dataLabel="@Strings.FitClimbMetric" unitLabel="@Strings.UnitClimbMetric" />
+    <fitField id="3" displayInActivityLaps="true" sortOrder="3" precision="2" dataLabel="@Strings.FitLapGap" unitLabel="@Strings.UnitMps" />
+    <fitField id="4" displayInActivitySummary="true" sortOrder="4" precision="2" dataLabel="@Strings.FitAvgGap" unitLabel="@Strings.UnitMps" />
+</fitContributions>

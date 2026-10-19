@@ -20,4 +20,12 @@
     <string id="ModelCts">CTS Run (5)</string>
     <string id="ModelMyProCoach">MyProCoach Run (5)</string>
     <string id="ModelCustom">Custom</string>
+    <string id="FitGap">GAP (speed)</string>
+    <string id="FitGrade">Grade</string>
+    <string id="FitClimbMetric">Climb metric shown</string>
+    <string id="FitLapGap">Lap GAP (speed)</string>
+    <string id="FitAvgGap">Avg GAP (speed)</string>
+    <string id="UnitMps">m/s</string>
+    <string id="UnitPct">%</string>
+    <string id="UnitClimbMetric">0pace 1GAP 2pwr</string>
 </strings>

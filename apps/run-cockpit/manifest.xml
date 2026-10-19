@@ -99,6 +99,7 @@
             <iq:product id="vivoactive6"/>
         </iq:products>
         <iq:permissions>
+            <iq:uses-permission id="FitContributor"/>
             <iq:uses-permission id="UserProfile"/>
         </iq:permissions>
         <iq:languages>

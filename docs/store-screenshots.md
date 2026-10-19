@@ -101,6 +101,14 @@ just build                                 # rebuild clean
 - **The field timer (Start) runs on wall clock, independent of FIT playback.** Start
   them together and don't pause one without the other, or TIME and DIST drift apart.
 - The FIT playback ends silently at the file's last record; the timer keeps running.
+- **Recording a data field's FIT (developer fields) needs playback records dated after Start.**
+  Start opens `$(getconf DARWIN_USER_TEMP_DIR)com.garmin.connectiq/GARMIN/Activities/<start
+  time>.fit` and writes one record at the wall clock. Playback records with an older timestamp
+  (`gen_store_fit.py`'s fixed 2025 base) are then dropped, and Save leaves that one-record file
+  unfinalized (header data size 0, which fitdecode rejects). A FIT generated with its base a little
+  after now records normally (2026-10-18, SDK 9.2, in the VM). The Data Simulation source records
+  only while its play button runs, and File → Kill App unloads the field and closes the Activity
+  Data dialog.
 - **Save Screen Capture panel:** remembers its last folder (first save decides — put it
   in `bin/`); a name collision opens a Replace sheet that silently cancels scripted
   saves, so always use fresh file names; type the file name only after a ~0.4 s delay

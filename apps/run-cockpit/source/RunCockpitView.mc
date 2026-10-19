@@ -7,7 +7,8 @@ import Toybox.System;
 
 // Full-screen running data field: grid of pace/HR/distance/duration + clock, with
 // HR coloured by zone and a time-in-zone bar strip along the bottom. Geometry is
-// cached in onLayout; onUpdate reads cached model values and allocates nothing.
+// cached in onLayout; onUpdate reads cached model values and allocates nothing. compute() also
+// writes the GAP developer fields into the activity's FIT file (FitRecorder).
 class RunCockpitView extends WatchUi.DataField {
     // Largest-first bold numeric candidates; the fit-to-cell picker in onLayout chooses per row.
     private const VALUE_FONTS = [
@@ -36,9 +37,11 @@ class RunCockpitView extends WatchUi.DataField {
     // reloadSettings() (called from initialize) immediately replaces it.
     private var _model as RunModel = new RunModel(new HrZoneModel([93, 111, 130, 148, 167, 185]));
     private var _layout as GridLayout or Null = null;
+    private var _fit as FitRecorder;
 
     function initialize() {
         DataField.initialize();
+        _fit = new FitRecorder(self);
         reloadSettings();
     }
 
@@ -105,6 +108,7 @@ class RunCockpitView extends WatchUi.DataField {
 
     function compute(info as Activity.Info) as Void {
         _model.update(info);
+        _fit.write(_model);
     }
 
     function onTimerLap() as Void {
@@ -130,7 +134,7 @@ class RunCockpitView extends WatchUi.DataField {
 
         var pc = _layout.paceCells();
         var gap = _model.climbMetricGap();
-        var climb = _model.showClimbForCurLap(); // once per draw: it advances the hysteresis
+        var climb = _model.showClimbForCurLap();
         if (climb && gap) {
             _cell(dc, pc[0], _model.gapCurColor(fg, onWhite), "GP" + _model.gapCurZone(), _model.gapCurStr(), _fPace);
             _cell(dc, pc[1], _model.gapLapColor(fg, onWhite), "GL" + _model.gapLapZone(), _model.gapLapStr(), _fPace);

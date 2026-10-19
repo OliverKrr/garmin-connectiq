@@ -19,6 +19,8 @@ power - or to grade-adjusted pace (GAP) - automatically, and back on the flat.
 - **Grade-adjusted pace (GAP)** as an alternative to power: on climbs the current and lap cells
   switch to GAP, and the bottom row shows average GAP, coloured by pace zones. The curve is
   calibrated to Garmin's own lap GAP; `just gap-check <fit files>` re-scores it against your runs.
+- **GAP in the activity file** — current, lap and average GAP, the grade and the climb metric shown
+  are recorded as FIT developer fields on every run ([Recorded data](#recorded-data-fit-developer-fields)).
 - **Heart rate** as current / lap / average, coloured by HR zone with a fractional zone number.
 - **Time-in-zone bar chart** — each bar grows with the time spent in that zone, drawn in that zone's colour.
 - **Distance, duration, and average power** (or average GAP) always on screen (useful on hilly runs, where average
@@ -29,6 +31,27 @@ power - or to grade-adjusted pace (GAP) - automatically, and back on the flat.
   brighter palette on dark / AMOLED backgrounds.
 
 Full setup and per-setting documentation: [store-assets/description.txt](store-assets/description.txt).
+
+## Recorded data (FIT developer fields)
+
+Every run's FIT file carries Run Cockpit's own grade-adjusted pace as Connect IQ developer fields,
+whatever the climb metric, so an analysis can set it beside Garmin's lap GAP
+(`avg_grade_adjusted_speed`) or another service's. This is what the FIT Contributor permission is
+for. Garmin Connect shows the fields with the activity. Intervals.icu drops developer fields from its
+streams, so read them from the original FIT (`GET /api/v1/activity/{id}/file`). Speeds are in m/s
+(pace in s/km = 1000 / speed), 0 while there is none.
+
+| Message | Field (id) | Meaning |
+|---|---|---|
+| record (per second) | `gap_speed` (0) | current GAP as the field shows it: 10 s rolling, m/s |
+| record | `gap_grade` (1) | the grade GAP used, % (barometric altitude, smoothed) |
+| record | `climb_metric` (2) | what the current and lap cells showed: 0 pace, 1 GAP, 2 power |
+| lap | `lap_gap_speed` (3) | lap GAP, m/s |
+| session | `avg_gap_speed` (4) | average GAP over the timer time, m/s |
+
+A settings change during a run restarts lap and average GAP from that moment, as on screen. Field
+ids are never reused. The record fields take 9 of the 32 bytes per message Connect IQ allows a data
+field, so check that budget before adding one.
 
 ## Screenshots
 

@@ -16,6 +16,7 @@ compact old entries before adding new ones. `just validate-store-text` fails the
 paste file or the Store description exceeds the limit.
 
 ## [Unreleased]
+- Records its grade-adjusted pace in the activity's FIT file on every run: current GAP, the grade it used and the climb metric shown each second, plus lap and average GAP, as Connect IQ fields in Garmin Connect. Installing asks for the FIT Contributor permission for this.
 
 ## [1.3.2] - 2026-10-18
 - GAP is the default climb metric (power stays one setting away), and Climb metric is the first setting.

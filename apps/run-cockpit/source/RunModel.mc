@@ -6,8 +6,9 @@ import Toybox.Graphics;
 // Per-second state for the running data field. update(info) reads Activity.Info,
 // feeds the metric classes, and caches display-ready values that onUpdate() reads
 // without allocating. Session averages are native (Activity.Info); lap values are
-// accumulated here and reset on lap. With GAP as the climb metric, a second set of values (current,
-// lap, average GAP) runs the same pipeline on flat-equivalent distance; pace stays raw pace.
+// accumulated here and reset on lap. A second set of values (current, lap, average GAP) runs the same
+// pipeline on flat-equivalent distance whatever the climb metric, since FitRecorder writes it to the
+// FIT file on every run; pace stays raw pace.
 class RunModel {
     // Current pace and current GAP are rolling averages over this many seconds of timer time.
     private const ROLLING_SEC = 10;
@@ -37,9 +38,10 @@ class RunModel {
     private var _paceVsPower as Number = 0;
     private var _gradeThreshold as Number = 3;
     private var _climbActive as Boolean = false;
+    private var _climbShown as Boolean = false; // Current/Lap show the climb metric this second
     private var _gap as Boolean = false; // climb metric: GAP (true) or power (false)
     private var _flat as GapDistance = new GapDistance();
-    private var _rollingGap as RollingPace or Null = null;
+    private var _rollingGap as RollingPace;
     private var _lapStartFlat as Float = 0.0;
     private var _gapCur as Float or Null = null;
     private var _gapLap as Float or Null = null;
@@ -48,6 +50,7 @@ class RunModel {
     function initialize(zones as HrZoneModel) {
         _zones = zones;
         _rollingPace = new RollingPace(ROLLING_SEC);
+        _rollingGap = new RollingPace(ROLLING_SEC);
         _lapHr = new RunningAverage();
         _tiz = new TimeInZone();
     }
@@ -82,20 +85,18 @@ class RunModel {
         _paceCur = (cur != null) ? cur : Pace.secPerKmFromSpeed(spd);
         _paceAvg = Pace.secPerKmFromSpeed(avgSpeed);
 
-        if (_gap) {
-            // GAP: the pace pipeline on flat-equivalent distance; speed * factor stands in like above.
-            var f = GapModel.factor(_grade.grade());
-            var rg = _rollingGap;
-            var gcur = null as Float or Null;
-            if (running && timer != null && dist != null) {
-                _flat.add(dist, f);
-                if (rg != null) { rg.add(timer, _flat.flatM()); gcur = rg.paceSecPerKm(); }
-                _gapLap = Pace.secPerKmFromDelta(_flat.flatM() - _lapStartFlat, timer - _lapStartMs);
-            }
-            if (gcur == null && spd != null) { gcur = Pace.secPerKmFromSpeed(spd * f); }
-            _gapCur = gcur;
-            _gapAvg = Pace.secPerKmFromDelta(_flat.flatM(), _timerMs);
+        // GAP: the pace pipeline on flat-equivalent distance; speed * factor stands in like above.
+        var f = GapModel.factor(_grade.grade());
+        var gcur = null as Float or Null;
+        if (running && timer != null && dist != null) {
+            _flat.add(dist, f);
+            _rollingGap.add(timer, _flat.flatM());
+            gcur = _rollingGap.paceSecPerKm();
+            _gapLap = Pace.secPerKmFromDelta(_flat.flatM() - _lapStartFlat, timer - _lapStartMs);
         }
+        if (gcur == null && spd != null) { gcur = Pace.secPerKmFromSpeed(spd * f); }
+        _gapCur = gcur;
+        _gapAvg = Pace.secPerKmFromDelta(_flat.flatM(), _timerMs);
 
         if (hr != null) {
             _hrCur = hr;
@@ -119,6 +120,7 @@ class RunModel {
             _powerCur = null;
         }
         _powerAvg = (info has :averagePower) ? info.averagePower : null;
+        _climbShown = _climbNow();
     }
 
     function onLap() as Void {
@@ -134,8 +136,7 @@ class RunModel {
         _lapStartDist = 0.0;
         _lapStartFlat = 0.0;
         _flat.reset();
-        var rg = _rollingGap;
-        if (rg != null) { rg.reset(); }
+        _rollingGap.reset();
         _rollingPace.reset();
         _lapHr.reset();
         _lapPower.reset();
@@ -183,16 +184,25 @@ class RunModel {
     function setPaceVsPower(m as Number) as Void { _paceVsPower = m; }
     function setGradeThreshold(t as Number) as Void { _gradeThreshold = t; }
 
-    // Climb metric: GAP (true) or power (false). Rolling GAP needs its own buffer.
-    function setClimbMetricGap(gap as Boolean) as Void {
-        _gap = gap;
-        _rollingGap = gap ? new RollingPace(ROLLING_SEC) : null;
-    }
+    // Climb metric: GAP (true) or power (false).
+    function setClimbMetricGap(gap as Boolean) as Void { _gap = gap; }
     function climbMetricGap() as Boolean { return _gap; }
 
-    // True when Current/Lap show the climb metric instead of pace: Always, or Auto with the grade
-    // over the threshold (hysteresis). Power also needs a live reading; GAP needs none.
-    function showClimbForCurLap() as Boolean {
+    // True when Current/Lap show the climb metric instead of pace, as of the last update().
+    function showClimbForCurLap() as Boolean { return _climbShown; }
+
+    // What Current/Lap show, for the FIT file: 0 pace, 1 GAP, 2 power.
+    function climbMetricShown() as Number {
+        if (!_climbShown) { return 0; }
+        return _gap ? 1 : 2;
+    }
+
+    // The grade (%) GAP used this second.
+    function grade() as Float { return _grade.grade(); }
+
+    // Always, or Auto with the grade over the threshold (hysteresis, advanced once per update()).
+    // Power also needs a live reading; GAP needs none.
+    private function _climbNow() as Boolean {
         if (_paceVsPower == 1) { return false; }
         if (!_gap && _powerCur == null) { return false; }
         if (_paceVsPower == 2) { return true; }

@@ -98,7 +98,8 @@ function runModel_gapAutoSwitchesOnClimb(l as Logger) as Boolean {
     return !flat1 && climb && !flat2;
 }
 
-// Power as climb metric keeps the old rule: no live power, no switch; and no GAP is computed.
+// Power as climb metric keeps the old rule: no live power, no switch. GAP is still computed, for
+// the FIT file; with live power, Always shows power (code 2).
 (:test)
 function runModel_powerMetricNeedsLivePower(l as Logger) as Boolean {
     var m = new RunModel(new HrZoneModel([93, 111, 130, 148, 167, 185]));
@@ -107,8 +108,30 @@ function runModel_powerMetricNeedsLivePower(l as Logger) as Boolean {
     var info = new Activity.Info();
     info.timerState = Activity.TIMER_STATE_ON;
     info.currentSpeed = 3.0;
-    _runSegment(m, info, 0, 60, 5.0, 100.0);
-    return !m.showClimbForCurLap() && m.gapCurSec() == null && m.gapAvgSec() == null;
+    var alt = _runSegment(m, info, 0, 60, 5.0, 100.0);
+    var noPowerOk = !m.showClimbForCurLap() && m.climbMetricShown() == 0
+        && _near(m.gapCurSec(), 287.4, 3.0) && m.gapAvgSec() != null;
+    if (!(info has :currentPower)) { return noPowerOk; } // e.g. fr645m: no running power at all
+    info.currentPower = 300;
+    _runSegment(m, info, 61, 62, 5.0, alt);
+    return noPowerOk && m.showClimbForCurLap() && m.climbMetricShown() == 2;
+}
+
+// The FIT's climb_metric code follows the screen: 0 pace on the flat, 1 GAP on the climb; Never
+// keeps 0 on the climb. The grade the FIT records is GradeModel's.
+(:test)
+function runModel_climbMetricShownCode(l as Logger) as Boolean {
+    var mi = _gapModel(0);
+    var m = mi[0] as RunModel;
+    var info = mi[1] as Activity.Info;
+    var alt = _runSegment(m, info, 0, 100, 0.0, 100.0);
+    var flatOk = m.climbMetricShown() == 0 && _near(m.grade(), 0.0, 0.1);
+    _runSegment(m, info, 101, 200, 5.0, alt);
+    var climbOk = m.climbMetricShown() == 1 && _near(m.grade(), 5.0, 0.3);
+    var nm = (_gapModel(1))[0] as RunModel;
+    _runSegment(nm, info, 0, 200, 5.0, 100.0);
+    l.debug("flat=" + flatOk + " climb=" + climbOk + " grade=" + m.grade() + " never=" + nm.climbMetricShown());
+    return flatOk && climbOk && nm.climbMetricShown() == 0;
 }
 
 // Same placeholder altitude through RunModel: average GAP on the flat must equal average pace.

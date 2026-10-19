@@ -19,4 +19,12 @@ module Pace {
         var speedMps = distM / (timeMs / 1000.0);
         return 1000.0 / speedMps;
     }
+
+    // Speed in m/s from seconds-per-km, for the FIT fields. null/<=0 (no pace yet, standing) -> 0.
+    function speedFromSecPerKm(secPerKm as Float or Null) as Float {
+        if (secPerKm == null || secPerKm <= 0.0) {
+            return 0.0;
+        }
+        return 1000.0 / secPerKm;
+    }
 }
