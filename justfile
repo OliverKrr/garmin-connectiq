@@ -43,9 +43,9 @@ build app="run-cockpit":
     mkdir -p bin
     "{{sdk_bin}}/monkeyc" -d {{device}} -f apps/{{app}}/monkey.jungle -o bin/{{app}}.prg -y {{key}} -w
 
-# The simulator recipes (test, dev, screenshot, shoot) run in a local macOS VM, so no simulator
-# window or scripted keystroke reaches this desktop (docs/simulator-vm.md). The *-local recipes
-# use this Mac's own simulator instead: opt in only on a desktop nobody is working at.
+# The simulator recipes (test, dev, screenshot, shoot, record) run in a local macOS VM, so no
+# simulator window or scripted keystroke reaches this desktop (docs/simulator-vm.md). The *-local
+# recipes use this Mac's own simulator instead: opt in only on a desktop nobody is working at.
 
 # Build an app with unit tests and run them in the VM's simulator
 test app="run-cockpit":
@@ -62,6 +62,11 @@ screenshot app="run-cockpit":
 # Store screenshot choreography in the VM, fake patches included; PNGs land in bin/vm/
 shoot:
     tools/ciq-vm.sh shoot
+
+# Record a 4.5-min activity with a data field in the VM to bin/vm/<app>-activity.fit, then check its developer fields
+record app="run-cockpit":
+    tools/ciq-vm.sh record {{app}}
+    uv run --script tools/fit_fields.py bin/vm/{{app}}-activity.fit --expect bin/vm/{{app}}-fit_contributions.json
 
 # The VM itself, e.g. `just vm start|stop|screen|peek|ssh|check` (tools/ciq-vm.sh)
 vm *args:

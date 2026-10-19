@@ -16,6 +16,7 @@ keystroke reaches the host's, and the host needs no simulator running at all.
 | `just screenshot [app]` | loads the app into the VM's simulator and saves its screen to `bin/vm/<app>.png` |
 | `just dev [app]` | loads the app into the VM's simulator and leaves it running; re-run to reload |
 | `just shoot` | the [Store screenshot](store-screenshots.md) choreography, fake patches included |
+| `just record [app]` | records a 4.5-min activity with a data field and checks its developer fields (below) |
 | `just vm screen` | opens Screen Sharing to the VM (user and password `admin`), to watch or click |
 | `just vm peek` | saves the VM's whole screen to `bin/vm/screen.png` |
 | `just vm ssh [cmd]` | a shell, or one command, in the VM's copy of the repo |
@@ -32,6 +33,20 @@ simulator and run on the host.
 
 The `*-local` recipes (`test-local`, `dev-local`, `run-local`, `sim-local`) still drive the
 host's own simulator, for a machine without the VM.
+
+## Recording an activity FIT
+
+Run `just record` after any change to what a data field writes with `FitContributor`; unit tests
+cannot see the FIT. It restarts the VM's simulator with no app settings, loads the field and
+plays a generated FIT of 90 s flat, 120 s at 6 % and 60 s at −4 %. It presses Start, Lap at
+150 s, and Stop and Save at 262 s, then copies the saved activity to
+`bin/vm/<app>-activity.fit`. `tools/fit_fields.py` then prints the activity's developer fields,
+per-record ranges and per-lap and per-session values. The recipe fails unless every field the
+build declares in `bin/vm/<app>-fit_contributions.json` was written. The run takes about 6 min.
+
+The playback FIT starts 45 s after it is generated (`CIQ_FIT_BASE_MS`), because the simulator
+records only playback records dated after Start; see [the gotchas](store-screenshots.md#simulator-gotchas-hard-won).
+Point `tools/fit_fields.py` at any other activity FIT to read what a watch wrote.
 
 ## Requirements
 

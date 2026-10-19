@@ -24,7 +24,9 @@ local path.
 - The simulator runs in a local macOS VM (`docs/simulator-vm.md`): `just test`, `just dev`,
   `just screenshot` and `just shoot` sync the working tree into it and boot it on demand, so no
   simulator window or scripted keystroke reaches the desktop, and they need no OK. Look at a UI
-  change with `just screenshot <app>` (the device screen lands in `bin/vm/<app>.png`).
+  change with `just screenshot <app>` (the device screen lands in `bin/vm/<app>.png`). Check a
+  change to Run Cockpit's FIT fields with `just record`, which records a 4.5-min activity in the
+  VM to `bin/vm/run-cockpit-activity.fit` and fails unless every declared field was written.
 - The `*-local` recipes (`test-local`, `dev-local`, `run-local`, `sim-local`) and the GUI
   automation in `tools/sim_shot.sh` and `tools/store_shoot.sh` drive this machine's own simulator
   and type into the logged-in desktop. Use them only on a machine without the VM, when nobody is

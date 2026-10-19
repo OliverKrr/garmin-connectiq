@@ -10,15 +10,16 @@
 #   tools/ciq-vm.sh dev [app]         build and load the app into the VM's simulator (`just dev`)
 #   tools/ciq-vm.sh screenshot [app]  dev, then save the device screen to bin/vm/<app>.png
 #   tools/ciq-vm.sh shoot             the Store screenshot choreography (`just shoot`)
+#   tools/ciq-vm.sh record [app]      record an activity with the data field (`just record`)
 #   tools/ciq-vm.sh just <args>       run any recipe in the VM
 #   tools/ciq-vm.sh peek              save the VM's whole screen to bin/vm/screen.png
 #   tools/ciq-vm.sh ssh [cmd]         shell (or one command) in the VM's copy of the repo
 #   tools/ciq-vm.sh start | stop      boot headless / shut down
 #
-# test, dev, screenshot, shoot and just first sync the working tree into the VM; inside the VM
-# (CIQ_IN_VM is set there) the same commands run on its own simulator. Everything the VM wrote to
-# its bin/ comes back to bin/vm/, never bin/: the VM signs with a throwaway key. CIQ_DEVICE and
-# CIQ_FIT_K are passed through.
+# test, dev, screenshot, shoot, record and just first sync the working tree into the VM; inside
+# the VM (CIQ_IN_VM is set there) the same commands run on its own simulator. Everything the VM
+# wrote to its bin/ comes back to bin/vm/, never bin/: the VM signs with a throwaway key.
+# CIQ_DEVICE and CIQ_FIT_K are passed through.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -41,7 +42,17 @@ die() { echo "ciq-vm: $*" >&2; exit 1; }
 need_tart() { command -v tart >/dev/null || die "tart missing (docs/simulator-vm.md, Requirements)"; }
 exists() { tart list --source local --quiet | grep -qx "$VM"; }
 running() { tart list --source local | awk -v vm="$VM" '$2 == vm { s = $NF } END { exit s != "running" }'; }
-ip() { tart ip "$VM" --wait 120; }
+# The DHCP lease answers at once, but after hours of uptime it can be gone ("no IP address found")
+# while the VM still runs. The guest agent (in the Cirrus images) still answers then, and so does
+# the host's ARP table, except to children of Homebrew's bash, which have read it empty. Only a
+# VM that is still booting is worth the 120 s wait.
+ip() {
+  local r
+  for r in dhcp agent arp; do
+    tart ip --resolver "$r" "$VM" 2>/dev/null && return 0
+  done
+  tart ip "$VM" --wait 120
+}
 
 # IdentityAgent=none keeps the host's SSH agent (and any approval prompt it raises) out of
 # this; the VM's address changes between boots, so its host key is not pinned.
@@ -224,6 +235,132 @@ guest_shoot() {
   return "$rc"
 }
 
+# Click a named button of the Activity Data dialog (Start, Stop, Lap, Save, Discard), or toggle
+# its unnamed play/pause button with "play".
+sim_dialog() {
+  osascript - "$1" <<'EOF'
+on run argv
+  set what to item 1 of argv
+  tell application "System Events" to tell process "simulator"
+    repeat with w in windows
+      try
+        if exists button "Load File" of w then
+          if what is not "play" then
+            if exists button what of w then
+              click button what of w
+              return "clicked " & what
+            end if
+            return "no " & what
+          end if
+          repeat with b in (every button of w)
+            if name of b is missing value then
+              set d to ""
+              try
+                set d to description of b as string
+              end try
+              if d does not contain "close" and d does not contain "zoom" and d does not contain "minimize" then
+                click b
+                return "toggled play"
+              end if
+            end if
+          end repeat
+        end if
+      end try
+    end repeat
+    return "no dialog"
+  end tell
+end run
+EOF
+}
+
+# FIT playback position in seconds, or -1 while there is none.
+play_pos() {
+  local p h m s
+  p=$(tools/sim_shot.sh pos 2>/dev/null | awk '{print $1}')
+  [[ "$p" =~ ^[0-9]+:[0-9]+:[0-9]+$ ]] || { echo -1; return; }
+  IFS=: read -r h m s <<<"$p"
+  echo $((10#$h * 3600 + 10#$m * 60 + 10#$s))
+}
+
+# Wait until playback reaches position $1, giving up at $SECONDS = $2.
+wait_play() {
+  while [ "$(play_pos)" -lt "$1" ]; do
+    [ "$SECONDS" -lt "$2" ] || die "playback stuck at $(tools/sim_shot.sh pos)"
+    sleep 3
+  done
+}
+
+# The newest activity in the simulator's Activities folder $1, or nothing. Start opens one named
+# after its start time (2026-10-18-20-42-36.fit); FILE.FIT beside it is the playback input.
+last_activity() {
+  local f last=
+  for f in "$1"/[0-9]*.fit; do
+    [ -e "$f" ] && last=$f
+  done
+  echo "$last"
+}
+
+# record's FIT: 90 s flat, 120 s at 6 %, 60 s at -4 % (secs,pace,grade,power,hr_from,hr_to).
+RECORD_SEGMENTS="90,300,0,250,130,140;120,380,6,330,150,165;60,270,-4,220,155,150"
+
+guest_record() {
+  local app=${1:-run-cockpit}
+  grep -q 'type="datafield"' "apps/$app/manifest.xml" ||
+    die "record drives a data field; $app is not one"
+  local act k lap_at stop_at p1 p2 deadline saved
+  act="$(getconf DARWIN_USER_TEMP_DIR)com.garmin.connectiq/GARMIN/Activities"
+  # Lap mid-climb and Stop just before the FIT ends, at wall seconds 150 and 262; the playback
+  # position runs K times faster (docs/store-screenshots.md, gotchas).
+  k=${CIQ_FIT_K:-1.0}
+  lap_at=$(awk -v k="$k" 'BEGIN { printf "%d", 150 * k + 0.5 }')
+  stop_at=$(awk -v k="$k" 'BEGIN { printf "%d", 262 * k + 0.5 }')
+  just build "$app"
+  # A fresh simulator: default app settings and no earlier activities.
+  reset_app_data
+  sim_up
+  load_app "$app"
+  # Start keeps only playback records dated after it, so the FIT starts 45 s from now; arming it
+  # and pressing Start take about 15 s.
+  mkdir -p bin
+  CIQ_FIT_K=$k CIQ_FIT_BASE_MS=$(($(date +%s) * 1000 + 45000)) CIQ_FIT_SEGMENTS=$RECORD_SEGMENTS \
+    CIQ_FIT_OUT=bin/record-run.fit uv run -q --with fit-tool python3 tools/gen_store_fit.py
+  tools/sim_shot.sh arm "$PWD/bin/record-run.fit"
+  tools/sim_shot.sh scrub 0 >/dev/null
+  sim_dialog Start
+  sleep 0.6
+  sim_dialog play
+  sleep 6
+  p1=$(play_pos)
+  sleep 5
+  p2=$(play_pos)
+  if [ "$p2" -le "$p1" ]; then
+    # The play button is a toggle: a frozen position means this click paused it. Play again and
+    # restart the timer with it.
+    echo "playback frozen at ${p2}s; toggling play and restarting the timer"
+    sim_dialog play
+    sleep 2
+    sim_dialog Stop
+    sleep 0.6
+    sim_dialog Discard
+    sleep 0.6
+    sim_dialog Start
+    sleep 2
+  fi
+  [ -n "$(last_activity "$act")" ] || die "Start opened no activity in $act"
+  echo "recording: $(tools/sim_shot.sh pos)"
+  deadline=$((SECONDS + 420))
+  wait_play "$lap_at" "$deadline"
+  echo "lap at $(tools/sim_shot.sh pos): $(sim_dialog Lap)"
+  wait_play "$stop_at" "$deadline"
+  echo "stop at $(tools/sim_shot.sh pos): $(sim_dialog Stop)"
+  sleep 2
+  sim_dialog Save
+  sleep 4
+  saved=$(last_activity "$act")
+  cp "$saved" "bin/$app-activity.fit"
+  echo "saved $(basename "$saved") -> bin/$app-activity.fit"
+}
+
 # ---- dispatch ---------------------------------------------------------------------------------
 
 cmd=${1:-}
@@ -242,7 +379,7 @@ case "$cmd" in
     ;;
   ssh) start && if [ $# -gt 0 ]; then remote "$@"; else vssh -t "$GUEST_ENV cd ~/$REPO 2>/dev/null; exec zsh -l"; fi ;;
   just) start && sync_tree && guest just "$@" ;;
-  test | dev | screenshot | shoot)
+  test | dev | screenshot | shoot | record)
     if [ -n "${CIQ_IN_VM:-}" ]; then
       "guest_$cmd" "$@"
     else
@@ -251,5 +388,5 @@ case "$cmd" in
     ;;
   peek) start && vssh 'screencapture -x /tmp/ciq-vm-screen.png' && mkdir -p bin/vm &&
     vrsync "$VM_USER@$(ip):/tmp/ciq-vm-screen.png" bin/vm/screen.png && echo "bin/vm/screen.png" ;;
-  *) sed -n '6,21p' "$0" | sed 's/^# \{0,1\}//'; [ -z "$cmd" ] || exit 1 ;;
+  *) sed -n '6,22p' "$0" | sed 's/^# \{0,1\}//'; [ -z "$cmd" ] || exit 1 ;;
 esac

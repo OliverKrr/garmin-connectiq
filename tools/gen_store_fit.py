@@ -18,6 +18,12 @@ Segments (threshold pace 4:00/km -> 80/20 boundaries 5:16 / 4:36 / 4:18 / 4:00 /
 
 Requires: pip install fit-tool.  Run: python3 tools/gen_store_fit.py
 (CIQ_FIT_K=<rate> for a simulator that plays at another rate, see K below.)
+
+Other runs, such as `tools/ciq-vm.sh record`'s short climb, override the design through env vars:
+  CIQ_FIT_SEGMENTS  "secs,pace,grade,power,hr_from,hr_to;..." in place of SEGMENTS
+  CIQ_FIT_BASE_MS   first record's timestamp (epoch ms) in place of the fixed 2025 base; recording
+                    an activity in the simulator keeps only records dated after its Start
+  CIQ_FIT_OUT       output path in place of bin/store-run.fit
 """
 import math
 import os
@@ -34,8 +40,9 @@ try:
 except ImportError:
     sys.exit("fit-tool not installed. Run: pip install fit-tool")
 
-BASE_MS = 1735689600000  # fixed base (2025-01-01 UTC) so output is reproducible
-OUT = "bin/store-run.fit"
+# fixed base (2025-01-01 UTC) so output is reproducible
+BASE_MS = int(os.environ.get("CIQ_FIT_BASE_MS", "1735689600000"))
+OUT = os.environ.get("CIQ_FIT_OUT", "bin/store-run.fit")
 
 # (seconds, pace s/km, grade %, power W, hr_from, hr_to)
 SEGMENTS = [
@@ -44,6 +51,14 @@ SEGMENTS = [
     (120, 335, 8.0, 345, 162, 170),   # climb: 8% -> POWER cells, HR z4
     (100, 232, -4.0, 215, 158, 152),  # descent: fast pace, HR eases
 ]
+if os.environ.get("CIQ_FIT_SEGMENTS"):
+    SEGMENTS = [
+        tuple(float(v) for v in seg.split(","))
+        for seg in os.environ["CIQ_FIT_SEGMENTS"].split(";")
+        if seg.strip()
+    ]
+    if any(len(seg) != 6 for seg in SEGMENTS):
+        sys.exit("CIQ_FIT_SEGMENTS: each segment needs secs,pace,grade,power,hr_from,hr_to")
 
 # The simulator's FIT playback consumes K records per wall second, while the data field's
 # timer ticks wall seconds: about 1.47 on a Mac (measured 1.455-1.47 across runs, SDK 9.2.0),
