@@ -1,10 +1,12 @@
 # garmin-connectiq build/dev recipes
 set shell := ["bash", "-uc"]
 
-# Active SDK dir (override with CIQ_SDK_HOME); falls back to the SDK Manager's current-sdk.cfg
-ciq_cfg := env_var_or_default("CIQ_SDK_HOME", `cat "$HOME/Library/Application Support/Garmin/ConnectIQ/current-sdk.cfg" 2>/dev/null || true`)
+# Active SDK dir (override with CIQ_SDK_HOME); falls back to the SDK Manager's current-sdk.cfg,
+# under ~/Library/Application Support/Garmin on macOS and ~/.Garmin on Linux
+ciq_home := `d="$HOME/Library/Application Support/Garmin/ConnectIQ"; [ -d "$d" ] || d="$HOME/.Garmin/ConnectIQ"; echo "$d"`
+ciq_cfg := env_var_or_default("CIQ_SDK_HOME", `d="$HOME/Library/Application Support/Garmin/ConnectIQ"; [ -d "$d" ] || d="$HOME/.Garmin/ConnectIQ"; cat "$d/current-sdk.cfg" 2>/dev/null || true`)
 sdk_bin := ciq_cfg / "bin"
-devices := env_var_or_default("CIQ_DEVICES_DIR", `echo "$HOME/Library/Application Support/Garmin/ConnectIQ/Devices"`)
+devices := env_var_or_default("CIQ_DEVICES_DIR", ciq_home / "Devices")
 device  := env_var_or_default("CIQ_DEVICE", "fenix9pro51mm")
 # Signing key: the release key the Store listings were first signed with (restore it, never
 # regenerate it). CIQ_KEY points at another key, e.g. a throwaway key inside the simulator VM.

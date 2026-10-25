@@ -34,6 +34,11 @@ self-contained, so link other repos by public URL only, never by local path.
   working at it, and ask first.
 - SDK 9.2 cannot capture the simulator's screen without driving its GUI (the dead ends are in
   `docs/store-screenshots.md`, gotchas), which is why screenshots run in the VM.
+- On Linux the recipes look for the SDK under `~/.Garmin/ConnectIQ` (`current-sdk.cfg`,
+  `Devices/`). An arm64 Linux host such as a Raspberry Pi can run `just build` only: `monkeyc` is
+  Java, but the simulator ships for x86-64. Device files need the SDK Manager's Garmin sign-in,
+  so copy `Devices/<device>` from a Mac where the SDK Manager has downloaded them. Sign there
+  with a throwaway key through `CIQ_KEY`, never a copy of the release key.
 - Only local builds compile. CI checks XML well-formedness and nothing else, because Garmin's MFA
   blocks the headless SDK-manager login that fetches device definitions. Verify a change with
   `just build` and `just test` before calling it done.
