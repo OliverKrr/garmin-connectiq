@@ -1,13 +1,14 @@
 # CLAUDE.md for garmin-connectiq
 
 An open-source monorepo of Garmin Connect IQ apps in Monkey C: the Run Cockpit data field in
-`apps/run-cockpit/` (on the Store) and the Sauna Cockpit watch app in `apps/sauna-cockpit/`
-(private beta listing). `just build|test|dev|screenshot|sideload <app>` take the app's directory
-name and default to `run-cockpit`, and so do `bump`, `tag` and `package-beta` (which requires it).
-The root `store-assets/` and `CHANGELOG.md` and the recipes `package`, `release`, `publish-assist`
-and `github-release` are Run Cockpit's alone; Sauna Cockpit keeps its Store files in
-`apps/sauna-cockpit/store/`. `RELEASE.md` covers both apps. The repo is self-contained, so link other repos by public URL only, never by
-local path.
+`apps/run-cockpit/` (on the Store), the Sauna Cockpit watch app in `apps/sauna-cockpit/` (private
+beta listing) and `apps/voice-spike/`, a sideload-only throwaway probe of the SDK 9.3 microphone and
+LTE APIs, deleted once its README's questions are answered. `just build|test|dev|screenshot|sideload
+<app>` take the app's directory name and default to `run-cockpit`, and so do `bump`, `tag` and
+`package-beta` (which requires it). The root `store-assets/` and `CHANGELOG.md` and the recipes
+`package`, `release`, `publish-assist` and `github-release` are Run Cockpit's alone; Sauna Cockpit
+keeps its Store files in `apps/sauna-cockpit/store/`. `RELEASE.md` covers both apps. The repo is
+self-contained, so link other repos by public URL only, never by local path.
 
 ## Build and test
 

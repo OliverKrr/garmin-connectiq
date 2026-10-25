@@ -1,0 +1,5 @@
+<settings>
+    <setting propertyKey="@Properties.uploadUrl" title="@Strings.SetUploadUrl">
+        <settingConfig type="alphaNumeric" />
+    </setting>
+</settings>

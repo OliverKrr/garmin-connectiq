@@ -72,6 +72,7 @@ shared barrels.
 |---|---|---|
 | [`apps/run-cockpit`](apps/run-cockpit) | Data field | Full-screen running stats page |
 | [`apps/sauna-cockpit`](apps/sauna-cockpit) | Watch app | Sauna rounds: phase countdown, HR and watch-temperature alerts, round stats, session history (private beta) |
+| [`apps/voice-spike`](apps/voice-spike) | Watch app | Throwaway probe for SDK 9.3's microphone and LTE web requests (sideload only) |
 
 - `apps/` — Connect IQ applications (one dir per app)
 - `barrels/` — Shared Monkey C code (Connect IQ "barrels")

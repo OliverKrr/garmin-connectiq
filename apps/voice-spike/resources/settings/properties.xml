@@ -1,0 +1,3 @@
+<properties>
+    <property id="uploadUrl" type="string">https://httpbin.org/status/200</property>
+</properties>
