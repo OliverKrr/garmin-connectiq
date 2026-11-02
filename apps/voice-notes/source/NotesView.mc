@@ -13,7 +13,7 @@ class Notes {
     function initialize() {
         recorder = new Recorder(method(:onRecorded));
         uploader = new Uploader(method(:onUploaded), method(:onProgress));
-        if (!Recorder.supported()) { status = "no Opus recording on this watch"; }
+        if (!Recorder.supported()) { status = "no microphone API on this watch"; }
     }
 
     function toggle() as Void {

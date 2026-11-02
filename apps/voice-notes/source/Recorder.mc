@@ -22,8 +22,10 @@ class Recorder {
         _onFinished = onFinished;
     }
 
+    // Only the API check; the format is checked when recording starts, so the main screen never
+    // depends on the microphone.
     static function supported() as Boolean {
-        return (Toybox has :Audio) && (Audio has :Capture) && Audio.Capture.isFormatSupported(format());
+        return (Toybox has :Audio) && (Audio has :Capture);
     }
 
     static function format() as Audio.AudioFormat {
@@ -41,7 +43,7 @@ class Recorder {
 
     function start() as String? {
         if (_recording) { return null; }
-        if (!supported()) { return "no Opus recording"; }
+        if (!supported() || !Audio.Capture.isFormatSupported(Recorder.format())) { return "no Opus recording"; }
         var kb = Application.Properties.getValue("partKb") as Number;
         _partBytes = (kb < 1 ? 1 : kb > 32 ? 32 : kb) * 1024 - 64;
         _buf = []b;
