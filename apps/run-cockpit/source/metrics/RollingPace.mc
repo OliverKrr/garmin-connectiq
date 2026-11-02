@@ -14,8 +14,8 @@ class RollingPace {
     function initialize(windowSec as Number) {
         _windowMs = windowSec * 1000;
         _cap = windowSec + 5;
-        _times = new [_cap];
-        _dists = new [_cap];
+        _times = new [_cap] as Array<Number>;
+        _dists = new [_cap] as Array<Float>;
     }
 
     function add(timerMs as Number, distanceM as Float) as Void {
