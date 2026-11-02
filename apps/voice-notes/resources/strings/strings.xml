@@ -6,4 +6,6 @@
     <string id="SetUseLte">Upload over the watch's LTE when no phone is connected</string>
     <string id="SetPartKb">Upload piece size in KB (1 to 32)</string>
     <string id="SetMaxMin">Longest note in minutes</string>
+    <string id="SetKeepDays">Keep uploaded notes on the watch for (days; 0 = delete after upload)</string>
+    <string id="SetKeepKb">Watch space for notes in KB (uploaded ones are removed first)</string>
 </strings>

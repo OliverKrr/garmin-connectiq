@@ -8,7 +8,7 @@ import Toybox.WatchUi;
 // Voice Notes: START records a note, START again stops it, and the note uploads to the server
 // set in the app settings, through the phone or over LTE. Notes that cannot go up wait in the
 // watch's storage and are retried in the background.
-(:background)
+(:background, :glance)
 class NotesApp extends Application.AppBase {
     private var _notes as Notes?;
 
@@ -21,6 +21,8 @@ class NotesApp extends Application.AppBase {
 
     function onStop(state as Dictionary?) as Void {
         if (_notes != null) {
+            Queue.markForeground(false);
+            (_notes as Notes).player.stop();
             (_notes as Notes).recorder.abort();
             scheduleRetry();
         }
@@ -32,9 +34,15 @@ class NotesApp extends Application.AppBase {
         if (Background has :registerForActivityCompletedEvent) {
             Background.registerForActivityCompletedEvent();
         }
+        Queue.markForeground(true);
         var notes = new Notes();
         _notes = notes;
         return [new NotesView(notes), new NotesDelegate(notes)];
+    }
+
+    (:glance)
+    function getGlanceView() as [WatchUi.GlanceView] or [WatchUi.GlanceView, WatchUi.GlanceViewDelegate] or Null {
+        return [new NotesGlance()];
     }
 
     function getServiceDelegate() as [System.ServiceDelegate] {

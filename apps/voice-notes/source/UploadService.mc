@@ -23,6 +23,10 @@ class UploadService extends System.ServiceDelegate {
     }
 
     private function upload() as Void {
+        if (Queue.foregroundOpen()) {
+            Background.exit(null);  // the app uploads itself
+            return;
+        }
         Queue.finish(null);
         _uploader = new Uploader(method(:onDone), null);
         (_uploader as Uploader).start();

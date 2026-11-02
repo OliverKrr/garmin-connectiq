@@ -4,6 +4,14 @@ Voice Notes, versioned by [SemVer](https://semver.org/). Released through a priv
 so far. `just package-beta voice-notes` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.2.0] - 2026-11-03
+- Past notes on the watch: DOWN and UP step through them from the record screen, START plays one
+  through the speaker, MENU deletes it. The app always opens on the record screen.
+- Uploaded notes stay for playback for 7 days and within 1 MB (both settings); the oldest go first.
+  Notes not uploaded yet are never deleted automatically.
+- Glance in the widget loop: how many notes wait.
+- The background retry stays out while the app is open.
+
 ## [0.1.1] - 2026-11-02
 - Fix: 0.1.0 crashed when an upload started, so right after a recording and then on every start.
   Its request parameters were numbers, which Connect IQ rejects with a non-JSON body.

@@ -3,9 +3,9 @@ import Toybox.Communications;
 import Toybox.Lang;
 import Toybox.System;
 
-// Uploads the queue part by part, oldest note first. Each part is one POST to
+// Uploads the waiting notes part by part, oldest first. Each part is one POST to
 // <uploadUrl>/<id>/parts/<n>; the server answers {"complete": true} once it holds the whole note,
-// and only then does the note leave the watch, so any failure just leaves it for the next run.
+// and only then is the note marked uploaded, so any failure just leaves it for the next run.
 // Goes through the phone when one is connected, else over LTE when the setting allows it.
 // Shared by the app and its background service.
 (:background)
@@ -68,7 +68,7 @@ class Uploader {
     }
 
     private function next() as Void {
-        var q = Queue.notes();
+        var q = Queue.pending();
         if (q.size() == 0) { finish("all uploaded"); return; }
         var note = q[0];
         var id = note["id"] as String;
@@ -125,7 +125,7 @@ class Uploader {
             return;
         }
         if (data["complete"] == true) {
-            Queue.remove(id);
+            Queue.markUploaded(id);
         } else {
             Queue.markSent(id, (ctx["n"] as Number) + 1);
         }

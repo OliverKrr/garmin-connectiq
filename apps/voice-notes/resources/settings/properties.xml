@@ -4,4 +4,6 @@
     <property id="useLte" type="boolean">true</property>
     <property id="partKb" type="number">16</property>
     <property id="maxMin" type="number">10</property>
+    <property id="keepDays" type="number">7</property>
+    <property id="keepKb" type="number">1024</property>
 </properties>
