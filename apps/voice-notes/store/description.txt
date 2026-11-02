@@ -1,16 +1,11 @@
-Record a voice note on the watch, mid-run or anywhere, and find it later as audio and text on your
-own server. Open source: https://github.com/OliverKrr/garmin-connectiq
+Record a voice note on the watch, mid-run or anywhere, and find it later as audio and text on your own server. Open source: https://github.com/OliverKrr/garmin-connectiq
 
-This app needs a server that receives the notes. It is built for one, a small service you run
-yourself; without it the app records but has nowhere to send. Set the upload URL and token in the
-app settings (Connect IQ app on the phone).
+This app needs a server that receives the notes. It is built for one, a small service you run yourself; without it the app records but has nowhere to send. Set the upload URL and token in the app settings (Connect IQ app on the phone).
 
 HOW IT WORKS
 - START records, START or BACK stops. The note is saved on the watch at once.
-- It uploads through the phone when one is connected, else over the watch's LTE if the setting
-  allows it and the watch has a plan.
-- A note leaves the watch only after the server confirms the whole recording, so nothing is lost
-  when the connection drops.
+- It uploads through the phone when one is connected, else over the watch's LTE if the setting allows it and the watch has a plan.
+- A note leaves the watch only after the server confirms the whole recording, so nothing is lost when the connection drops.
 - Notes that could not go up retry in the background every 15 minutes and after every activity.
 - MENU: upload now, or delete the notes still waiting.
 
