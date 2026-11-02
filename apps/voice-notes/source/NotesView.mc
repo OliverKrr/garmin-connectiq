@@ -1,5 +1,6 @@
 import Toybox.Graphics;
 import Toybox.Lang;
+import Toybox.System;
 import Toybox.Timer;
 import Toybox.WatchUi;
 
@@ -54,6 +55,7 @@ class Notes {
     function onRecorded(error as String?) as Void {
         _tick.stop();
         status = error != null ? error : "saved";
+        System.println("recorded: " + status + ", queue " + Queue.count());
         NotesApp.scheduleRetry();
         upload();
         WatchUi.requestUpdate();
@@ -64,6 +66,7 @@ class Notes {
     }
 
     function onUploaded(result as String) as Void {
+        System.println("upload: " + result);
         status = result;
         NotesApp.scheduleRetry();
         WatchUi.requestUpdate();
@@ -125,6 +128,24 @@ class NotesDelegate extends WatchUi.BehaviorDelegate {
             return true;
         }
         return false;
+    }
+
+    // Debug builds: DOWN queues a 40 KB test note, UP uploads it over LTE (see DebugNote).
+    (:debug)
+    function onNextPage() as Boolean {
+        DebugNote.add(40);
+        System.println("test note added, queue " + Queue.count());
+        _n.status = "test note added";
+        WatchUi.requestUpdate();
+        return true;
+    }
+
+    (:debug)
+    function onPreviousPage() as Boolean {
+        _n.status = "uploading via LTE";
+        _n.uploader.startVia(true);
+        WatchUi.requestUpdate();
+        return true;
     }
 
     function onMenu() as Boolean {

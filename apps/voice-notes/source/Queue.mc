@@ -1,5 +1,6 @@
 import Toybox.Application;
 import Toybox.Lang;
+import Toybox.System;
 
 // The notes waiting for upload, in Application.Storage. Each note is a list of parts (Ogg bytes,
 // at most 32 KB each, the Storage value limit) under "<id>:<n>", plus one entry in the "q" array:
@@ -28,6 +29,7 @@ module Queue {
     }
 
     function setTrace(s as String?) as Void {
+        System.println("trace: " + s);
         if (s == null) { Application.Storage.deleteValue("trace"); } else { Application.Storage.setValue("trace", s); }
     }
 

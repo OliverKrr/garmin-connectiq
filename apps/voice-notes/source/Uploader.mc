@@ -25,6 +25,11 @@ class Uploader {
     }
 
     function start() as Void {
+        startVia(false);
+    }
+
+    // forceLte skips the phone even when one is connected (debug builds use it in the simulator).
+    function startVia(forceLte as Boolean) as Void {
         if (_busy) { return; }
         if (Queue.count() == 0) { _onDone.invoke("nothing to upload"); return; }
         var url = Application.Properties.getValue("uploadUrl") as String?;
@@ -34,7 +39,7 @@ class Uploader {
             return;
         }
         _busy = true;
-        if (System.getDeviceSettings().phoneConnected) {
+        if (!forceLte && System.getDeviceSettings().phoneConnected) {
             next();
         } else if ((Application.Properties.getValue("useLte") as Boolean) && (Communications has :enableConnection)) {
             _lte = true;
@@ -83,7 +88,9 @@ class Uploader {
         Queue.setTrace("POST part " + (n + 1) + "/" + total + ", " + (body.size() / 1024) + " KB");
         try {
             Communications.makeWebRequest(url,
-                {"total" => total, "recorded" => note["rec"], "duration" => note["dur"]}, {
+                // Strings only: with a non-JSON body, Connect IQ throws on any other value type.
+                {"total" => total.toString(), "recorded" => (note["rec"] as Number).toString(),
+                    "duration" => (note["dur"] as Number).toString()}, {
                     :method => Communications.HTTP_REQUEST_METHOD_POST,
                     :headers => {
                         "Authorization" => "Bearer " + clean(Application.Properties.getValue("uploadToken") as String),

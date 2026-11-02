@@ -5,6 +5,8 @@ so far. `just package-beta voice-notes` regenerates the beta listing's What's Ne
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
 ## [0.1.1] - 2026-11-02
+- Fix: 0.1.0 crashed when an upload started, so right after a recording and then on every start.
+  Its request parameters were numbers, which Connect IQ rejects with a non-JSON body.
 - No crash loop: if the app stops during an upload, the next start shows where it stopped
   ("stopped at ...") and uploads only from MENU, Upload now.
 - Upload and LTE errors show on the status line instead of closing the app.

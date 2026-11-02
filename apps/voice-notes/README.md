@@ -41,6 +41,15 @@ upload result (`bg:` marks one from the background service).
 The server side is a small service with this API, kept in a separate repository; any server that
 implements the endpoint above works.
 
+## Testing in the simulator
+
+Debug builds (`just build`, `just dev voice-notes`) add two buttons the beta leaves out: DOWN queues
+a 40 KB test note (zeros after an `OggS` header, since the VM has no microphone), UP uploads it
+forcing the LTE route. Point the app at a server by putting its URL and token into the VM's copy of
+`resources/settings/properties.xml`, never into the repo. In the simulator the phone counts as
+connected; forced LTE reports status 2 (unavailable). START records silence when the simulator's
+microphone access is declined, which still exercises the whole path.
+
 ## Open questions
 
 Whether `makeWebRequest` really goes over LTE without a phone, and whether a background service
