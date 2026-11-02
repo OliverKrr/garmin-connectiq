@@ -65,11 +65,11 @@ class Spike {
         }
     }
 
-    function onWifiCheck(result) as Void {
+    function onWifiCheck(result as {:wifiAvailable as Boolean, :errorCode as Communications.WifiConnectionStatus}) as Void {
         log("wifi " + result[:wifiAvailable] + " err " + result[:errorCode]);
     }
 
-    function onLteCheck(result) as Void {
+    function onLteCheck(result as {:lteAvailable as Boolean, :errorCode as Communications.LteConnectionStatus or Null}) as Void {
         log("lte " + result[:lteAvailable] + " err " + result[:errorCode]);
     }
 
@@ -88,7 +88,7 @@ class Spike {
         log("LTE disable sent");
     }
 
-    function onLteUpdate(info) as Void {
+    function onLteUpdate(info as {:type as Communications.ConnectionType, :connected as Boolean, :errorCode as Communications.LteConnectionStatus or Null}) as Void {
         log("LTE conn " + info[:connected] + " err " + info[:errorCode]);
     }
 
@@ -125,7 +125,7 @@ class Spike {
         _chunks++;
     }
 
-    function onError(error) as Void {
+    function onError(error as Audio.Capture.Error) as Void {
         _timer.stop();
         log("rec error " + error);
     }
@@ -177,7 +177,7 @@ class Spike {
         }, method(:onResponse));
     }
 
-    function onResponse(code as Number, data, context) as Void {
+    function onResponse(code as Number, data as Dictionary or String or ByteArray or Null, context as Object) as Void {
         var kb = (context as Number) / 1024;
         log("POST " + kb + "K -> " + code + " in " + (System.getTimer() - _sentAt) + " ms");
         next();
