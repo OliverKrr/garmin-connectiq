@@ -34,7 +34,6 @@ class NotesApp extends Application.AppBase {
         }
         var notes = new Notes();
         _notes = notes;
-        notes.upload();
         return [new NotesView(notes), new NotesDelegate(notes)];
     }
 

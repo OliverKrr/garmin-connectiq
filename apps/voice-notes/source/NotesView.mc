@@ -9,11 +9,20 @@ class Notes {
     var uploader as Uploader;
     var status as String = "";
     private var _tick as Timer.Timer = new Timer.Timer();
+    private var _boot as Timer.Timer = new Timer.Timer();
 
     function initialize() {
         recorder = new Recorder(method(:onRecorded));
         uploader = new Uploader(method(:onUploaded), method(:onProgress));
         if (!Recorder.supported()) { status = "no microphone API on this watch"; }
+        var trace = Queue.trace();
+        if (trace != null) {
+            // The last run died inside a request: report it, and upload only when asked (MENU).
+            status = "stopped at " + trace;
+            Queue.setTrace(null);
+        } else {
+            _boot.start(method(:upload), 1500, false);
+        }
     }
 
     function toggle() as Void {

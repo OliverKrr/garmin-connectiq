@@ -22,6 +22,15 @@ module Queue {
         Application.Storage.setValue(KEY, q as Array<Application.PropertyValueType>);
     }
 
+    // What the uploader was doing when it last started a request; cleared on its answer.
+    function trace() as String? {
+        return Application.Storage.getValue("trace") as String?;
+    }
+
+    function setTrace(s as String?) as Void {
+        if (s == null) { Application.Storage.deleteValue("trace"); } else { Application.Storage.setValue("trace", s); }
+    }
+
     function count() as Number {
         return notes().size();
     }

@@ -4,6 +4,12 @@ Voice Notes, versioned by [SemVer](https://semver.org/). Released through a priv
 so far. `just package-beta voice-notes` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.1.1] - 2026-11-02
+- No crash loop: if the app stops during an upload, the next start shows where it stopped
+  ("stopped at ...") and uploads only from MENU, Upload now.
+- Upload and LTE errors show on the status line instead of closing the app.
+- Spaces or line breaks pasted into the URL or token settings are ignored.
+
 ## [0.1.0] - 2026-11-02
 - First beta: START records a note (Ogg Opus, 16 kHz mono), START or BACK stops it.
 - Notes upload in pieces to the server in the settings, through the phone or over the watch's

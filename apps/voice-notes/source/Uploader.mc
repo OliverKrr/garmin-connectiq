@@ -38,8 +38,14 @@ class Uploader {
             next();
         } else if ((Application.Properties.getValue("useLte") as Boolean) && (Communications has :enableConnection)) {
             _lte = true;
-            Communications.enableConnection({:type => Communications.CONNECTION_TYPE_LTE,
-                :updateCallback => method(:onLte)});
+            Queue.setTrace("switching LTE on");
+            try {
+                Communications.enableConnection({:type => Communications.CONNECTION_TYPE_LTE,
+                    :updateCallback => method(:onLte)});
+            } catch (e) {
+                Queue.setTrace(null);
+                finish("LTE error: " + e.getErrorMessage());
+            }
         } else {
             finish("no phone");
         }
@@ -47,6 +53,7 @@ class Uploader {
 
     function onLte(info as {:type as Communications.ConnectionType, :connected as Boolean,
             :errorCode as Communications.LteConnectionStatus or Null}) as Void {
+        Queue.setTrace(null);
         if (!_busy) { return; }
         if (info[:connected]) {
             next();
@@ -70,20 +77,40 @@ class Uploader {
             next();
             return;
         }
-        var url = (Application.Properties.getValue("uploadUrl") as String) + "/" + id + "/parts/" + n;
-        Communications.makeWebRequest(url,
-            {"total" => total, "recorded" => note["rec"], "duration" => note["dur"]}, {
-                :method => Communications.HTTP_REQUEST_METHOD_POST,
-                :headers => {
-                    "Authorization" => "Bearer " + (Application.Properties.getValue("uploadToken") as String),
-                    "Content-Type" => "application/octet-stream"},
-                :body => body,
-                :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON,
-                :context => {"id" => id, "n" => n}
-            }, method(:onResponse));
+        var url = clean(Application.Properties.getValue("uploadUrl") as String) + "/" + id + "/parts/" + n;
+        // A trace survives a crash inside the request, so the next start can say where it died
+        // instead of crashing again on the same note (see Queue.trace).
+        Queue.setTrace("POST part " + (n + 1) + "/" + total + ", " + (body.size() / 1024) + " KB");
+        try {
+            Communications.makeWebRequest(url,
+                {"total" => total, "recorded" => note["rec"], "duration" => note["dur"]}, {
+                    :method => Communications.HTTP_REQUEST_METHOD_POST,
+                    :headers => {
+                        "Authorization" => "Bearer " + clean(Application.Properties.getValue("uploadToken") as String),
+                        "Content-Type" => "application/octet-stream"},
+                    :body => body,
+                    :responseType => Communications.HTTP_RESPONSE_CONTENT_TYPE_JSON,
+                    :context => {"id" => id, "n" => n}
+                }, method(:onResponse));
+        } catch (e) {
+            Queue.setTrace(null);
+            finish("send error: " + e.getErrorMessage());
+        }
+    }
+
+    // Settings pasted on a phone can carry spaces or line breaks.
+    private function clean(s as String) as String {
+        var out = "";
+        var chars = s.toCharArray();
+        for (var i = 0; i < chars.size(); i++) {
+            var c = chars[i];
+            if (c != ' ' && c != '\n' && c != '\r' && c != '\t') { out += c.toString(); }
+        }
+        return out;
     }
 
     function onResponse(code as Number, data as Dictionary or String or ByteArray or Null, context as Object) as Void {
+        Queue.setTrace(null);
         var ctx = context as Dictionary;
         var id = ctx["id"] as String;
         if (code != 200 || !(data instanceof Dictionary)) {
