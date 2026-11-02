@@ -120,3 +120,11 @@ and every later upload to that listing must carry the same one. Signing uses the
 
 The same guardrail applies: Claude prepares the `.iq`, the text and the local tag; the upload, the
 submit and pushing tags are yours.
+
+# Releasing Voice Notes
+
+Voice Notes follows the Sauna Cockpit beta procedure above with `voice-notes` as the app name
+(`just bump X.Y.Z voice-notes`, `just package-beta voice-notes`, upload `bin/voice-notes-beta.iq`).
+Its beta listing does not exist yet: create it with the "Beta App" option on the first upload of
+`apps/voice-notes/store/beta-app-id`'s build, then record its dashboard link here. Cover image:
+`apps/voice-notes/store/cover.png` (source `cover.svg`); there are no screenshots yet.

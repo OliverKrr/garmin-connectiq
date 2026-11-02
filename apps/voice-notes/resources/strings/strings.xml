@@ -1,0 +1,9 @@
+<strings>
+    <string id="AppName">Voice Notes</string>
+    <string id="AppNameBeta">Voice Notes (Beta)</string>
+    <string id="SetUploadUrl">Upload URL (from the notes page, Watch setup)</string>
+    <string id="SetUploadToken">Upload token (from the notes page, Watch setup)</string>
+    <string id="SetUseLte">Upload over the watch's LTE when no phone is connected</string>
+    <string id="SetPartKb">Upload piece size in KB (1 to 32)</string>
+    <string id="SetMaxMin">Longest note in minutes</string>
+</strings>

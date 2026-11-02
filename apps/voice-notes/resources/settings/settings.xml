@@ -1,0 +1,17 @@
+<settings>
+    <setting propertyKey="@Properties.uploadUrl" title="@Strings.SetUploadUrl">
+        <settingConfig type="alphaNumeric" />
+    </setting>
+    <setting propertyKey="@Properties.uploadToken" title="@Strings.SetUploadToken">
+        <settingConfig type="alphaNumeric" />
+    </setting>
+    <setting propertyKey="@Properties.useLte" title="@Strings.SetUseLte">
+        <settingConfig type="boolean" />
+    </setting>
+    <setting propertyKey="@Properties.partKb" title="@Strings.SetPartKb">
+        <settingConfig type="numeric" min="1" max="32" />
+    </setting>
+    <setting propertyKey="@Properties.maxMin" title="@Strings.SetMaxMin">
+        <settingConfig type="numeric" min="1" max="30" />
+    </setting>
+</settings>

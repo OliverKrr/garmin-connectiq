@@ -1,0 +1,7 @@
+<properties>
+    <property id="uploadUrl" type="string"></property>
+    <property id="uploadToken" type="string"></property>
+    <property id="useLte" type="boolean">true</property>
+    <property id="partKb" type="number">16</property>
+    <property id="maxMin" type="number">10</property>
+</properties>
