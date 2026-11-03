@@ -7,6 +7,8 @@ import Toybox.System;
 // <uploadUrl>/<id>/parts/<n>; the server answers {"complete": true} once it holds the whole note,
 // and only then is the note marked uploaded, so any failure just leaves it for the next run.
 // Goes through the phone when one is connected, else over LTE when the setting allows it.
+// A dropped or timed-out request is retried twice at once before the run gives up. Results name
+// their route ("phone: ..." or "LTE: ...") and keep the error code.
 // Shared by the app and its background service.
 (:background)
 class Uploader {
@@ -14,6 +16,11 @@ class Uploader {
     private var _onProgress as Method() as Void or Null;
     private var _lte as Boolean = false;
     private var _busy as Boolean = false;
+    private var _retries as Number = 0;
+    // BLE timeouts, a request timeout, and a connection lost before the response (-1004, seen
+    // over LTE on 2026-11-03).
+    private const RETRY_CODES = [-2, -3, -300, -1004] as Array<Number>;
+    private const MAX_RETRIES = 2;
 
     function initialize(onDone as Method(status as String) as Void, onProgress as Method() as Void or Null) {
         _onDone = onDone;
@@ -39,6 +46,7 @@ class Uploader {
             return;
         }
         _busy = true;
+        _retries = 0;
         if (!forceLte && System.getDeviceSettings().phoneConnected) {
             next();
         } else if ((Application.Properties.getValue("useLte") as Boolean) && (Communications has :enableConnection)) {
@@ -69,7 +77,7 @@ class Uploader {
 
     private function next() as Void {
         var q = Queue.pending();
-        if (q.size() == 0) { finish("all uploaded"); return; }
+        if (q.size() == 0) { finish(route() + "all uploaded"); return; }
         var note = q[0];
         var id = note["id"] as String;
         var total = note["n"] as Number;
@@ -101,7 +109,7 @@ class Uploader {
                 }, method(:onResponse));
         } catch (e) {
             Queue.setTrace(null);
-            finish("send error: " + e.getErrorMessage());
+            finish(route() + "send error: " + e.getErrorMessage());
         }
     }
 
@@ -121,7 +129,13 @@ class Uploader {
         var ctx = context as Dictionary;
         var id = ctx["id"] as String;
         if (code != 200 || !(data instanceof Dictionary)) {
-            finish(code == 401 ? "token rejected" : "upload failed (" + code + ")");
+            if (RETRY_CODES.indexOf(code) >= 0 && _retries < MAX_RETRIES) {
+                _retries++;
+                next();
+                return;
+            }
+            var tries = _retries > 0 ? ", " + (_retries + 1) + " tries" : "";
+            finish(route() + (code == 401 ? "token rejected (401)" : "upload failed (" + code + tries + ")"));
             return;
         }
         if (data["complete"] == true) {
@@ -131,6 +145,10 @@ class Uploader {
         }
         if (_onProgress != null) { _onProgress.invoke(); }
         next();
+    }
+
+    private function route() as String {
+        return _lte ? "LTE: " : "phone: ";
     }
 
     private function finish(status as String) as Void {

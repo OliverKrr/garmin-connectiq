@@ -16,7 +16,10 @@ The app always opens on the record screen.
 | MENU (hold UP) | Upload now, or delete the notes still waiting | Delete this note |
 
 The record screen shows the elapsed time while recording, otherwise how many notes wait, the last
-upload result (`bg:` marks one from the background service) and how many notes are on the watch.
+upload result and how many notes are on the watch. The result names its route and keeps the error
+code, e.g. `LTE: all uploaded` or `phone: upload failed (-1004, 3 tries)`; `bg:` marks one from the
+background service. A playback error shows under the note with its code; one that ended the app
+shows on the next start as `last playback: ...`.
 A note shows its date, length, size and whether it is uploaded. The glance in the widget loop
 shows how many notes wait.
 
@@ -45,7 +48,8 @@ what it has ("watch storage full").
    is connected, else LTE (`Communications.enableConnection`) when the setting allows it.
 3. Each piece is one `POST <url>/<id>/parts/<n>?total=&recorded=&duration=`. The server answers
    `{"complete": true}` once it holds every piece; only then is the note deleted from the watch.
-   A failed request leaves the note, and every request is safe to repeat.
+   A failed request leaves the note, and every request is safe to repeat. A dropped connection
+   or a timeout (`-2`, `-3`, `-300`, `-1004`) is retried twice at once before the run gives up.
 4. While notes wait, a background service (`UploadService`) retries every 15 minutes and after
    each recorded activity, without opening the app. It stays out while the app is open (the app
    stamps `fg` in Storage), so the two never save the note list at the same time.
@@ -70,3 +74,5 @@ microphone access is declined, which still exercises the whole path.
 Whether `makeWebRequest` really goes over LTE without a phone, and whether a background service
 may enable LTE, is unconfirmed (Garmin's docs name only Wi-Fi and the phone). If it does not, notes
 wait on the watch and upload once the phone is back. The status line shows what happened.
+A first test (2026-11-03, phone Bluetooth off): LTE switched on (`enableConnection` reported
+connected), but the request ended in `-1004` (connection dropped) and never reached the server.

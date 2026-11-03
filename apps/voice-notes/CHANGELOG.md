@@ -4,6 +4,11 @@ Voice Notes, versioned by [SemVer](https://semver.org/). Released through a priv
 so far. `just package-beta voice-notes` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.2.1] - 2026-11-03
+- Upload results name their route (phone or LTE) and keep the error code.
+- A dropped connection or a timeout is retried twice at once before an upload gives up.
+- Playback errors show their code, and one that ended the app shows on the next start.
+
 ## [0.2.0] - 2026-11-03
 - Past notes on the watch: DOWN and UP step through them from the record screen, START plays one
   through the speaker, MENU deletes it. The app always opens on the record screen.

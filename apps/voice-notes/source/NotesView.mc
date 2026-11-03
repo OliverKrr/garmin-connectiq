@@ -1,3 +1,4 @@
+import Toybox.Application;
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.System;
@@ -24,6 +25,11 @@ class Notes {
         if (!Recorder.supported()) { status = "no microphone API on this watch"; }
         Queue.prune();
         var trace = Queue.trace();
+        var perr = Player.lastError();
+        if (perr != null) {
+            status = "last playback: " + perr;
+            Application.Storage.deleteValue("perr");
+        }
         if (trace != null) {
             // The last run died inside a request: report it, and upload only when asked (MENU).
             status = "stopped at " + trace;
