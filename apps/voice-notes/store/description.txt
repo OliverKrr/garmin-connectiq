@@ -3,7 +3,7 @@ Record a voice note on the watch, mid-run or anywhere, and find it later as audi
 This app needs a server that receives the notes. It is built for one, a small service you run yourself; without it the app records but has nowhere to send. Set the upload URL and token in the app settings (Connect IQ app on the phone); the other settings can also be changed on the watch (MENU, Settings).
 
 HOW IT WORKS
-- START records, START or BACK stops. The note is saved on the watch at once.
+- START records, START again stops and saves (green check). BACK or DOWN (red X) asks "Discard recording?" and keeps recording until you answer.
 - It uploads through the phone when one is connected, else over the watch's LTE if the setting allows it and the watch has a plan.
 - A note leaves the watch only after the server confirms the whole recording, so nothing is lost when the connection drops.
 - Notes that could not go up retry in the background every 15 minutes (a setting) and after every activity.

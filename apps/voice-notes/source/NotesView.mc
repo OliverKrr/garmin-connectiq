@@ -15,6 +15,9 @@ class Notes {
     var player as Player;
     var status as String = "";
     var sel as Number = -1;
+    // A "Discard recording?" question is open: the recording goes on, but a note the length
+    // limit finishes meanwhile waits for the answer instead of uploading.
+    var confirming as Boolean = false;
     private var _tick as Timer.Timer = new Timer.Timer();
     private var _boot as Timer.Timer = new Timer.Timer();
 
@@ -128,7 +131,31 @@ class Notes {
         status = error != null ? error : "saved";
         System.println("recorded: " + status + ", waiting " + Queue.count());
         NotesApp.scheduleRetry();
-        upload();
+        if (!confirming) { upload(); }
+        WatchUi.requestUpdate();
+    }
+
+    // BACK or the red X while recording: ask first; the recording keeps running meanwhile.
+    function askDiscard() as Void {
+        if (!recorder.isRecording() || confirming) { return; }
+        confirming = true;
+        WatchUi.pushView(new WatchUi.Confirmation("Discard recording?"),
+            new DiscardDelegate(self), WatchUi.SLIDE_LEFT);
+    }
+
+    function answerDiscard(yes as Boolean) as Void {
+        confirming = false;
+        if (yes) {
+            if (recorder.isRecording()) {
+                recorder.discard();
+            } else if (recorder.lastId != null) {
+                // The length limit finished it while the question was open.
+                status = Queue.removeUnsent(recorder.lastId as String) ? "discarded" : "already uploading";
+                NotesApp.scheduleRetry();
+            }
+        } else if (!recorder.isRecording()) {
+            upload();
+        }
         WatchUi.requestUpdate();
     }
 
@@ -176,7 +203,10 @@ class NotesView extends WatchUi.View {
             var s = _n.recorder.elapsedS();
             dc.drawText(w / 2, h * 40 / 100, Graphics.FONT_MEDIUM, (s / 60) + ":" + (s % 60).format("%02d"),
                 Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
-            dc.drawText(w / 2, h * 66 / 100, Graphics.FONT_SMALL, "START to stop", Graphics.TEXT_JUSTIFY_CENTER);
+            // Clear of the red X at BACK, which sits beside the gap between these two lines.
+            dc.drawText(w / 2, h * 62 / 100, Graphics.FONT_XTINY, "START: save", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(w / 2, h * 80 / 100, Graphics.FONT_XTINY, "BACK, DOWN: discard", Graphics.TEXT_JUSTIFY_CENTER);
+            Markers.draw(dc);
             return;
         }
         dc.drawText(w / 2, h * 40 / 100, Graphics.FONT_SMALL, "REC",
@@ -242,7 +272,12 @@ class NotesDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
 
+    // DOWN: like BACK while recording (asks to discard), otherwise the next note.
     function onNextPage() as Boolean {
+        if (_n.recorder.isRecording()) {
+            _n.askDiscard();
+            return true;
+        }
         _n.move(1);
         return true;
     }
@@ -252,10 +287,10 @@ class NotesDelegate extends WatchUi.BehaviorDelegate {
         return true;
     }
 
-    // BACK while recording saves the note; on a note it returns to the record screen.
+    // BACK while recording asks to discard the note; on a note it returns to the record screen.
     function onBack() as Boolean {
         if (_n.recorder.isRecording()) {
-            _n.recorder.stop();
+            _n.askDiscard();
             return true;
         }
         if (_n.sel >= 0) {
@@ -263,6 +298,21 @@ class NotesDelegate extends WatchUi.BehaviorDelegate {
             return true;
         }
         return false;
+    }
+
+    // While recording, a tap on the green check saves and one on the red X asks to discard;
+    // other taps do nothing.
+    function onTap(evt as WatchUi.ClickEvent) as Boolean {
+        if (!_n.recorder.isRecording()) { return false; }
+        var xy = evt.getCoordinates();
+        var s = System.getDeviceSettings();
+        var which = Markers.hit(xy[0], xy[1], s.screenWidth, s.screenHeight);
+        if (which == Markers.SAVE) {
+            _n.recorder.stop();
+        } else if (which == Markers.DISCARD) {
+            _n.askDiscard();
+        }
+        return true;
     }
 
     function onMenu() as Boolean {
@@ -365,6 +415,20 @@ class DeleteNoteDelegate extends WatchUi.ConfirmationDelegate {
 
     function onResponse(response as WatchUi.Confirm) as Boolean {
         if (response == WatchUi.CONFIRM_YES) { _n.deleteSelected(); }
+        return true;
+    }
+}
+
+class DiscardDelegate extends WatchUi.ConfirmationDelegate {
+    private var _n as Notes;
+
+    function initialize(n as Notes) {
+        ConfirmationDelegate.initialize();
+        _n = n;
+    }
+
+    function onResponse(response as WatchUi.Confirm) as Boolean {
+        _n.answerDiscard(response == WatchUi.CONFIRM_YES);
         return true;
     }
 }

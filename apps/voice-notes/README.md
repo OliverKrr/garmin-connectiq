@@ -10,10 +10,14 @@ The app always opens on the record screen.
 
 | Button | Record screen | On a note |
 | --- | --- | --- |
-| START | Start recording; again to stop and save | Play; again to stop |
-| DOWN / UP | Step to the newest note / back | Older note / newer note, then the record screen |
-| BACK | While recording: stop and save. Otherwise: leave the app | Back to the record screen |
+| START | Start recording; again to stop and save (green check) | Play; again to stop |
+| DOWN / UP | Step to the newest note / back. While recording: DOWN asks "Discard recording?", UP does nothing | Older note / newer note, then the record screen |
+| BACK | While recording: asks "Discard recording?" (red X); yes deletes it, no keeps recording. Otherwise: leave the app | Back to the record screen |
 | MENU (hold UP) | Upload now, or delete the notes still waiting | Delete this note |
+
+While recording, a green check by START and a red X by BACK show what each does; a tap on the
+check saves, a tap on the X asks to discard, other taps do nothing. A discarded recording leaves
+nothing on the watch and never uploads; leaving the app while recording still saves it.
 
 The record screen shows the elapsed time while recording, otherwise how many notes wait, the last
 upload result and how many notes are on the watch. The result names its route and keeps the error

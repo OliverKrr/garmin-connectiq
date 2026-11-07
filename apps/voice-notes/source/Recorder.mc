@@ -17,6 +17,8 @@ class Recorder {
     private var _timer as Timer.Timer = new Timer.Timer();
     private var _onFinished as Method(error as String?) as Void;
     private var _error as String? = null;
+    // The id of the recording in progress, or of the last one once finished.
+    var lastId as String? = null;
 
     function initialize(onFinished as Method(error as String?) as Void) {
         _onFinished = onFinished;
@@ -58,7 +60,8 @@ class Recorder {
             return "mic: " + e.getErrorMessage();
         }
         var now = Time.now().value();
-        Queue.begin(now.format("%d") + "-" + (Math.rand() % 100000).format("%05d"), now);
+        lastId = now.format("%d") + "-" + (Math.rand() % 100000).format("%05d");
+        Queue.begin(lastId as String, now);
         Audio.Capture.start();
         _startedAt = System.getTimer();
         _recording = true;
@@ -82,6 +85,18 @@ class Recorder {
         _timer.stop();
         if (Audio.Capture.getState() == Audio.Capture.CAPTURE_CAPTURING) { Audio.Capture.stop(); }
         complete();
+    }
+
+    // BACK, confirmed: stop capturing and drop everything this recording wrote. The recorder
+    // stops listening first, so a late onData or onComplete changes nothing.
+    function discard() as Void {
+        if (!_recording) { return; }
+        _timer.stop();
+        _recording = false;
+        _buf = []b;
+        if (Audio.Capture.getState() == Audio.Capture.CAPTURE_CAPTURING) { Audio.Capture.stop(); }
+        Queue.discardCurrent();
+        _onFinished.invoke("discarded");
     }
 
     // ---- Audio.Capture.Callbacks ----

@@ -4,6 +4,11 @@ Voice Notes, versioned by [SemVer](https://semver.org/). Released through a priv
 so far. `just package-beta voice-notes` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.3.1] - 2026-11-07
+- A recording can be discarded: BACK, DOWN or a tap on the red X asks "Discard recording?"; yes
+  deletes it from the watch so it never uploads, no keeps recording. START or the green check saves.
+- While recording, a green check by START and a red X by BACK show what the buttons do.
+
 ## [0.3.0] - 2026-11-07
 - MENU, Settings on the watch: keep uploaded notes (days, watch space), retry interval, upload
   over LTE, longest note. They change the same settings as the phone app.

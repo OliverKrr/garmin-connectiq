@@ -96,6 +96,30 @@ module Queue {
         Application.Storage.setValue(CURRENT, cur as Dictionary<Application.PropertyKeyType, Application.PropertyValueType>);
     }
 
+    // Discards the recording in progress: its parts and the "cur" entry, so nothing of it is
+    // salvaged on the next start or uploaded.
+    function discardCurrent() as Void {
+        var cur = Application.Storage.getValue(CURRENT) as Dictionary?;
+        if (cur == null) { return; }
+        for (var p = 0; p < (cur["n"] as Number); p++) {
+            Application.Storage.deleteValue(partKey(cur["id"] as String, p));
+        }
+        Application.Storage.deleteValue(CURRENT);
+    }
+
+    // The note `id` while it has not started uploading: removes it and returns true.
+    function removeUnsent(id as String) as Boolean {
+        var q = notes();
+        for (var i = 0; i < q.size(); i++) {
+            if ((q[i]["id"] as String).equals(id)) {
+                if (isUploaded(q[i]) || (q[i]["sent"] as Number) > 0) { return false; }
+                remove(id);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // Moves the recording in progress (if any) into the queue. `dur` is null when salvaging a
     // recording the app did not finish; its length is then unknown.
     function finish(dur as Number?) as Void {
