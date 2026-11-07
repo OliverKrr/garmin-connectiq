@@ -14,8 +14,13 @@ import Toybox.Time;
 module Queue {
     const KEY = "q";
     const CURRENT = "cur";
-    // Background retry interval while notes wait (the platform minimum is 5 minutes).
-    const RETRY_S = 15 * 60;
+    // Background retry interval while notes wait: the retryMin setting, at least the platform's
+    // 5 minutes.
+    function retrySeconds() as Number {
+        var m = Application.Properties.getValue("retryMin");
+        var min = m instanceof Number ? m : 15;
+        return (min < 5 ? 5 : min) * 60;
+    }
 
     function notes() as Array<Dictionary> {
         var q = Application.Storage.getValue(KEY);

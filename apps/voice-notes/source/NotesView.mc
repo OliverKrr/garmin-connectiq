@@ -275,6 +275,7 @@ class NotesDelegate extends WatchUi.BehaviorDelegate {
         var m = new WatchUi.Menu2({:title => "Voice Notes"});
         m.addItem(new WatchUi.MenuItem("Upload now", Queue.count() + " waiting", :upload, null));
         m.addItem(new WatchUi.MenuItem("Delete waiting", "notes not uploaded yet", :clear, null));
+        m.addItem(new WatchUi.MenuItem("Settings", "keep, retry, LTE, length", :settings, null));
         addDebugItems(m);
         WatchUi.pushView(m, new NotesMenuDelegate(_n), WatchUi.SLIDE_UP);
         return true;
@@ -306,6 +307,8 @@ class NotesMenuDelegate extends WatchUi.Menu2InputDelegate {
         if (id == :upload) {
             WatchUi.popView(WatchUi.SLIDE_DOWN);
             _n.upload();
+        } else if (id == :settings) {
+            Settings.show(_n);
         } else if (id == :clear) {
             WatchUi.pushView(new WatchUi.Confirmation("Delete " + Queue.count() + " waiting notes?"),
                 new ClearConfirmDelegate(_n), WatchUi.SLIDE_LEFT);

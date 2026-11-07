@@ -20,4 +20,7 @@
     <setting propertyKey="@Properties.keepKb" title="@Strings.SetKeepKb">
         <settingConfig type="numeric" min="64" max="8192" />
     </setting>
+    <setting propertyKey="@Properties.retryMin" title="@Strings.SetRetryMin">
+        <settingConfig type="numeric" min="5" max="60" />
+    </setting>
 </settings>

@@ -8,4 +8,5 @@
     <string id="SetMaxMin">Longest note in minutes</string>
     <string id="SetKeepDays">Keep uploaded notes on the watch for (days; 0 = delete after upload)</string>
     <string id="SetKeepKb">Watch space for notes in KB (uploaded ones are removed first)</string>
+    <string id="SetRetryMin">Retry waiting notes in the background every (minutes, 5 to 60)</string>
 </strings>

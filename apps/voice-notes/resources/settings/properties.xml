@@ -6,4 +6,5 @@
     <property id="maxMin" type="number">10</property>
     <property id="keepDays" type="number">7</property>
     <property id="keepKb" type="number">1024</property>
+    <property id="retryMin" type="number">15</property>
 </properties>

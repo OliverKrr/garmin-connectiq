@@ -23,7 +23,7 @@ shows on the next start as `last playback: ...`.
 A note shows its date, length, size and whether it is uploaded. The glance in the widget loop
 shows how many notes wait.
 
-## Settings (Connect IQ app on the phone)
+## Settings (phone app, most also on the watch)
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -34,6 +34,11 @@ shows how many notes wait.
 | Longest note | 10 min | Recording stops by itself after this |
 | Keep uploaded notes | 7 days | Uploaded notes stay for playback this long; 0 deletes them right after upload |
 | Watch space for notes | 1024 KB | Above this, the oldest uploaded notes go first |
+| Retry interval | 15 min | How often the background retries waiting notes (5–60; the platform minimum is 5) |
+
+MENU, Settings on the watch changes keep days (0, 1, 3, 7, 14, 30), watch space (256–2048 KB),
+retry interval (5, 15, 30, 60 min), upload over LTE and longest note (5, 10, 20, 30 min). It writes
+the same settings the phone app edits; URL, token and piece size are phone-only.
 
 Notes that are not uploaded yet are never deleted automatically, only from MENU. Cleanup runs after
 every upload and when the app starts. When the watch's storage is full, a recording stops and keeps
@@ -50,7 +55,7 @@ what it has ("watch storage full").
    `{"complete": true}` once it holds every piece; only then is the note deleted from the watch.
    A failed request leaves the note, and every request is safe to repeat. A dropped connection
    or a timeout (`-2`, `-3`, `-300`, `-1004`) is retried twice at once before the run gives up.
-4. While notes wait, a background service (`UploadService`) retries every 15 minutes and after
+4. While notes wait, a background service (`UploadService`) retries every retryMin minutes (default 15) and after
    each recorded activity, without opening the app. It stays out while the app is open (the app
    stamps `fg` in Storage), so the two never save the note list at the same time.
 5. Uploaded notes stay for playback (`Player` streams their stored pieces to the speaker) until

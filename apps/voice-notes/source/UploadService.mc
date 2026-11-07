@@ -4,7 +4,7 @@ import Toybox.Background;
 import Toybox.Lang;
 import Toybox.System;
 
-// Background retry: every 15 minutes while notes wait, and after every recorded activity, upload
+// Background retry: every retryMin minutes (default 15) while notes wait, and after every recorded activity, upload
 // what is queued without opening the app. Exits with the upload status for the app to show.
 (:background)
 class UploadService extends System.ServiceDelegate {

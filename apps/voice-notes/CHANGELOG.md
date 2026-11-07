@@ -4,6 +4,11 @@ Voice Notes, versioned by [SemVer](https://semver.org/). Released through a priv
 so far. `just package-beta voice-notes` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.3.0] - 2026-11-07
+- MENU, Settings on the watch: keep uploaded notes (days, watch space), retry interval, upload
+  over LTE, longest note. They change the same settings as the phone app.
+- New setting: retry waiting notes every 5 to 60 minutes (default 15).
+
 ## [0.2.1] - 2026-11-03
 - Upload results name their route (phone or LTE) and keep the error code.
 - A dropped connection or a timeout is retried twice at once before an upload gives up.

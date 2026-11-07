@@ -58,12 +58,13 @@ class NotesApp extends Application.AppBase {
 
     function onSettingsChanged() as Void {
         if (_notes != null) { (_notes as Notes).upload(); }
+        scheduleRetry();  // retryMin may have changed on the phone
     }
 
-    // A 15-minute temporal event while notes wait, none once the queue is empty.
+    // A temporal event every retryMin minutes while notes wait, none once the queue is empty.
     static function scheduleRetry() as Void {
         if (Queue.count() > 0) {
-            Background.registerForTemporalEvent(new Time.Duration(Queue.RETRY_S));
+            Background.registerForTemporalEvent(new Time.Duration(Queue.retrySeconds()));
         } else {
             Background.deleteTemporalEvent();
         }
