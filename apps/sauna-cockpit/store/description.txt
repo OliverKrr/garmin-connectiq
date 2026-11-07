@@ -19,7 +19,7 @@ SCREEN
 
 COCKPIT
 - A ring around the screen fills toward the phase target; the big number counts down, then counts up as overtime.
-- Heart rate in your Garmin heart-rate zone colours, with the phase's low / average / high.
+- Heart rate in your Garmin heart-rate zone colours, with a graph of the current phase and its low and high.
 - Watch temperature: yellow at the pre-warning, red at the alert.
 
 ALERTS (vibrate, beep and screen light are each optional; each kind has its own vibration)
