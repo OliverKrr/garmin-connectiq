@@ -22,10 +22,11 @@ only when the window closes, so an undone switch leaves no lap behind; the cost 
 boundaries sit up to 3 s after the real switch. The on-watch tables use the exact time.
 
 **Screen.** Connect IQ gives watch apps no control over the always-on display (only watch faces
-get the low-power hooks), so the app manages its own brightness. Between button presses the
-session screen dims (every colour at 40 %). Any button, a touch, or an alert shows it at full
-brightness for 10 s. The "Heat screen" and "Rest screen" settings choose Normal or Dim per
-phase. For a screen that is off, page with UP/DOWN to the fourth page, which is all black: on
+get the low-power hooks, and a watch app is not told when the wrist turns), so the app manages
+its own brightness. Between button presses the session screen dims (every colour at the "Dim
+brightness" setting, 20 % by default). Any button, a touch, or an alert shows it at full
+brightness for 10 s; turning the wrist cannot, since SDK 9.3 still reports that gesture to watch
+faces only. The "Heat screen" and "Rest screen" settings choose Normal or Dim per phase. For a screen that is off, page with UP/DOWN to the fourth page, which is all black: on
 AMOLED, black pixels draw no power and no light. Alerts still show their banner there, and the
 next UP/DOWN leaves it.
 
@@ -36,7 +37,10 @@ two long buzzes are the temperature pre-warning; long-short-long is an alarm (wa
 **Cockpit page.** The bezel ring fills toward the phase target (orange heat, blue cool-down, red
 once over). The big number counts down to the target, then counts up as `+m:ss` overtime; without a
 target it shows elapsed time. Below it: heart rate in zone colour, the watch temperature (yellow
-from the pre-warning, red at the alert), the phase's HR low / average / high, total time and the clock.
+from the pre-warning, red at the alert), a graph of the heart rate over the current phase (heat or
+rest) labelled with its lowest and highest value, the total time and the time of day. The graph
+fills from left to right and squeezes to half width whenever it reaches the right edge, so a
+phase of any length fits. The phase averages are in the round tables.
 
 Heart rate is coloured by your own zones: the general zones from your Garmin profile, read when
 the app starts.
@@ -103,7 +107,8 @@ offers 1-30 min targets, 36-55 °C temperatures and 120-200 bpm in steps of 5.
 | Watch temperature pre-warning | 42 °C | Two buzzes, "cover": shade the watch with your hand. Warns again after the reading drops 1 °C and climbs back. 0 = off |
 | Watch temperature alert | 44 °C | Three buzzes, "leave". 0 = off. See below |
 | Heart rate alert | 0 (off) | bpm |
-| Heat screen / Rest screen | Dim / Dim | Between button presses: Normal or Dim (40 %) |
+| Heat screen / Rest screen | Dim / Dim | Between button presses: Normal or Dim |
+| Dim brightness | 20 % | How bright a dimmed screen is: 10, 20, 30 or 40 % |
 | Alert: vibrate / beep / light up the screen | on / off / on | |
 | Save as activity in Garmin Connect | on | Off keeps only the on-watch history |
 | Record as | Other | Other: calories, no stress during the session. Meditation: stress measured, no calories |

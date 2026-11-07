@@ -6,14 +6,14 @@ import Toybox.System;
 const LIVE_ROWS = 4;
 // A live table with more rounds than fit pages through them, this long per block.
 const LIVE_PAGE_MS = 4000;
-// Brightness of a dimmed screen, in percent.
-const DIM_LEVEL = 40;
 
 // The in-session screen. Page 0 is the cockpit: a bezel ring filling toward the phase target,
 // the phase countdown (or elapsed time without a target), HR in zone colour, the watch
-// temperature, and the phase's HR min/avg/max. Pages 1 and 2 are the heat and rest tables, page 3
+// temperature, a graph of the phase's HR labelled with its min and max, the session total and
+// the time of day. Pages 1 and 2 are the heat and rest tables, page 3
 // is black (the screen off on AMOLED, chosen on demand; alerts still show their banner on it).
-// Between button presses the screen dims per phase (Config.heatScreen/restScreen).
+// Between button presses the screen dims per phase (Config.heatScreen/restScreen) to
+// Config.dimLevel().
 const PAGES = 4;
 const PAGE_BLACK = 3;
 class SessionView extends WatchUi.View {
@@ -59,7 +59,7 @@ class SessionView extends WatchUi.View {
         var m = _c.model;
         if (m == null) { return; }
         var mode = mode();
-        Theme.level = mode == SCREEN_NORMAL ? 100 : DIM_LEVEL;
+        Theme.level = mode == SCREEN_NORMAL ? 100 : Config.dimLevel();
         if (page == PAGE_BLACK) {
             // Nothing lit.
         } else if (page == 0) {
@@ -84,29 +84,72 @@ class SessionView extends WatchUi.View {
         Theme.ring(dc, target > 0 ? el.toFloat() / target : 0.0, over ? Theme.WARN : color);
 
         var label = paused ? "PAUSED" : (m.phase == PHASE_HEAT ? "HEAT  R" + m.round : "COOL  R" + m.round);
-        Theme.text(dc, cx, h * 17 / 100, Graphics.FONT_SMALL, label, paused ? Theme.CAUTION : color, Graphics.TEXT_JUSTIFY_CENTER);
+        Theme.text(dc, cx, h * 15 / 100, Graphics.FONT_SMALL, label, paused ? Theme.CAUTION : color, Graphics.TEXT_JUSTIFY_CENTER);
 
         // Main number: time left toward the target, then overtime with a "+"; plain elapsed time
         // when the phase has no target.
         var main = target == 0 ? Fmt.clock(el) : (over ? "+" + Fmt.clock(el - target) : Fmt.clock(target - el));
-        Theme.text(dc, cx, h * 36 / 100, Graphics.FONT_NUMBER_HOT, main, over ? Theme.WARN : Theme.FG, Graphics.TEXT_JUSTIFY_CENTER);
+        Theme.text(dc, cx, h * 31 / 100, Graphics.FONT_NUMBER_HOT, main, over ? Theme.WARN : Theme.FG, Graphics.TEXT_JUSTIFY_CENTER);
         var sub = target == 0 ? "elapsed" : Fmt.clock(el) + " of " + Fmt.clock(target);
-        Theme.text(dc, cx, h * 50 / 100, Graphics.FONT_XTINY, sub, Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
+        Theme.text(dc, cx, h * 43 / 100, Graphics.FONT_XTINY, sub, Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
 
         var hr = m.lastHr;
-        Theme.text(dc, cx - w * 3 / 100, h * 63 / 100, Graphics.FONT_NUMBER_MILD, hr != null ? hr.format("%d") : "--",
+        Theme.text(dc, cx - w * 3 / 100, h * 54 / 100, Graphics.FONT_NUMBER_MILD, hr != null ? hr.format("%d") : "--",
             m.hrHigh() ? Theme.WARN : Theme.zoneColor(hr), Graphics.TEXT_JUSTIFY_RIGHT);
         var t = m.lastTemp;
         var tc = m.tempHigh() ? Theme.WARN : (m.tempWarm() ? Theme.CAUTION : Theme.FG);
-        Theme.text(dc, cx + w * 3 / 100, h * 63 / 100, Graphics.FONT_MEDIUM, t != null ? t.format("%.0f") + "°" : "--°",
+        Theme.text(dc, cx + w * 3 / 100, h * 54 / 100, Graphics.FONT_MEDIUM, t != null ? t.format("%.0f") + "°" : "--°",
             tc, Graphics.TEXT_JUSTIFY_LEFT);
 
-        var s = m.current;
-        var stats = Fmt.num(History.n(s.minHr)) + " / " + Fmt.num(History.n(s.avgHr())) + " / " + Fmt.num(History.n(s.maxHr));
-        Theme.text(dc, cx, h * 74 / 100, Graphics.FONT_XTINY, "lo/avg/hi " + stats, Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
-        Theme.text(dc, cx, h * 83 / 100, Graphics.FONT_XTINY, "Total " + Fmt.clock(m.total.seconds), Theme.FG, Graphics.TEXT_JUSTIFY_CENTER);
+        drawGraph(dc, m.trace, w * 25 / 100, h * 62 / 100, w * 50 / 100, h * 13 / 100, color);
+
+        Theme.text(dc, cx, h * 81 / 100, Graphics.FONT_XTINY, "Total " + Fmt.clock(m.total.seconds), Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
         var now = System.getClockTime();
-        Theme.text(dc, cx, h * 91 / 100, Graphics.FONT_XTINY, now.hour.format("%d") + ":" + now.min.format("%02d"), Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
+        Theme.text(dc, cx, h * 89 / 100, Graphics.FONT_SMALL, now.hour.format("%d") + ":" + now.min.format("%02d"), Theme.FG, Graphics.TEXT_JUSTIFY_CENTER);
+    }
+
+    // HR over the running phase in the box (x, y, gw, gh), oldest at the left, filling toward the
+    // right; the phase's max HR labels the top edge and its min the bottom. HrTrace keeps at most
+    // HrTrace.CAP points, so the line spans the box once the phase has filled them.
+    private function drawGraph(dc as Graphics.Dc, tr as HrTrace, x as Number, y as Number, gw as Number, gh as Number,
+                               color as Number) as Void {
+        dc.setColor(Theme.c(Theme.TRACK), Graphics.COLOR_TRANSPARENT);
+        dc.drawLine(x, y + gh, x + gw, y + gh);
+        var lo = tr.minHr;
+        var hi = tr.maxHr;
+        if (lo == null || hi == null) {
+            Theme.text(dc, x + gw / 2, y + gh / 2, Graphics.FONT_XTINY, "no HR yet", Theme.DIM, Graphics.TEXT_JUSTIFY_CENTER);
+            return;
+        }
+        var lab = x - dc.getWidth() * 2 / 100;
+        Theme.text(dc, lab, y, Graphics.FONT_XTINY, (hi as Number).format("%d"), Theme.DIM, Graphics.TEXT_JUSTIFY_RIGHT);
+        Theme.text(dc, lab, y + gh, Graphics.FONT_XTINY, (lo as Number).format("%d"), Theme.DIM, Graphics.TEXT_JUSTIFY_RIGHT);
+        // At least 10 bpm of height, so a steady HR draws as a calm line, not as noise.
+        var span = (hi as Number) - (lo as Number);
+        var base = lo as Number;
+        if (span < 10) {
+            base -= (10 - span) / 2;
+            span = 10;
+        }
+        var v = tr.values();
+        var cap = tr.CAP;
+        dc.setColor(Theme.c(color), Graphics.COLOR_TRANSPARENT);
+        dc.setPenWidth(3);
+        var px = -1;
+        var py = 0;
+        for (var i = 0; i < v.size(); i++) {
+            if (v[i] == 0) { px = -1; continue; }
+            var qx = x + gw * i / (cap - 1);
+            var qy = y + gh - gh * (v[i] - base) / span;
+            if (px >= 0) {
+                dc.drawLine(px, py, qx, qy);
+            } else {
+                dc.fillCircle(qx, qy, 2);
+            }
+            px = qx;
+            py = qy;
+        }
+        dc.setPenWidth(1);
     }
 
     // Live round table (heat or rest), LIVE_ROWS rounds at a time: the block with the newest round

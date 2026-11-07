@@ -1,3 +1,7 @@
+Version 0.3.0 - 2026-11-07
+- Cockpit page rearranged: a graph of the heart rate over the current phase, labelled with its low and high, replaces the low/avg/high line (averages stay in the round tables), and the clock is much larger.
+- Darker dim screen by default: new setting Dim brightness, 10 to 40 % (default 20, was 40).
+
 Version 0.2.1 - 2026-10-18
 - Rest no longer goes dark by default: both phases dim, and a fourth all-black page (UP/DOWN) turns the screen off on demand. The Dark screen setting is gone (a stored Dark reads as Dim).
 - Undo window for a phase switch shortened to 3 s, so FIT laps land at most 3 s late.

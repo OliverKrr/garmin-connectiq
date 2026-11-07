@@ -11,7 +11,12 @@
     <string id="SetHeatScreen">Screen during heat, between button presses</string>
     <string id="SetRestScreen">Screen during rest, between button presses</string>
     <string id="ScreenNormal">Normal</string>
-    <string id="ScreenDim">Dim: every colour at 40 %, a button brightens it</string>
+    <string id="ScreenDim">Dim: darker colours (Dim brightness), a button brightens it</string>
+    <string id="SetDimLevel">Dim brightness</string>
+    <string id="Dim10">10 %</string>
+    <string id="Dim20">20 %</string>
+    <string id="Dim30">30 %</string>
+    <string id="Dim40">40 %</string>
     <string id="SetAlertVibrate">Alert: vibrate</string>
     <string id="SetAlertTone">Alert: beep</string>
     <string id="SetAlertLight">Alert: light up the screen</string>

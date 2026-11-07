@@ -4,6 +4,12 @@ Sauna Cockpit, versioned by [SemVer](https://semver.org/). Released through a pr
 listing so far. `just package-beta sauna-cockpit` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.3.0] - 2026-11-07
+- Cockpit page rearranged: a graph of the heart rate over the current phase, labelled with its
+  low and high, replaces the low/avg/high line (averages stay in the round tables), and the
+  clock is much larger.
+- Darker dim screen by default: new setting Dim brightness, 10 to 40 % (default 20, was 40).
+
 ## [0.2.1] - 2026-10-18
 - Rest no longer goes dark by default: both phases dim, and a fourth all-black page (UP/DOWN)
   turns the screen off on demand. The Dark screen setting is gone (a stored Dark reads as Dim).

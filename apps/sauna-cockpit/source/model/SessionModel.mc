@@ -19,6 +19,8 @@ class SessionModel {
     var round as Number = 1;
     var total as PhaseStats;
     var current as PhaseStats;
+    // Heart rate over the running phase, for the cockpit graph.
+    var trace as HrTrace;
     // Completed phases in order, each [phaseCode, PhaseStats].
     var done as Array<Array> = [] as Array<Array>;
     var lastHr as Number or Null = null;
@@ -29,7 +31,7 @@ class SessionModel {
     private var _tempWarn as ThresholdAlarm;
     private var _hrAlarm as ThresholdAlarm;
     // The phase the last switchPhase() closed, [phaseCode, PhaseStats or null when it was dropped
-    // empty], until undoSwitch() reopens it or the next switch replaces it.
+    // empty, its HrTrace], until undoSwitch() reopens it or the next switch replaces it.
     private var _undo as Array or Null = null;
 
     // Targets in seconds (0 = no target alert); limits in °C and bpm (0 = off). The temperature
@@ -38,6 +40,7 @@ class SessionModel {
                         hrLimit as Number) {
         total = new PhaseStats();
         current = new PhaseStats();
+        trace = new HrTrace();
         _heatTarget = 0;
         _coolTarget = 0;
         _tempWarn = new ThresholdAlarm(0, 1);
@@ -65,6 +68,7 @@ class SessionModel {
         lastTemp = temp;
         current.add(hr, temp);
         total.add(hr, temp);
+        trace.add(hr);
         var ev = 0;
         var t = targetSec();
         if (t > 0 && current.seconds == t) {
@@ -85,9 +89,10 @@ class SessionModel {
     // Lap button: close the current phase and start the other one. A phase left before its first
     // second is dropped, and the round number counts only heat phases that actually ran.
     function switchPhase() as Void {
-        _undo = [phase, current.seconds > 0 ? current : null];
+        _undo = [phase, current.seconds > 0 ? current : null, trace];
         if (current.seconds > 0) { done.add([phase, current]); }
         current = new PhaseStats();
+        trace = new HrTrace();
         phase = phase == PHASE_HEAT ? PHASE_COOL : PHASE_HEAT;
         countRound();
     }
@@ -105,6 +110,9 @@ class SessionModel {
             prev.merge(current);
             current = prev;
         }
+        var t = u[2] as HrTrace;
+        t.merge(trace);
+        trace = t;
         countRound();
         return true;
     }

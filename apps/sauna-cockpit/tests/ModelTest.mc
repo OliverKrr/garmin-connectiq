@@ -265,3 +265,42 @@ function history_atReadsOldShortEntries(logger as Test.Logger) as Boolean {
     var oldRound = [600, 100, 120, 140, 440, 300, 25];
     return History.at(oldRound, History.R_HRR) == 25 && History.at(oldRound, History.R_CAVG) == History.NONE;
 }
+
+(:test)
+function hrTrace_onePointPerSecondUntilFull(logger as Test.Logger) as Boolean {
+    var t = new HrTrace();
+    t.add(100); t.add(null); t.add(140);
+    var v = t.values();
+    return t.step == 1 && v.size() == 3 && v[0] == 100 && v[1] == 0 && v[2] == 140 && t.minHr == 100 && t.maxHr == 140;
+}
+
+(:test)
+function hrTrace_halvesWhenFull(logger as Test.Logger) as Boolean {
+    var t = new HrTrace();
+    for (var i = 0; i < 60; i++) { t.add(100 + i); }
+    // 60 one-second points merged into 30 two-second points; the next point needs two seconds.
+    var full = t.points.size() == 30 && t.step == 2 && t.points[0] == 100 && t.points[29] == 158;
+    t.add(200);
+    var half = t.points.size() == 30 && t.values().size() == 31;
+    t.add(202);
+    return full && half && t.points.size() == 31 && t.points[30] == 201;
+}
+
+(:test)
+function hrTrace_longPhaseStaysWithinCap(logger as Test.Logger) as Boolean {
+    var t = new HrTrace();
+    for (var i = 0; i < 3600; i++) { t.add(120); }
+    return t.values().size() < t.CAP && t.step == 64 && t.minHr == 120 && t.maxHr == 120;
+}
+
+(:test)
+function session_traceFollowsThePhaseAndUndo(logger as Test.Logger) as Boolean {
+    var m = new SessionModel(0, 0, 0, 0, 0);
+    tickN(m, 5, 150, null);
+    m.switchPhase();
+    var fresh = m.trace.values().size() == 0;
+    tickN(m, 3, 110, null);
+    m.undoSwitch();
+    var v = m.trace.values();
+    return fresh && v.size() == 8 && v[0] == 150 && v[7] == 110 && m.trace.minHr == 110 && m.trace.maxHr == 150;
+}

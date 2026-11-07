@@ -32,6 +32,14 @@
             <listEntry value="1">@Strings.ScreenDim</listEntry>
         </settingConfig>
     </setting>
+    <setting propertyKey="@Properties.dimLevel" title="@Strings.SetDimLevel">
+        <settingConfig type="list">
+            <listEntry value="10">@Strings.Dim10</listEntry>
+            <listEntry value="20">@Strings.Dim20</listEntry>
+            <listEntry value="30">@Strings.Dim30</listEntry>
+            <listEntry value="40">@Strings.Dim40</listEntry>
+        </settingConfig>
+    </setting>
     <setting propertyKey="@Properties.alertVibrate" title="@Strings.SetAlertVibrate">
         <settingConfig type="boolean" />
     </setting>

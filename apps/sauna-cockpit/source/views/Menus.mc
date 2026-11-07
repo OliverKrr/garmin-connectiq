@@ -160,7 +160,7 @@ class SettingsMenu extends WatchUi.Menu2 {
     // minutes, 0 = off, stored as two properties).
     static const CHOICES = [
         ["heat", "Heat target"], ["cool", "Rest target"],
-        ["heatScreen", "Heat screen"], ["restScreen", "Rest screen"],
+        ["heatScreen", "Heat screen"], ["restScreen", "Rest screen"], ["dimLevel", "Dim brightness"],
         ["tempWarn", "Temp pre-warning"], ["tempLimit", "Temp alert"], ["hrLimit", "HR alert"],
     ];
     static const TOGGLES = [["alertVibrate", "Vibrate"], ["alertTone", "Beep"], ["alertLight", "Light up"]];
@@ -200,6 +200,7 @@ class SettingsMenu extends WatchUi.Menu2 {
             return [["Normal", SCREEN_NORMAL], ["Dim", SCREEN_DIM]];
         }
         if (id.equals("recordAs")) { return [["Other", 0], ["Meditation", 1]]; }
+        if (id.equals("dimLevel")) { return [["10 %", 10], ["20 %", 20], ["30 %", 30], ["40 %", 40]]; }
         o.add(["Off", 0]);
         if (id.equals("heat") || id.equals("cool")) {
             for (var v = 1; v <= 30; v++) { o.add([v + " min", v]); }
@@ -216,6 +217,7 @@ class SettingsMenu extends WatchUi.Menu2 {
         if (id.equals("cool")) { return Config.coolTargetMin(); }
         if (id.equals("heatScreen")) { return Config.heatScreen(); }
         if (id.equals("restScreen")) { return Config.restScreen(); }
+        if (id.equals("dimLevel")) { return Config.dimLevel(); }
         if (id.equals("tempWarn")) { return Config.tempWarn(); }
         if (id.equals("tempLimit")) { return Config.tempLimit(); }
         if (id.equals("hrLimit")) { return Config.hrLimit(); }

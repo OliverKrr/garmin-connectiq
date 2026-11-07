@@ -36,11 +36,14 @@ module Config {
     }
 
     // Session screen between button presses, per phase: SCREEN_NORMAL or SCREEN_DIM (every colour
-    // at about 40 %). A button press or an alert shows it at full brightness for a few seconds.
+    // at dimLevel()). A button press or an alert shows it at full brightness for a few seconds.
     // A black screen is a page of its own (SessionView), chosen on demand. 0.2.0's Dark (2) reads
     // as Dim.
     function heatScreen() as Number { return _clamp(_num("heatScreen", SCREEN_DIM), 0, 1); }
     function restScreen() as Number { return _clamp(_num("restScreen", SCREEN_DIM), 0, 1); }
+
+    // Brightness of a dimmed screen in percent (10, 20, 30 or 40; up to 0.2.1 a fixed 40).
+    function dimLevel() as Number { return _clamp(_num("dimLevel", 20), 10, 40); }
 
     function alertVibrate() as Boolean { return _bool("alertVibrate", true); }
     function alertTone() as Boolean { return _bool("alertTone", false); }
