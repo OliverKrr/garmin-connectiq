@@ -1,10 +1,13 @@
 import Toybox.Graphics;
 import Toybox.Lang;
 import Toybox.Math;
+import Toybox.System;
 
 // The save and discard cues shown while recording, at the edge next to the button that does it,
 // as Garmin's own activity screens do: a green check by START (upper right) and a red X by BACK
 // (lower right). Pure geometry, so the hit test is unit-tested.
+// Also the button hints: watches with only START and BACK (Venu 4, Venu X1, Approach S72) have no
+// DOWN or MENU key, so the hints name the swipe and the long press instead.
 module Markers {
     const SAVE = 1;
     const DISCARD = 2;
@@ -12,10 +15,18 @@ module Markers {
     const SAVE_DEG = 30;
     const DISCARD_DEG = -30;
 
-    // The marker's centre on a round screen of width w and height h.
+    // The marker's centre on a screen of width w and height h. Every supported watch has START at
+    // about 2 o'clock and BACK at about 4 o'clock (simulator.json key positions, 21-31 degrees off
+    // the 3 o'clock line). On a round screen the cue sits on that ray just inside the edge; on the
+    // rectangular Venu X1 (w != h) it hugs the right edge at the same height.
     function center(w as Number, h as Number, deg as Number) as Array<Number> {
-        var r = (w < h ? w : h) / 2 - radius(w, h) - (w < h ? w : h) / 40;
+        var m = (w < h ? w : h) / 40;
         var a = Math.toRadians(deg);
+        if (w != h) {
+            var dy = (w / 2 * Math.sin(a) / Math.cos(a)).toNumber();
+            return [w - radius(w, h) - m, h / 2 - dy];
+        }
+        var r = w / 2 - radius(w, h) - m;
         return [w / 2 + (r * Math.cos(a)).toNumber(), h / 2 - (r * Math.sin(a)).toNumber()];
     }
 
@@ -35,6 +46,11 @@ module Markers {
         var dx = x - c[0];
         var dy = y - c[1];
         return dx * dx + dy * dy <= reach * reach;
+    }
+
+    // True when the watch has a DOWN key (and with it UP and MENU); false on two-button watches.
+    function hasDown() as Boolean {
+        return (System.getDeviceSettings().inputButtons & System.BUTTON_INPUT_DOWN) != 0;
     }
 
     function draw(dc as Graphics.Dc) as Void {

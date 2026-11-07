@@ -13,7 +13,12 @@ The app always opens on the record screen.
 | START | Start recording; again to stop and save (green check) | Play; again to stop |
 | DOWN / UP | Step to the newest note / back. While recording: DOWN asks "Discard recording?", UP does nothing | Older note / newer note, then the record screen |
 | BACK | While recording: asks "Discard recording?" (red X); yes deletes it, no keeps recording. Otherwise: leave the app | Back to the record screen |
-| MENU (hold UP) | Upload now, or delete the notes still waiting | Delete this note |
+| MENU (hold UP) | Upload now, delete the notes still waiting, or settings | Delete this note |
+
+Two-button watches (Venu 4, Venu X1, Approach S72) have only START and BACK: swipe up and down
+step through the notes (swipe up while recording asks to discard, like DOWN), and a long press on
+the screen or a swipe left opens the menu; the screen says "hold: menu" and "swipe up: N notes".
+The long press and the swipe left open the menu on every watch.
 
 While recording, a green check by START and a red X by BACK show what each does; a tap on the
 check saves, a tap on the X asks to discard, other taps do nothing. A discarded recording leaves
@@ -26,6 +31,35 @@ background service. A playback error shows under the note with its code; one tha
 shows on the next start as `last playback: ...`.
 A note shows its date, length, size and whether it is uploaded. The glance in the widget loop
 shows how many notes wait.
+
+## Devices
+
+The app lists the 23 watches that have both Connect IQ's `Audio.Capture` API (SDK 9.3, API
+6.0.3) and a built-in microphone; all of them also have a speaker for playback. Seven more watches
+expose the API but have no microphone, so they are left out (checked 2026-11-07; Garmin publishes
+no single list, so the sources are reviews and spec sheets, linked below).
+
+| Device (SDK id) | Screen | Microphone | Source |
+| --- | --- | --- | --- |
+| fenix 9 / 9 Pro / 9 Pro Solar, all sizes (`fenix943mm`, `fenix947mm`, `fenix9pro43mm`, `fenix9pro47mm`, `fenix9pro51mm`, `fenix9prosolar47mm`, `fenix9prosolar51mm`) | 416-466 AMOLED; Solar 260/280 MIP | yes | [DC Rainmaker, fenix 9 review](https://www.dcrainmaker.com/2026/09/garmin-fenix9-series-pro-inreach-solar-in-depth-review.html), [the5krunner, fenix 9](https://the5krunner.com/specs/garmin/fenix-9/) |
+| fenix 8 / 8 Pro / 8 Solar (`fenix843mm`, `fenix847mm`, `fenix8pro47mm`, `fenix8solar47mm`, `fenix8solar51mm`) | 416/454 AMOLED; Solar 260/280 MIP | yes | [DC Rainmaker, fenix 8 review](https://dcrainmaker.com/2024/08/garmin-fenix-8-in-depth-review.html) |
+| Forerunner 970, 570 42/47 mm (`fr970`, `fr57042mm`, `fr57047mm`) | 390/454 AMOLED | yes | [Tom's Guide](https://www.tomsguide.com/wellness/fitness-trackers/garmin-announces-forerunner-570-and-970-heres-everything-you-need-to-know-about-the-new-watches) |
+| Venu 4 41/45 mm, D2 Air X15 (`venu441mm`, `venu445mm`) | 390/454 AMOLED, two buttons | yes | [Garmin blog](https://www.garmin.com/en-US/blog/general/which-garmin-smartwatch-is-right-for-me/), [the5krunner, D2 Air X15](https://the5krunner.com/2025/10/22/garmin-d2-air-x15-a-buyers-guide/) |
+| Venu X1 (`venux1`) | 448x486 AMOLED, rectangular, two buttons | yes | [Garmin blog](https://www.garmin.com/en-US/blog/general/which-garmin-smartwatch-is-right-for-me/) |
+| MARQ Gen 3 (`marq3`) | 454 AMOLED | yes | [the5krunner, MARQ Gen 3](https://the5krunner.com/specs/garmin/marq-3/) |
+| D2 Mach 2, D2 Mach 2 Pro (`d2mach2`, `d2mach2pro`) | 454 AMOLED | yes | [Garmin newsroom, Mach 2 Pro](https://www.garmin.com/en-US/newsroom/?p=6179), [Garmin manual, voice notes](https://www8.garmin.com/manuals/webhelp/GUID-EA112C95-8563-4EED-AADF-2AADFBB95646/EN-US/GUID-700E76C4-F7E2-4984-8199-D59D6A31DFB9.html) |
+| Approach S72 43/47 mm (`approachs7243mm`, `approachs7247mm`) | 416/454 AMOLED, two buttons | yes | [Wareable](https://www.wareable.com/garmin/garmin-approach-s72-golf-watch-voice-calling-flashlight-swing-analysis-features-price) |
+| Enduro 3 (`enduro3`) | | no | [Tom's Guide review](https://www.tomsguide.com/wellness/smartwatches/garmin-enduro-3-review) |
+| Enduro 4 (`enduro4`) | | no (beeper only) | [DC Rainmaker](https://www.dcrainmaker.com/2026/10/garmin-enduro-4-vs-fenix9-vs-enduro3-detailed-comparison-review.html) |
+| fenix E (`fenixe`) | | no | [Gadgets & Wearables](https://gadgetsandwearables.com/technical-specs/garmin-fenix-e) |
+| Forerunner 70, 170, 170 Music (`fr70`, `fr170`, `fr170m`) | | no (170 Music: beeper only) | [DC Rainmaker, FR70 vs FR170](https://www.dcrainmaker.com/2026/05/garmin-forerunner70-vs-forerunner170-detailed-comparison-review.html) |
+| vivoactive 6 (`vivoactive6`) | | no (sources conflict; TechRadar's review notes it has none) | [TechRadar review](https://www.inkl.com/news/garmin-vivoactive-6-review-a-feature-stuffed-pocket-rocket) |
+
+`Audio.Capture` support per device comes from each device's `<id>.api.debug.xml` in the SDK's
+Devices folder. All 23 build; the screen layout and the save/discard cues scale with the screen and
+sit next to START (about 2 o'clock) and BACK (about 4 o'clock) on every listed watch, per the key
+positions in each device's `simulator.json`; on the rectangular Venu X1 they hug the right edge.
+Only the fenix 9 Pro 51 mm has been tested on a real watch.
 
 ## Settings (phone app, most also on the watch)
 

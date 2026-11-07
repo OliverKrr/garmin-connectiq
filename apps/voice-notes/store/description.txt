@@ -21,4 +21,4 @@ SETTINGS
 - Watch space for notes in KB (default 1024).
 - Retry waiting notes every N minutes (default 15, 5 to 60).
 
-Requires a watch with a microphone and Connect IQ 6.0.3 (fenix 9 Pro).
+Requires a watch with a microphone and Connect IQ 6.0.3: fenix 8 and 9 (all sizes, Pro and Solar), Forerunner 570 and 970, Venu 4, Venu X1, D2 Air X15, MARQ Gen 3, D2 Mach 2 and 2 Pro, Approach S72. On Venu 4, Venu X1 and Approach S72 (two buttons), swipe up and down step through notes and a long press opens the menu.

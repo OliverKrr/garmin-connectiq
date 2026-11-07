@@ -205,7 +205,8 @@ class NotesView extends WatchUi.View {
                 Graphics.TEXT_JUSTIFY_CENTER | Graphics.TEXT_JUSTIFY_VCENTER);
             // Clear of the red X at BACK, which sits beside the gap between these two lines.
             dc.drawText(w / 2, h * 62 / 100, Graphics.FONT_XTINY, "START: save", Graphics.TEXT_JUSTIFY_CENTER);
-            dc.drawText(w / 2, h * 80 / 100, Graphics.FONT_XTINY, "BACK, DOWN: discard", Graphics.TEXT_JUSTIFY_CENTER);
+            dc.drawText(w / 2, h * 80 / 100, Graphics.FONT_XTINY,
+                Markers.hasDown() ? "BACK, DOWN: discard" : "BACK: discard", Graphics.TEXT_JUSTIFY_CENTER);
             Markers.draw(dc);
             return;
         }
@@ -221,8 +222,13 @@ class NotesView extends WatchUi.View {
             dc.drawText(w / 2, h * 75 / 100, Graphics.FONT_XTINY, _n.status, Graphics.TEXT_JUSTIFY_CENTER);
         }
         if (all > 0) {
-            dc.drawText(w / 2, h * 85 / 100, Graphics.FONT_XTINY, "DOWN: " + all + (all == 1 ? " note" : " notes"),
+            dc.drawText(w / 2, h * 85 / 100, Graphics.FONT_XTINY,
+                (Markers.hasDown() ? "DOWN: " : "swipe up: ") + all + (all == 1 ? " note" : " notes"),
                 Graphics.TEXT_JUSTIFY_CENTER);
+        }
+        if (!Markers.hasDown()) {
+            // No MENU key on two-button watches: say how to reach the menu, at the bottom edge.
+            dc.drawText(w / 2, h * 92 / 100, Graphics.FONT_XTINY, "hold: menu", Graphics.TEXT_JUSTIFY_CENTER);
         }
     }
 
@@ -313,6 +319,17 @@ class NotesDelegate extends WatchUi.BehaviorDelegate {
             _n.askDiscard();
         }
         return true;
+    }
+
+    // Two-button watches have no MENU key: a long press on the screen opens the same menu, and so
+    // does a swipe left (free on every watch: swipe right is BACK, up/down step through notes).
+    function onHold(evt as WatchUi.ClickEvent) as Boolean {
+        return onMenu();
+    }
+
+    function onSwipe(evt as WatchUi.SwipeEvent) as Boolean {
+        if (evt.getDirection() == WatchUi.SWIPE_LEFT) { return onMenu(); }
+        return false;
     }
 
     function onMenu() as Boolean {

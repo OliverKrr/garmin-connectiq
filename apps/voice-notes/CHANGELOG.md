@@ -4,6 +4,13 @@ Voice Notes, versioned by [SemVer](https://semver.org/). Released through a priv
 so far. `just package-beta voice-notes` regenerates the beta listing's What's New
 (`store/whats-new.txt`) from the released history below, so keep entries short and plain ASCII.
 
+## [0.4.0] - 2026-11-07
+- 23 watches with a microphone: fenix 8 and 9 (all sizes, Pro and Solar), Forerunner 570 and 970,
+  Venu 4, Venu X1, D2 Air X15, MARQ Gen 3, D2 Mach 2 and 2 Pro, Approach S72.
+- Two-button watches (Venu 4, Venu X1, Approach S72): swipe up and down step through notes, a long
+  press or a swipe left opens the menu; the screen says how.
+- The save and discard cues sit next to START and BACK on every screen size and shape.
+
 ## [0.3.1] - 2026-11-07
 - A recording can be discarded: BACK, DOWN or a tap on the red X asks "Discard recording?"; yes
   deletes it from the watch so it never uploads, no keeps recording. START or the green check saves.
